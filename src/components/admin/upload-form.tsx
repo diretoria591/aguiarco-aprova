@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { removeFiles, safePath, uploadFile } from '@/lib/upload';
 import { MAX_UPLOAD_MB, TYPES } from '@/lib/constants';
+import { COVER_PREFIX, EMBED_PREFIX, parseVideoLink, splitMedia, type Embed } from '@/lib/media';
 import type { Client, Post, PostFormat } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
@@ -12,6 +13,13 @@ import { errMsg } from './client-form';
 import { useMe } from './me';
 
 const ACCEPT = /^(image|video)\/|application\/pdf/;
+/** Formatos que aceitam capa personalizada. */
+const COVER_FORMATS: PostFormat[] = ['reels', 'video'];
+
+type Item = { kind: 'file'; file: File } | { kind: 'link'; embed: Embed };
+type MediaRow = { post_id: string; file_url: string; storage_path: string | null; file_type: string; file_name: string; order_index: number };
+const itemKey = (it: Item, i: number) =>
+  it.kind === 'file' ? `${it.file.name}-${it.file.size}-${it.file.lastModified}-${i}` : `${it.embed.src}-${i}`;
 
 function Preview({ file }: { file: File }) {
   const url = useMemo(() => URL.createObjectURL(file), [file]);
@@ -33,7 +41,12 @@ export function UploadForm({
   const { toast } = useUI();
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<File[]>([]);
+  const coverRef = useRef<HTMLInputElement>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [link, setLink] = useState('');
+  const oldCover = material ? splitMedia(material.post_media).cover : null;
+  const [cover, setCover] = useState<File | null>(null);
+  const [dropOldCover, setDropOldCover] = useState(false);
   const [type, setType] = useState<PostFormat>(material?.format ?? 'carrossel');
   const [over, setOver] = useState(false);
   const [keep, setKeep] = useState(false);
@@ -47,30 +60,62 @@ export function UploadForm({
       if (f.size > MAX_UPLOAD_MB * 1024 * 1024) return toast(`“${f.name}” passa de ${MAX_UPLOAD_MB} MB.`, 'err');
       ok.push(f);
     });
-    setFiles((cur) => cur.concat(ok));
+    setItems((cur) => cur.concat(ok.map((file) => ({ kind: 'file' as const, file }))));
+  }
+  function addLink() {
+    if (!link.trim()) return;
+    const embed = parseVideoLink(link);
+    if (!embed) return toast('Não reconheci esse link. Cole o endereço do vídeo (YouTube, Vimeo, Drive, Instagram, TikTok, Loom…).', 'err');
+    setItems((cur) => cur.concat({ kind: 'link', embed }));
+    setLink('');
+  }
+  function pickCover(list: FileList | null) {
+    const f = list?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) return toast('A capa precisa ser uma imagem (JPG ou PNG).', 'err');
+    if (f.size > MAX_UPLOAD_MB * 1024 * 1024) return toast(`A capa passa de ${MAX_UPLOAD_MB} MB.`, 'err');
+    setCover(f);
   }
   function move(i: number, d: number) {
     const j = i + d;
-    if (j < 0 || j >= files.length) return;
-    setFiles((cur) => { const n = cur.slice(); [n[i], n[j]] = [n[j], n[i]]; return n; });
+    if (j < 0 || j >= items.length) return;
+    setItems((cur) => { const n = cur.slice(); [n[i], n[j]] = [n[j], n[i]]; return n; });
   }
 
-  async function uploadAll(postId: string) {
+  /** Envia arquivos (itens + capa) e devolve as linhas de post_media. */
+  async function uploadAll(postId: string, withItems: boolean) {
+    const sendCover = !!cover && COVER_FORMATS.includes(type);
+    const files = (withItems ? items : []).flatMap((it) => (it.kind === 'file' ? [it.file] : []));
+    if (sendCover) files.push(cover!);
     const total = files.reduce((a, f) => a + f.size, 0) || 1;
     let done = 0;
-    const rows: { post_id: string; file_url: string; storage_path: string; file_type: string; file_name: string; order_index: number }[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
+    const rows: MediaRow[] = [];
+    const up = async (f: File, i: number) => {
       const path = safePath(`posts/${postId}`, f, i);
-      try {
-        const url = await uploadFile(path, f, (loaded) => setProgress((done + loaded) / total));
-        rows.push({ post_id: postId, file_url: url, storage_path: path, file_type: f.type, file_name: f.name, order_index: i });
-      } catch (e) {
-        await removeFiles(rows.map((r) => r.storage_path)).catch(() => {});
-        throw e;
-      }
+      const url = await uploadFile(path, f, (loaded) => setProgress((done + loaded) / total));
       done += f.size;
       setProgress(done / total);
+      return { url, path };
+    };
+    try {
+      if (withItems) {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          if (it.kind === 'link') {
+            rows.push({ post_id: postId, file_url: it.embed.src, storage_path: null, file_type: `${EMBED_PREFIX}${it.embed.provider}`, file_name: it.embed.original.slice(0, 500), order_index: i });
+          } else {
+            const { url, path } = await up(it.file, i);
+            rows.push({ post_id: postId, file_url: url, storage_path: path, file_type: it.file.type, file_name: it.file.name, order_index: i });
+          }
+        }
+      }
+      if (sendCover) {
+        const { url, path } = await up(cover!, 999);
+        rows.push({ post_id: postId, file_url: url, storage_path: path, file_type: `${COVER_PREFIX}${cover!.type}`, file_name: cover!.name, order_index: -1 });
+      }
+    } catch (e) {
+      await removeFiles(rows.map((r) => r.storage_path)).catch(() => {});
+      throw e;
     }
     return rows;
   }
@@ -81,7 +126,7 @@ export function UploadForm({
     const title = String(fd.get('title') ?? '').trim();
     const caption = String(fd.get('caption') ?? '');
     if (!isVersion && !title) return toast('Dê um título para o material.', 'err');
-    if (!files.length && !caption.trim() && !keep) return toast('Envie pelo menos um arquivo ou um texto.', 'err');
+    if (!items.length && !caption.trim() && !keep) return toast('Envie pelo menos um arquivo, um link ou um texto.', 'err');
 
     const supabase = createClient();
     setProgress(0);
@@ -95,7 +140,7 @@ export function UploadForm({
           .single();
         if (error) throw error;
         try {
-          const rows = await uploadAll(post.id);
+          const rows = await uploadAll(post.id, true);
           if (rows.length) {
             const { error: e2 } = await supabase.from('post_media').insert(rows);
             if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
@@ -110,17 +155,21 @@ export function UploadForm({
         toast('Material enviado para aprovação');
       } else {
         const v = material.version + 1;
-        if (!keep) {
-          const rows = await uploadAll(material.id);
-          if (rows.length) {
-            const { error: e2 } = await supabase.from('post_media').insert(rows);
-            if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
-          }
-          const oldIds = material.post_media.map((m) => m.id);
-          if (oldIds.length) {
-            await supabase.from('post_media').delete().in('id', oldIds);
-            await removeFiles(material.post_media.map((m) => m.storage_path)).catch(() => {});
-          }
+        const rows = await uploadAll(material.id, !keep);
+        if (rows.length) {
+          const { error: e2 } = await supabase.from('post_media').insert(rows);
+          if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
+        }
+        // remove o que foi substituído: itens antigos (se não manteve) e a capa antiga (se trocou/removeu)
+        const newCover = rows.some((r) => r.file_type.startsWith(COVER_PREFIX));
+        const old = splitMedia(material.post_media);
+        const gone = [
+          ...(keep ? [] : old.items),
+          ...(old.cover && (newCover || dropOldCover) ? [old.cover] : []),
+        ];
+        if (gone.length) {
+          await supabase.from('post_media').delete().in('id', gone.map((m) => m.id));
+          await removeFiles(gone.map((m) => m.storage_path)).catch(() => {});
         }
         const { error } = await supabase.from('posts').update({
           version: v, caption, status: 'pending', sent_at: new Date().toISOString(),
@@ -187,7 +236,7 @@ export function UploadForm({
         )}
 
         <div className="field">
-          <label>Arquivos <span className="muted" style={{ fontWeight: 400 }}>— fotos, vídeos ou PDF; a ordem é a do carrossel</span></label>
+          <label>Arquivos <span className="muted" style={{ fontWeight: 400 }}>— fotos, vídeos ou PDF (pode misturar foto e vídeo no carrossel); a ordem é a do carrossel</span></label>
           <div
             className={`drop${over ? ' over' : ''}`}
             onClick={() => fileRef.current?.click()}
@@ -204,14 +253,24 @@ export function UploadForm({
           </div>
           <input ref={fileRef} type="file" multiple accept="image/*,video/*,application/pdf" hidden
             onChange={(e) => { add(e.target.files); e.target.value = ''; }} />
-          {files.length > 0 && (
+          <div className="linkrow">
+            <input className="input" value={link} onChange={(e) => setLink(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } }}
+              placeholder="Ou cole o link de um vídeo (YouTube, Vimeo, Drive, Instagram, TikTok, Loom…)" />
+            <button type="button" className="btn line" onClick={addLink} disabled={!link.trim()}><Icon name="link" />Adicionar</button>
+          </div>
+          {items.length > 0 && (
             <div className="previews">
-              {files.map((f, i) => (
-                <div className="pv" key={`${f.name}-${f.size}-${f.lastModified}-${i}`}>
-                  <Preview file={f} />
+              {items.map((it, i) => (
+                <div className="pv" key={itemKey(it, i)}>
+                  {it.kind === 'file' ? <Preview file={it.file} /> : (
+                    <div className="emb" style={it.embed.thumb ? { backgroundImage: `linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url("${it.embed.thumb}")` } : undefined}>
+                      <Icon name="video" /><span>{it.embed.label}</span>
+                    </div>
+                  )}
                   <span className="n">{i + 1}</span>
-                  <button type="button" aria-label="Remover" onClick={() => setFiles((cur) => cur.filter((_, k) => k !== i))}><Icon name="x" /></button>
-                  {files.length > 1 && (
+                  <button type="button" aria-label="Remover" onClick={() => setItems((cur) => cur.filter((_, k) => k !== i))}><Icon name="x" /></button>
+                  {items.length > 1 && (
                     <div className="mv">
                       <button type="button" aria-label="Mover para trás" onClick={() => move(i, -1)}><Icon name="left" /></button>
                       <button type="button" aria-label="Mover para frente" onClick={() => move(i, 1)}><Icon name="right" /></button>
@@ -221,12 +280,39 @@ export function UploadForm({
               ))}
             </div>
           )}
-          {isVersion && material.post_media.length > 0 && (
+          {isVersion && splitMedia(material.post_media).items.length > 0 && (
             <label className="small" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
               <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /> Manter os arquivos atuais (mudar só o texto)
             </label>
           )}
         </div>
+
+        {COVER_FORMATS.includes(type) && (
+          <div className="field">
+            <label>Capa personalizada <span className="muted" style={{ fontWeight: 400 }}>(opcional — a imagem que aparece no feed)</span></label>
+            <div className="cover-pick">
+              <div className="cv">
+                {cover ? <Preview file={cover} />
+                  : oldCover && !dropOldCover
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={oldCover.file_url} alt="Capa atual" />
+                    : <Icon name="image" />}
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button type="button" className="btn line sm" onClick={() => coverRef.current?.click()}>
+                  <Icon name="upload" />{cover || (oldCover && !dropOldCover) ? 'Trocar capa' : 'Escolher capa'}
+                </button>
+                {(cover || (oldCover && !dropOldCover)) && (
+                  <button type="button" className="btn line sm" onClick={() => { if (cover) setCover(null); else setDropOldCover(true); }}>
+                    <Icon name="x" />Remover
+                  </button>
+                )}
+              </div>
+            </div>
+            <input ref={coverRef} type="file" accept="image/*" hidden
+              onChange={(e) => { pickCover(e.target.files); e.target.value = ''; }} />
+          </div>
+        )}
 
         <div className="field">
           <label>Legenda / texto para aprovação</label>
