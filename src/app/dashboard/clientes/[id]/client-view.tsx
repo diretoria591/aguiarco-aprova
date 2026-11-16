@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { removeFiles } from '@/lib/upload';
 import { STATUS_CLASS, STATUS_LABEL, STATUS_SHORT, TYPES, countStatuses, portalLink } from '@/lib/constants';
 import { fmtAgo, fmtDate, fmtDay, firstName } from '@/lib/format';
+import { embedThumb, isEmbed, isVideoLike, splitMedia } from '@/lib/media';
 import type { ActivityLog, Client, Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Mono, Viewer, copyText, useUI } from '@/components/ui';
@@ -140,14 +141,21 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
 }
 
 function MaterialCard({ m, onOpen }: { m: Post; onOpen: () => void }) {
-  const f = m.post_media[0];
+  const { cover, items } = splitMedia(m.post_media);
+  const f = items[0];
   const t = TYPES[m.format] ?? { label: m.format, icon: 'image' as const };
   const badge = <span className="type-badge"><Icon name={t.icon} />{t.label}</span>;
-  const multi = m.post_media.length > 1 ? <span className="multi">1/{m.post_media.length}</span> : null;
+  const multi = items.length > 1 ? <span className="multi">1/{items.length}</span> : null;
+  const play = <span className="play"><Icon name="video" /></span>;
   const cc = m.comments.filter((x) => x.author_role === 'client' && x.kind !== 'approval').length;
 
   let thumb;
-  if (!f) thumb = <div className="thumb"><div className="txt">{m.caption}</div>{badge}</div>;
+  if (cover) thumb = <div className="thumb" style={{ backgroundImage: `url("${cover.file_url}")` }}>{f && isVideoLike(f) ? play : null}{badge}{multi}</div>;
+  else if (!f) thumb = <div className="thumb"><div className="txt">{m.caption}</div>{badge}</div>;
+  else if (isEmbed(f)) {
+    const th = embedThumb(f.file_url);
+    thumb = <div className="thumb" style={th ? { backgroundImage: `url("${th}")` } : { background: '#2b2a29' }}>{play}{badge}{multi}</div>;
+  }
   else if (f.file_type.startsWith('image/')) thumb = <div className="thumb" style={{ backgroundImage: `url("${f.file_url}")` }}>{badge}{multi}</div>;
   else if (f.file_type.startsWith('video/')) thumb = <div className="thumb"><video muted preload="metadata" src={`${f.file_url}#t=0.1`} />{badge}{multi}</div>;
   else thumb = (
@@ -228,14 +236,16 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
     router.refresh();
   }
 
-  const isVideo = m.post_media.length > 0 && m.post_media.every((f) => f.file_type.startsWith('video/'));
+  const { cover, items } = splitMedia(m.post_media);
+  const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
 
   return (
     <Modal wide onClose={onClose} bodyStyle={{ padding: 0 }}>
       <div className="mdetail">
         <div className="media">
           <Viewer
-            files={m.post_media.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+            files={items.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+            cover={cover?.file_url}
             caption={m.caption}
             ratio={isVideo ? '9 / 16' : '4 / 5'}
           />
@@ -262,7 +272,7 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
             </div>
             <div className="fact"><div className="k">Publicação</div><div className="v">{m.scheduled_date ? fmtDay(m.scheduled_date) : '—'}</div></div>
           </div>
-          {m.caption && m.post_media.length > 0 && (
+          {m.caption && items.length > 0 && (
             <div><p className="eyebrow" style={{ margin: '0 0 8px' }}>Legenda / texto</p><div className="caption">{m.caption}</div></div>
           )}
           <div ref={threadEnd}>
