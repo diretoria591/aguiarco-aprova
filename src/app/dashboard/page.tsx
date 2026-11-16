@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     const mine = posts.filter((p) => p.client_id === c.id);
     const cover = mine
       .flatMap((p) => [...p.post_media].sort((a, b) => a.order_index - b.order_index))
-      .find((m) => m.file_type.startsWith('image/'));
+      .find((m) => m.file_type.startsWith('image/') || m.file_type.startsWith('cover/image/'));
     return { ...c, counts: countStatuses(mine), cover: cover?.file_url ?? null };
   });
 
