@@ -1,0 +1,15 @@
+'use client';
+
+import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseEnv } from './env';
+
+let browserClient: SupabaseClient | null = null;
+
+/** Cliente do navegador para a equipe (sessão em cookies). */
+export function createClient(): SupabaseClient {
+  if (browserClient) return browserClient;
+  const { url, anonKey } = supabaseEnv();
+  browserClient = createBrowserClient(url, anonKey);
+  return browserClient;
+}

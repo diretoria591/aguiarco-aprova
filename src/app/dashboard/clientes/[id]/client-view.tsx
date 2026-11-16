@@ -1,0 +1,343 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { removeFiles } from '@/lib/upload';
+import { STATUS_CLASS, STATUS_LABEL, STATUS_SHORT, TYPES, countStatuses, portalLink } from '@/lib/constants';
+import { fmtAgo, fmtDate, fmtDay, firstName } from '@/lib/format';
+import type { ActivityLog, Client, Post, PostStatus } from '@/lib/types';
+import { Icon } from '@/components/icon';
+import { Modal, Mono, Viewer, copyText, useUI } from '@/components/ui';
+import { Thread, Timeline } from '@/components/thread';
+import { ClientForm, errMsg } from '@/components/admin/client-form';
+import { UploadForm } from '@/components/admin/upload-form';
+import { LiveRefresh } from '@/components/admin/live-refresh';
+import { useMe } from '@/components/admin/me';
+
+type Filter = 'todos' | PostStatus;
+
+export function ClientView({ client, posts, events }: { client: Client; posts: Post[]; events: ActivityLog[] }) {
+  const { toast, confirm } = useUI();
+  const [filter, setFilter] = useState<Filter>('todos');
+  const [editOpen, setEditOpen] = useState(false);
+  const [upload, setUpload] = useState<{ material?: Post } | null>(null);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [origin, setOrigin] = useState('');
+  useEffect(() => setOrigin(window.location.origin), []);
+
+  const counts = countStatuses(posts);
+  const link = portalLink(client.access_token, origin);
+  const list = posts.filter((p) => filter === 'todos' || p.status === filter);
+  const tabs: [Filter, string, number][] = [
+    ['todos', 'Todos', posts.length],
+    ['pending', 'Aguardando', counts.pendente],
+    ['adjustment_requested', 'Em ajuste', counts.ajustes],
+    ['approved', 'Aprovados', counts.aprovado],
+  ];
+  const detail = detailId ? posts.find((p) => p.id === detailId) ?? null : null;
+
+  async function copyLink() {
+    const ok = await copyText(link);
+    toast(ok ? 'Link copiado' : 'Não foi possível copiar', ok ? undefined : 'err');
+  }
+
+  async function askNotify() {
+    const ok = await confirm({
+      title: `Avisar ${client.name}?`,
+      text: 'Preparamos uma mensagem personalizada com o link da área de aprovação. Você revisa e envia pelo WhatsApp ou e-mail.',
+      okLabel: 'Preparar aviso',
+    });
+    if (ok) setNotifyOpen(true);
+  }
+
+  return (
+    <>
+      <LiveRefresh clientId={client.id} />
+      <Link className="back" href="/dashboard"><Icon name="left" />Todos os clientes</Link>
+      <div className="chead">
+        <Mono name={client.name} logo={client.logo_url} />
+        <div>
+          <h1><b>{client.name}</b></h1>
+          <div className="sub">
+            {client.contact_name && <span>{client.contact_name}</span>}
+            <span suppressHydrationWarning>
+              {client.last_accessed_at ? `Último acesso ${fmtAgo(client.last_accessed_at)}` : 'Ainda não acessou a área de aprovação'}
+            </span>
+          </div>
+        </div>
+        <div className="actions">
+          <button className="btn line" title="Editar cliente" onClick={() => setEditOpen(true)}><Icon name="edit" />Editar</button>
+          <button className="btn line" onClick={() => setNotifyOpen(true)}><Icon name="bell" />Avisar cliente</button>
+          <button className="btn" onClick={() => setUpload({})}><Icon name="upload" />Enviar material</button>
+        </div>
+      </div>
+
+      <div className="layout">
+        <section>
+          <div className="tabs">
+            {tabs.map(([k, l, n]) => (
+              <button key={k} className={`tab ${filter === k ? 'on' : ''}`} onClick={() => setFilter(k)}>
+                {l}<span className="n">{n}</span>
+              </button>
+            ))}
+          </div>
+          {list.length ? (
+            <div className="mats">
+              {list.map((m) => <MaterialCard key={m.id} m={m} onOpen={() => setDetailId(m.id)} />)}
+            </div>
+          ) : posts.length ? (
+            <div className="empty"><p>Nada por aqui neste filtro.</p></div>
+          ) : (
+            <div className="card empty">
+              <h3>Primeiro <b>envio</b></h3>
+              <p>Envie fotos, vídeos, carrosséis, artes ou textos para {client.name} aprovar.</p>
+              <button className="btn" onClick={() => setUpload({})}><Icon name="upload" />Enviar material</button>
+            </div>
+          )}
+        </section>
+
+        <aside className="side" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 16 }}>
+          <div className="card">
+            <h3>Link do cliente</h3>
+            <div className="linkbox">
+              <code>{link}</code>
+              <button className="btn sm sand" onClick={copyLink}><Icon name="copy" />Copiar</button>
+            </div>
+            <p className="small muted" style={{ margin: '10px 0 0' }}>Cada cliente tem um link exclusivo e só enxerga os próprios materiais.</p>
+            <a className="btn sm ghost" style={{ marginTop: 6, paddingLeft: 0 }} href={`/aprovar/${client.access_token}?preview=1`} target="_blank" rel="noopener noreferrer">
+              <Icon name="eye" />Ver como o cliente vê
+            </a>
+          </div>
+          <div className="card">
+            <h3>Linha do tempo</h3>
+            {events.length ? <Timeline events={events} /> : <p className="muted small" style={{ margin: 0 }}>Ainda sem movimentações.</p>}
+          </div>
+        </aside>
+      </div>
+
+      {editOpen && <ClientForm client={client} onClose={() => setEditOpen(false)} />}
+      {upload && (
+        <UploadForm
+          client={client}
+          material={upload.material}
+          onClose={() => setUpload(null)}
+          onDone={askNotify}
+        />
+      )}
+      {notifyOpen && <NotifyForm client={client} posts={posts} link={link} onClose={() => setNotifyOpen(false)} />}
+      {detail && (
+        <PostDetail
+          m={detail}
+          onClose={() => setDetailId(null)}
+          onNewVersion={() => { setDetailId(null); setUpload({ material: detail }); }}
+        />
+      )}
+    </>
+  );
+}
+
+function MaterialCard({ m, onOpen }: { m: Post; onOpen: () => void }) {
+  const f = m.post_media[0];
+  const t = TYPES[m.format] ?? { label: m.format, icon: 'image' as const };
+  const badge = <span className="type-badge"><Icon name={t.icon} />{t.label}</span>;
+  const multi = m.post_media.length > 1 ? <span className="multi">1/{m.post_media.length}</span> : null;
+  const cc = m.comments.filter((x) => x.author_role === 'client' && x.kind !== 'approval').length;
+
+  let thumb;
+  if (!f) thumb = <div className="thumb"><div className="txt">{m.caption}</div>{badge}</div>;
+  else if (f.file_type.startsWith('image/')) thumb = <div className="thumb" style={{ backgroundImage: `url("${f.file_url}")` }}>{badge}{multi}</div>;
+  else if (f.file_type.startsWith('video/')) thumb = <div className="thumb"><video muted preload="metadata" src={`${f.file_url}#t=0.1`} />{badge}{multi}</div>;
+  else thumb = (
+    <div className="thumb">
+      <div style={{ textAlign: 'center', color: 'var(--brown)' }}><Icon name="doc" /><div className="small">{f.file_name}</div></div>
+      {badge}{multi}
+    </div>
+  );
+
+  return (
+    <article className="card mcard" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(); }}>
+      {thumb}
+      <div className="mb">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <span className={`status ${STATUS_CLASS[m.status]}`}>{STATUS_SHORT[m.status]}</span>
+          {m.version > 1 && <span className="small muted">v{m.version}</span>}
+        </div>
+        <h4>{m.title}</h4>
+        <div className="meta">
+          <span suppressHydrationWarning>
+            {m.scheduled_date ? <><Icon name="calendar" />{fmtDay(m.scheduled_date)}</> : `Enviado ${fmtDate(m.sent_at, false)}`}
+          </span>
+          <span>
+            {cc > 0 && <><Icon name="chat" />{cc}</>}{' '}
+            {m.first_viewed_at ? <><Icon name="eye" />visto</> : <span className="muted">não visto</span>}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void; onNewVersion: () => void }) {
+  const router = useRouter();
+  const me = useMe();
+  const { toast, confirm } = useUI();
+  const [reply, setReply] = useState('');
+  const [sending, setSending] = useState(false);
+  const threadEnd = useRef<HTMLDivElement>(null);
+  const t = TYPES[m.format] ?? { label: m.format };
+
+  useEffect(() => {
+    const th = threadEnd.current?.querySelector('.thread');
+    th?.lastElementChild?.scrollIntoView({ block: 'nearest' });
+  }, [m.comments.length]);
+
+  async function send() {
+    const body = reply.trim();
+    if (!body) return;
+    setSending(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('comments').insert({
+      post_id: m.id, author_name: me.name, author_role: 'agency', kind: 'comment', content: body, version: m.version,
+    });
+    if (error) { setSending(false); return toast(errMsg(error), 'err'); }
+    await supabase.from('activity_logs').insert({
+      client_id: m.client_id, post_id: m.id, type: 'resposta', actor: me.name, action_text: `${me.name} respondeu em ${m.title}`,
+    });
+    setReply('');
+    setSending(false);
+    toast('Resposta enviada');
+    router.refresh();
+  }
+
+  async function del() {
+    const ok = await confirm({
+      title: 'Excluir material?',
+      text: `“${m.title}” e os comentários dele serão apagados.`,
+      okLabel: 'Excluir',
+      danger: true,
+    });
+    if (!ok) return;
+    const { error } = await createClient().from('posts').delete().eq('id', m.id);
+    if (error) return toast(errMsg(error), 'err');
+    await removeFiles(m.post_media.map((x) => x.storage_path)).catch(() => {});
+    toast('Material excluído');
+    onClose();
+    router.refresh();
+  }
+
+  const isVideo = m.post_media.length > 0 && m.post_media.every((f) => f.file_type.startsWith('video/'));
+
+  return (
+    <Modal wide onClose={onClose} bodyStyle={{ padding: 0 }}>
+      <div className="mdetail">
+        <div className="media">
+          <Viewer
+            files={m.post_media.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+            caption={m.caption}
+            ratio={isVideo ? '9 / 16' : '4 / 5'}
+          />
+        </div>
+        <div className="info">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+            <div>
+              <p className="eyebrow" style={{ margin: '0 0 6px' }}>{t.label}{m.version > 1 ? ` · versão ${m.version}` : ''}</p>
+              <h2>{m.title}</h2>
+            </div>
+            <button className="icon-btn" onClick={onClose} aria-label="Fechar"><Icon name="x" /></button>
+          </div>
+          <div><span className={`status ${STATUS_CLASS[m.status]}`}>{STATUS_LABEL[m.status]}</span></div>
+          <div className="facts" suppressHydrationWarning>
+            <div className="fact"><div className="k">Enviado</div><div className="v">{fmtDate(m.sent_at)}</div></div>
+            <div className="fact"><div className="k">Cliente viu</div><div className="v">{m.first_viewed_at ? fmtDate(m.first_viewed_at) : '—'}</div></div>
+            <div className="fact">
+              <div className="k">{m.status === 'adjustment_requested' ? 'Ajuste pedido' : 'Aprovado'}</div>
+              <div className="v">
+                {m.decided_at && m.status !== 'pending' ? (
+                  <>{fmtDate(m.decided_at)}{m.decided_by && <><br /><span className="muted" style={{ fontWeight: 400 }}>por {m.decided_by}</span></>}</>
+                ) : '—'}
+              </div>
+            </div>
+            <div className="fact"><div className="k">Publicação</div><div className="v">{m.scheduled_date ? fmtDay(m.scheduled_date) : '—'}</div></div>
+          </div>
+          {m.caption && m.post_media.length > 0 && (
+            <div><p className="eyebrow" style={{ margin: '0 0 8px' }}>Legenda / texto</p><div className="caption">{m.caption}</div></div>
+          )}
+          <div ref={threadEnd}>
+            <p className="eyebrow" style={{ margin: '0 0 12px' }}>Conversa</p>
+            {m.comments.length ? <Thread comments={m.comments} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
+          </div>
+          <div className="reply">
+            <textarea className="textarea" placeholder="Responder ao cliente…" value={reply} onChange={(e) => setReply(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }} />
+            <button className="btn" onClick={send} disabled={sending} aria-label="Enviar"><Icon name="send" /></button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
+            <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
+            <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function defaultMessage(c: Client, pend: Post[], link: string) {
+  const n = pend.length;
+  const nome = firstName(c.contact_name) || c.name;
+  const lista = pend.slice(0, 6).map((p) => `• ${p.title}`).join('\n');
+  return `Olá, ${nome}! Tudo bem? 🤍\n\n${n === 1 ? 'Temos 1 conteúdo novo' : `Temos ${n} conteúdos`} aguardando a sua aprovação na sua área exclusiva da Aguiar&Co:\n\n${lista}${n > 6 ? `\n• e mais ${n - 6}` : ''}\n\nÉ só acessar o link abaixo para visualizar, comentar e aprovar:\n${link}\n\nQualquer dúvida, estamos por aqui!\nEquipe Aguiar&Co`;
+}
+
+function NotifyForm({ client, posts, link, onClose }: { client: Client; posts: Post[]; link: string; onClose: () => void }) {
+  const router = useRouter();
+  const me = useMe();
+  const { toast } = useUI();
+  const pend = posts.filter((x) => x.status === 'pending');
+  const [msg, setMsg] = useState(() => defaultMessage(client, pend, link));
+  const LABEL = { whatsapp: 'WhatsApp', email: 'e-mail', copia: 'mensagem copiada' } as const;
+
+  async function go(ch: keyof typeof LABEL) {
+    if (ch === 'whatsapp') {
+      const n = String(client.whatsapp || '').replace(/\D/g, '');
+      window.open(`https://wa.me/${n}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+    } else if (ch === 'email') {
+      window.location.href = `mailto:${encodeURIComponent(client.email || '')}?subject=${encodeURIComponent('Novos conteúdos aguardando sua aprovação · Aguiar&Co')}&body=${encodeURIComponent(msg)}`;
+    } else {
+      const ok = await copyText(msg);
+      toast(ok ? 'Mensagem copiada' : 'Não foi possível copiar', ok ? undefined : 'err');
+    }
+    onClose();
+    await createClient().from('activity_logs').insert({
+      client_id: client.id, type: 'aviso', actor: me.name, meta: LABEL[ch], action_text: `${me.name} avisou o cliente (${LABEL[ch]})`,
+    });
+    router.refresh();
+  }
+
+  return (
+    <Modal title={<>Avisar <b>{client.name}</b></>} onClose={onClose}>
+      <p className="muted small" style={{ margin: '0 0 14px' }}>
+        {pend.length
+          ? `${pend.length} ${pend.length > 1 ? 'materiais' : 'material'} aguardando aprovação.`
+          : 'Não há materiais aguardando no momento — a mensagem leva o cliente para a área dele mesmo assim.'}{' '}
+        Revise o texto antes de enviar.
+      </p>
+      <div className="field">
+        <textarea className="textarea" style={{ minHeight: 240 }} value={msg} onChange={(e) => setMsg(e.target.value)} />
+      </div>
+      <div className="channels">
+        <button className="btn" onClick={() => go('whatsapp')}><Icon name="whats" />WhatsApp</button>
+        <button className="btn line" onClick={() => go('email')}><Icon name="mail" />E-mail</button>
+        <button className="btn line" onClick={() => go('copia')}><Icon name="copy" />Copiar</button>
+      </div>
+      <p className="small muted" style={{ margin: '12px 0 0' }}>
+        {client.whatsapp
+          ? `O WhatsApp abre na conversa com ${client.whatsapp}.`
+          : 'Sem número cadastrado: o WhatsApp abre para você escolher o contato ou o grupo do cliente.'}{' '}
+        Nada é enviado sem você confirmar no aplicativo.
+      </p>
+    </Modal>
+  );
+}
