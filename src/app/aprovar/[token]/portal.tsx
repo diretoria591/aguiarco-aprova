@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchPortal, portalSupabase, rpcError, type PortalData } from '@/lib/portal';
 import { STATUS_CLASS, TYPES, countStatuses } from '@/lib/constants';
 import { fmtDate, fmtDay } from '@/lib/format';
+import { isVideoLike, splitMedia } from '@/lib/media';
 import type { Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Viewer, Wordmark, useUI } from '@/components/ui';
@@ -157,7 +158,8 @@ function PostCard({
 }) {
   const { toast } = useUI();
   const t = TYPES[m.format] ?? { label: m.format, icon: 'image' as const };
-  const isVideo = m.post_media.length > 0 && m.post_media.every((f) => f.file_type.startsWith('video/'));
+  const { cover, items } = splitMedia(m.post_media);
+  const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
   const [panel, setPanel] = useState<null | 'changes' | 'comment'>(null);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -212,7 +214,8 @@ function PostCard({
       </div>
       <div className="vw">
         <Viewer
-          files={m.post_media.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+          files={items.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+          cover={cover?.file_url}
           caption={m.caption}
           ratio={isVideo ? '9 / 16' : '4 / 5'}
           maxHeight={isVideo ? '78vh' : undefined}
@@ -223,7 +226,7 @@ function PostCard({
         {m.scheduled_date && (
           <div className="pdate"><span><Icon name="calendar" />Publicação prevista: {fmtDay(m.scheduled_date)}</span></div>
         )}
-        {m.caption && m.post_media.length > 0 && (
+        {m.caption && items.length > 0 && (
           <>
             <div className={`cap${long && !expanded ? ' clamp' : ''}`}>{m.caption}</div>
             {long && !expanded && <button className="more" onClick={() => setExpanded(true)}>ver legenda completa</button>}
