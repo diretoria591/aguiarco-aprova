@@ -138,10 +138,10 @@ export function Lightbox({ src, onClose }: { src: string; onClose: () => void })
 
 export type ViewerFile = { url: string; mime: string; name: string };
 
-/** Visualizador: imagens, vídeos, PDFs e carrosséis com swipe. */
+/** Visualizador: imagens, vídeos (arquivo ou link), PDFs e carrosséis com swipe. */
 export function Viewer({
-  files, caption = '', ratio = '4 / 5', maxHeight,
-}: { files: ViewerFile[]; caption?: string; ratio?: string; maxHeight?: string }) {
+  files, caption = '', ratio = '4 / 5', maxHeight, cover,
+}: { files: ViewerFile[]; caption?: string; ratio?: string; maxHeight?: string; cover?: string | null }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [lb, setLb] = useState<string | null>(null);
@@ -178,7 +178,19 @@ export function Viewer({
               // eslint-disable-next-line @next/next/no-img-element
               <img loading="lazy" alt={f.name} src={f.url} onClick={() => setLb(f.url)} />
             ) : f.mime.startsWith('video/') ? (
-              <video controls playsInline preload="metadata" src={`${f.url}#t=0.1`} />
+              <video controls playsInline preload="metadata" poster={cover ?? undefined}
+                src={cover ? f.url : `${f.url}#t=0.1`} />
+            ) : f.mime.startsWith('embed/') ? (
+              <iframe
+                className="embed"
+                src={f.url}
+                title={f.name || 'Vídeo'}
+                loading="lazy"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
+              />
             ) : (
               <div className="doc">
                 <Icon name="doc" />
@@ -196,6 +208,12 @@ export function Viewer({
           <div className="count">{index + 1}/{files.length}</div>
           <div className="dots">{files.map((_, i) => <i key={i} className={i === index ? 'on' : ''} />)}</div>
         </>
+      )}
+      {cover && (
+        <button type="button" className="cover-btn" onClick={(e) => { e.stopPropagation(); setLb(cover); }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={cover} alt="" />Ver capa
+        </button>
       )}
       {lb && <Lightbox src={lb} onClose={() => setLb(null)} />}
     </div>
