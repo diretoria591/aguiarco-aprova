@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { removeFiles } from '@/lib/upload';
 import { STATUS_CLASS, STATUS_LABEL, STATUS_SHORT, TYPES, countStatuses, portalLink } from '@/lib/constants';
-import { fmtAgo, fmtDate, fmtDay, firstName } from '@/lib/format';
+import { addMonths, currentMonth, fmtAgo, fmtDate, fmtDay, firstName, monthLabel, planMonth, sentMonth } from '@/lib/format';
 import { embedThumb, isEmbed, isVideoLike, splitMedia } from '@/lib/media';
 import type { ActivityLog, Client, Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
@@ -29,11 +29,20 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
   const [origin, setOrigin] = useState('');
   useEffect(() => setOrigin(window.location.origin), []);
 
-  const counts = countStatuses(posts);
+  // organização por mês (mês de publicação; sem data, vale o mês de envio)
+  const nowMonth = currentMonth();
+  const [month, setMonth] = useState(nowMonth);
+  const months = Array.from(new Set([...posts.map(planMonth), nowMonth, addMonths(nowMonth, 1)])).sort();
+  const monthList = posts.filter((p) => planMonth(p) === month);
+  // o que o cliente enxerga hoje no link: enviados neste mês + pendências anteriores
+  const clientSees = posts.filter((p) => sentMonth(p) === nowMonth || p.status !== 'approved');
+  const seen = countStatuses(clientSees);
+
+  const counts = countStatuses(monthList);
   const link = portalLink(client.access_token, origin);
-  const list = posts.filter((p) => filter === 'todos' || p.status === filter);
+  const list = monthList.filter((p) => filter === 'todos' || p.status === filter);
   const tabs: [Filter, string, number][] = [
-    ['todos', 'Todos', posts.length],
+    ['todos', 'Todos', monthList.length],
     ['pending', 'Aguardando', counts.pendente],
     ['adjustment_requested', 'Em ajuste', counts.ajustes],
     ['approved', 'Aprovados', counts.aprovado],
@@ -78,6 +87,23 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
 
       <div className="layout">
         <section>
+          <div className="months">
+            {months.map((k) => {
+              const ps = posts.filter((p) => planMonth(p) === k);
+              const c = countStatuses(ps);
+              const info = !ps.length ? 'Nada ainda'
+                : c.pendente || c.ajustes
+                  ? [`${c.aprovado} aprovado${c.aprovado === 1 ? '' : 's'}`, c.pendente && `${c.pendente} aguardando`, c.ajustes && `${c.ajustes} em ajuste`].filter(Boolean).join(' · ')
+                  : `${c.aprovado}/${ps.length} aprovados ✓`;
+              return (
+                <button key={k} className={`mchip ${month === k ? 'on' : ''}`} onClick={() => { setMonth(k); setFilter('todos'); }} suppressHydrationWarning>
+                  <b>{monthLabel(k)}{k === nowMonth && <span className="pill">atual</span>}</b>
+                  <small>{info}</small>
+                  {ps.length > 0 && <div className="bar"><i style={{ width: `${(c.aprovado / ps.length) * 100}%` }} /></div>}
+                </button>
+              );
+            })}
+          </div>
           <div className="tabs">
             {tabs.map(([k, l, n]) => (
               <button key={k} className={`tab ${filter === k ? 'on' : ''}`} onClick={() => setFilter(k)}>
@@ -90,7 +116,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
               {list.map((m) => <MaterialCard key={m.id} m={m} onOpen={() => setDetailId(m.id)} />)}
             </div>
           ) : posts.length ? (
-            <div className="empty"><p>Nada por aqui neste filtro.</p></div>
+            <div className="empty"><p>{monthList.length ? 'Nada por aqui neste filtro.' : `Nenhum conteúdo de ${monthLabel(month).toLowerCase()} ainda.`}</p></div>
           ) : (
             <div className="card empty">
               <h3>Primeiro <b>envio</b></h3>
@@ -101,6 +127,16 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
         </section>
 
         <aside className="side" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 16 }}>
+          <div className="card cnow" suppressHydrationWarning>
+            <h3>O cliente está vendo agora</h3>
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+              <b>{monthLabel(nowMonth)}</b><br />
+              {clientSees.length
+                ? `${seen.aprovado} de ${clientSees.length} aprovados · ${seen.pendente} aguardando${seen.ajustes ? ` · ${seen.ajustes} em ajuste` : ''}`
+                : 'Nada enviado neste mês ainda.'}
+            </p>
+            <p className="small muted" style={{ margin: '8px 0 0' }}>No link, o cliente vê só o que foi enviado neste mês (e o que ainda estiver pendente). Os outros meses ficam só aqui no painel.</p>
+          </div>
           <div className="card">
             <h3>Link do cliente</h3>
             <div className="linkbox">
