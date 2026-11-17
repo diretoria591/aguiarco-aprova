@@ -42,7 +42,8 @@ export function UploadForm({
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
-  const [items, setItems] = useState<Item[]>([]);
+  const [itemsState, setItems] = useState<Item[]>([]);
+  const items = itemsState;
   const [link, setLink] = useState('');
   const oldCover = material ? splitMedia(material.post_media).cover : null;
   const [cover, setCover] = useState<File | null>(null);
@@ -83,7 +84,7 @@ export function UploadForm({
   }
 
   /** Envia arquivos (itens + capa) e devolve as linhas de post_media. */
-  async function uploadAll(postId: string, withItems: boolean) {
+  async function uploadAll(postId: string, withItems: boolean, items: Item[]) {
     const sendCover = !!cover && COVER_FORMATS.includes(type);
     const files = (withItems ? items : []).flatMap((it) => (it.kind === 'file' ? [it.file] : []));
     if (sendCover) files.push(cover!);
@@ -126,6 +127,15 @@ export function UploadForm({
     const title = String(fd.get('title') ?? '').trim();
     const caption = String(fd.get('caption') ?? '');
     if (!isVersion && !title) return toast('Dê um título para o material.', 'err');
+    // link colado no campo sem clicar em "Adicionar" também entra no material
+    let items = itemsState;
+    if (link.trim()) {
+      const embed = parseVideoLink(link);
+      if (!embed) return toast('Não reconheci o link do vídeo. Confira o endereço ou apague o campo antes de enviar.', 'err');
+      items = itemsState.concat({ kind: 'link', embed });
+      setItems(items);
+      setLink('');
+    }
     if (!items.length && !caption.trim() && !keep) return toast('Envie pelo menos um arquivo, um link ou um texto.', 'err');
 
     const supabase = createClient();
@@ -140,7 +150,7 @@ export function UploadForm({
           .single();
         if (error) throw error;
         try {
-          const rows = await uploadAll(post.id, true);
+          const rows = await uploadAll(post.id, true, items);
           if (rows.length) {
             const { error: e2 } = await supabase.from('post_media').insert(rows);
             if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
@@ -155,7 +165,7 @@ export function UploadForm({
         toast('Material enviado para aprovação');
       } else {
         const v = material.version + 1;
-        const rows = await uploadAll(material.id, !keep);
+        const rows = await uploadAll(material.id, !keep, items);
         if (rows.length) {
           const { error: e2 } = await supabase.from('post_media').insert(rows);
           if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
