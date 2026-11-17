@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchPortal, portalSupabase, rpcError, type PortalData } from '@/lib/portal';
 import { STATUS_CLASS, TYPES, countStatuses } from '@/lib/constants';
-import { fmtDate, fmtDay } from '@/lib/format';
+import { currentMonth, fmtDate, fmtDay, monthLabel, monthName, sentMonth } from '@/lib/format';
 import { isVideoLike, splitMedia } from '@/lib/media';
 import type { Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
@@ -22,7 +22,7 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
   const { toast } = useUI();
   const [data, setData] = useState(initial);
   const [tab, setTab] = useState<Tab>(() => {
-    const c = countStatuses(initial.posts);
+    const c = countStatuses(monthPosts(initial.posts));
     return c.pendente ? 'pending' : c.ajustes ? 'adjustment_requested' : 'todos';
   });
   const [askingName, setAskingName] = useState<((v: string | null) => void) | null>(null);
@@ -46,14 +46,21 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
     return new Promise((resolve) => setAskingName(() => resolve));
   }, []);
 
-  const c = countStatuses(data.posts);
+  // o cliente só vê o mês atual (+ o que ainda estiver pendente de meses anteriores)
+  const month = currentMonth();
+  const posts = monthPosts(data.posts);
+  const c = countStatuses(posts);
   const name = data.client.contact_name ? data.client.contact_name.split(/\s+/)[0] : data.client.name;
-  const list = data.posts.filter((m) => tab === 'todos' || m.status === tab);
+  const list = posts.filter((m) => tab === 'todos' || m.status === tab);
+  const fresh = useRef<Set<string> | null>(null);
+  if (fresh.current === null) fresh.current = new Set(posts.filter(isNew).map((m) => m.id));
+  posts.forEach((m) => { if (isNew(m)) fresh.current!.add(m.id); });
+  const newCount = posts.filter((m) => m.status === 'pending' && fresh.current!.has(m.id)).length;
   const tabs: [Tab, string, number][] = [
     ['pending', 'Para aprovar', c.pendente],
     ['adjustment_requested', 'Em ajuste', c.ajustes],
     ['approved', 'Aprovados', c.aprovado],
-    ['todos', 'Todos', data.posts.length],
+    ['todos', 'Todos', posts.length],
   ];
 
   // marca como "visto" quando a peça aparece na tela
@@ -85,12 +92,21 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
         <section className="phero">
           <p className="eyebrow">Seus conteúdos</p>
           <h1>Olá, <b>{name}</b></h1>
-          <p>
-            {c.pendente
-              ? <>Você tem <b style={{ fontWeight: 600 }}>{c.pendente} conteúdo{c.pendente > 1 ? 's' : ''}</b> aguardando sua aprovação.</>
-              : 'Está tudo em dia por aqui. Obrigada pela parceria!'}
-          </p>
+          <span className="pmonth" suppressHydrationWarning>{monthLabel(month)}</span>
         </section>
+        {posts.length > 0 && (
+          <section className="card pprog" suppressHydrationWarning>
+            <p>
+              {c.pendente
+                ? <>Você já aprovou <b>{c.aprovado} de {posts.length}</b> conteúdo{posts.length > 1 ? 's' : ''} de {monthName(month)}. Falta{c.pendente > 1 ? 'm' : ''} <b>{c.pendente}</b>.</>
+                : <>Você já aprovou <b>{c.aprovado} de {posts.length}</b> conteúdo{posts.length > 1 ? 's' : ''} de {monthName(month)}. {c.ajustes ? 'Estamos ajustando o restante.' : 'Tudo em dia, obrigada pela parceria!'}</>}
+            </p>
+            <div className="bar"><i style={{ width: `${(c.aprovado / posts.length) * 100}%` }} /></div>
+          </section>
+        )}
+        {newCount > 0 && (
+          <div className="pnew"><Icon name="bell" /><span>Chegaram <b>{newCount} novo{newCount > 1 ? 's' : ''} conteúdo{newCount > 1 ? 's' : ''}</b> para você aprovar.</span></div>
+        )}
         <nav className="ptabs">
           {tabs.map(([k, l, n]) => (
             <button key={k} className={`ptab ${tab === k ? 'on' : ''}`}
@@ -101,12 +117,13 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
         </nav>
         <div className="feed" ref={feed}>
           {list.length ? list.map((m) => (
-            <PostCard key={`${m.id}-${m.version}-${m.status}`} m={m} token={token} supabase={supabase} askName={askName} reload={load} />
+            <PostCard key={`${m.id}-${m.version}-${m.status}`} m={m} isNew={m.status === 'pending' && fresh.current!.has(m.id)}
+              token={token} supabase={supabase} askName={askName} reload={load} />
           )) : tab === 'pending' ? (
             <div className="card celebrate">
               <div className="ring"><Icon name="check" /></div>
               <h3>Tudo <b>aprovado</b></h3>
-              <p className="muted" style={{ margin: 0 }}>Nenhum conteúdo aguardando você agora. Avisaremos quando houver novidades.</p>
+              <p className="muted" style={{ margin: 0 }}>Nenhum conteúdo aguardando você agora. Avisaremos quando chegarem os próximos.</p>
             </div>
           ) : (
             <div className="card empty"><p style={{ margin: 0 }}>Nenhum conteúdo aqui.</p></div>
@@ -147,10 +164,18 @@ function NameModal({ onDone }: { onDone: (v: string | null) => void }) {
   );
 }
 
+/** Conteúdos enviados no mês atual + pendências de meses anteriores (para nada ficar esquecido). */
+function monthPosts(all: Post[]): Post[] {
+  const month = currentMonth();
+  return all.filter((m) => sentMonth(m) === month || m.status !== 'approved');
+}
+const isNew = (m: Post) => m.status === 'pending' && !m.first_viewed_at;
+
 function PostCard({
-  m, token, supabase, askName, reload,
+  m, isNew, token, supabase, askName, reload,
 }: {
   m: Post;
+  isNew: boolean;
   token: string;
   supabase: ReturnType<typeof portalSupabase>;
   askName: () => Promise<string | null>;
@@ -208,9 +233,12 @@ function PostCard({
             <b>{t.label}{m.version > 1 ? ` · versão ${m.version}` : ''}</b>Enviado {fmtDate(m.sent_at, false)}
           </div>
         </div>
-        {m.status !== 'pending'
-          ? <span className={`status ${STATUS_CLASS[m.status]}`}>{m.status === 'approved' ? 'Aprovado' : 'Em ajuste'}</span>
-          : <span className="status pendente">Aguardando você</span>}
+        <div className="badges">
+          {isNew && <span className="newtag">Novo</span>}
+          {m.status !== 'pending'
+            ? <span className={`status ${STATUS_CLASS[m.status]}`}>{m.status === 'approved' ? 'Aprovado' : 'Em ajuste'}</span>
+            : <span className="status pendente">Aguardando você</span>}
+        </div>
       </div>
       <div className="vw">
         <Viewer
