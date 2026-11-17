@@ -49,3 +49,33 @@ export function greet(): string {
 export const initials = (n: string | null | undefined) =>
   String(n || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 export const firstName = (n: string | null | undefined) => String(n || '').trim().split(/\s+/)[0];
+
+/* ---------- Organização por mês ---------- */
+const MONTHS_FULL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+/** Mês (AAAA-MM) de um instante, no fuso da agência. */
+export function monthOf(iso: string): string {
+  const p = parts(new Date(iso));
+  return `${p.y}-${pad(p.m)}`;
+}
+/** Mês atual (AAAA-MM), no fuso da agência. */
+export const currentMonth = () => monthOf(new Date().toISOString());
+/** Soma meses a uma chave AAAA-MM. */
+export function addMonths(key: string, n: number): string {
+  const [y, m] = key.split('-').map(Number);
+  const t = y * 12 + (m - 1) + n;
+  return `${Math.floor(t / 12)}-${pad((t % 12) + 1)}`;
+}
+/** "novembro" / "Novembro 2026" */
+export function monthName(key: string): string {
+  return MONTHS_FULL[Number(key.slice(5, 7)) - 1] ?? '';
+}
+export function monthLabel(key: string): string {
+  const n = monthName(key);
+  return `${n.charAt(0).toUpperCase()}${n.slice(1)} ${key.slice(0, 4)}`;
+}
+/** Mês de envio — é o que o cliente vê no link dele. */
+export const sentMonth = (p: { sent_at: string }) => monthOf(p.sent_at);
+/** Mês de publicação (ou de envio, se não houver data) — usado no painel da agência. */
+export const planMonth = (p: { scheduled_date: string | null; sent_at: string }) =>
+  p.scheduled_date ? p.scheduled_date.slice(0, 7) : monthOf(p.sent_at);
