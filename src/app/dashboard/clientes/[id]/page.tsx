@@ -18,7 +18,9 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
       .from('posts')
       .select('*, post_media(*), comments(*)')
       .eq('client_id', id)
-      .order('sent_at', { ascending: false }),
+      // ordem de publicação: data agendada (mais cedo primeiro), depois ordem de envio
+      .order('scheduled_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true }),
     supabase
       .from('activity_logs')
       .select('*, posts(title)')
