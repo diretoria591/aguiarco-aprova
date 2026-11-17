@@ -26,7 +26,9 @@ export async function fetchPortal(supabase: SupabaseClient): Promise<PortalData 
     .from('posts')
     .select('*, post_media(*), comments(*)')
     .eq('client_id', client.id)
-    .order('sent_at', { ascending: false });
+    // ordem de publicação: data agendada (mais cedo primeiro), depois ordem de envio
+    .order('scheduled_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
   if (e2) throw e2;
   return {
     client: { name: client.name, contact_name: client.contact_name, logo_url: client.logo_url },
