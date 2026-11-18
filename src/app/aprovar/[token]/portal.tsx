@@ -60,8 +60,10 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
     ['pending', 'Para aprovar', c.pendente],
     ['adjustment_requested', 'Em ajuste', c.ajustes],
     ['approved', 'Aprovados', c.aprovado],
+    ...(c.reprovado ? [['rejected', 'Reprovados', c.reprovado] as [Tab, string, number]] : []),
     ['todos', 'Todos', posts.length],
   ];
+  const toPublish = posts.length - c.reprovado; // reprovados não entram na conta
 
   // marca como "visto" quando a peça aparece na tela
   useEffect(() => {
@@ -94,14 +96,14 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
           <h1>Olá, <b>{name}</b></h1>
           <span className="pmonth" suppressHydrationWarning>{monthLabel(month)}</span>
         </section>
-        {posts.length > 0 && (
+        {toPublish > 0 && (
           <section className="card pprog" suppressHydrationWarning>
             <p>
               {c.pendente
-                ? <>Você já aprovou <b>{c.aprovado} de {posts.length}</b> conteúdo{posts.length > 1 ? 's' : ''} de {monthName(month)}. Falta{c.pendente > 1 ? 'm' : ''} <b>{c.pendente}</b>.</>
-                : <>Você já aprovou <b>{c.aprovado} de {posts.length}</b> conteúdo{posts.length > 1 ? 's' : ''} de {monthName(month)}. {c.ajustes ? 'Estamos ajustando o restante.' : 'Tudo em dia, obrigada pela parceria!'}</>}
+                ? <>Você já aprovou <b>{c.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. Falta{c.pendente > 1 ? 'm' : ''} <b>{c.pendente}</b>.</>
+                : <>Você já aprovou <b>{c.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. {c.ajustes ? 'Estamos ajustando o restante.' : 'Tudo em dia, obrigada pela parceria!'}</>}
             </p>
-            <div className="bar"><i style={{ width: `${(c.aprovado / posts.length) * 100}%` }} /></div>
+            <div className="bar"><i style={{ width: `${(c.aprovado / toPublish) * 100}%` }} /></div>
           </section>
         )}
         {newCount > 0 && (
@@ -167,7 +169,7 @@ function NameModal({ onDone }: { onDone: (v: string | null) => void }) {
 /** Conteúdos enviados no mês atual + pendências de meses anteriores (para nada ficar esquecido). */
 function monthPosts(all: Post[]): Post[] {
   const month = currentMonth();
-  return all.filter((m) => sentMonth(m) === month || m.status !== 'approved');
+  return all.filter((m) => sentMonth(m) === month || m.status === 'pending' || m.status === 'adjustment_requested');
 }
 const isNew = (m: Post) => m.status === 'pending' && !m.first_viewed_at;
 
@@ -185,7 +187,7 @@ function PostCard({
   const t = TYPES[m.format] ?? { label: m.format, icon: 'image' as const };
   const { cover, items } = splitMedia(m.post_media);
   const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
-  const [panel, setPanel] = useState<null | 'changes' | 'comment'>(null);
+  const [panel, setPanel] = useState<null | 'changes' | 'comment' | 'reject'>(null);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [fading, setFading] = useState(false);
@@ -208,6 +210,7 @@ function PostCard({
 
   async function submitPanel() {
     const body = text.trim();
+    if (panel === 'reject') return reject(body);
     if (!body) return ta.current?.focus();
     const name = await askName();
     if (!name) return;
@@ -221,7 +224,18 @@ function PostCard({
     reload();
   }
 
-  const toggle = (k: 'changes' | 'comment') => setPanel((p) => (p === k ? null : k));
+  async function reject(reason: string) {
+    const name = await askName();
+    if (!name) return;
+    setBusy(true);
+    const { error } = await supabase.rpc('portal_reject', { p_token: token, p_post_id: m.id, p_name: name, p_content: reason || null });
+    if (error) { setBusy(false); return toast(rpcError(error), 'err'); }
+    toast('Conteúdo reprovado. Ele não será publicado.');
+    setFading(true);
+    setTimeout(() => { reload(); }, 350);
+  }
+
+  const toggle = (k: 'changes' | 'comment' | 'reject') => setPanel((p) => (p === k ? null : k));
   const msgs = m.comments.length;
 
   return (
@@ -236,7 +250,7 @@ function PostCard({
         <div className="badges">
           {isNew && <span className="newtag">Novo</span>}
           {m.status !== 'pending'
-            ? <span className={`status ${STATUS_CLASS[m.status]}`}>{m.status === 'approved' ? 'Aprovado' : 'Em ajuste'}</span>
+            ? <span className={`status ${STATUS_CLASS[m.status]}`}>{m.status === 'approved' ? 'Aprovado' : m.status === 'rejected' ? 'Reprovado' : 'Em ajuste'}</span>
             : <span className="status pendente">Aguardando você</span>}
         </div>
       </div>
@@ -266,6 +280,9 @@ function PostCard({
             <div>Aprovado{m.decided_by ? ` por ${m.decided_by}` : ''} · {fmtDate(m.decided_at)}</div>
           </div>
         )}
+        {m.status === 'rejected' && (
+          <div className="decision reprovado"><Icon name="x" /><div>Você reprovou este conteúdo · ele não será publicado.</div></div>
+        )}
         {m.status === 'adjustment_requested' && (
           <div className="decision ajustes"><Icon name="edit" /><div>Você pediu alterações · nossa equipe já está ajustando.</div></div>
         )}
@@ -273,6 +290,8 @@ function PostCard({
       <div className="pactions">
         {m.status === 'approved' ? (
           <button className="btn line" style={{ gridColumn: 'span 2' }} onClick={() => toggle('changes')}><Icon name="edit" />Precisa mudar algo?</button>
+        ) : m.status === 'rejected' ? (
+          <button className="btn line" style={{ gridColumn: 'span 2' }} onClick={approve} disabled={busy}><Icon name="check" />Mudei de ideia: aprovar</button>
         ) : (
           <>
             <button className="btn ok" onClick={approve} disabled={busy}><Icon name="check" />Aprovar</button>
@@ -281,14 +300,21 @@ function PostCard({
         )}
         <button className="btn line" aria-label="Comentar" title="Comentar" onClick={() => toggle('comment')}><Icon name="chat" /></button>
       </div>
+      {(m.status === 'pending' || m.status === 'adjustment_requested') && panel !== 'reject' && (
+        <button className="preject" onClick={() => toggle('reject')}>Não quero publicar este conteúdo</button>
+      )}
       {panel && (
         <div className="panel">
-          <label className="small" style={{ fontWeight: 500 }}>{panel === 'changes' ? 'O que você gostaria de alterar?' : 'Seu comentário'}</label>
+          <label className="small" style={{ fontWeight: 500 }}>
+            {panel === 'changes' ? 'O que você gostaria de alterar?' : panel === 'reject' ? 'Reprovar: este conteúdo não será publicado. Quer contar o motivo? (opcional)' : 'Seu comentário'}
+          </label>
           <textarea ref={ta} className="textarea" value={text} maxLength={5000} onChange={(e) => setText(e.target.value)}
-            placeholder={panel === 'changes' ? 'Ex.: Trocar a foto da 3ª tela e deixar o título mais curto.' : 'Escreva para a equipe…'} />
+            placeholder={panel === 'changes' ? 'Ex.: Trocar a foto da 3ª tela e deixar o título mais curto.' : panel === 'reject' ? 'Ex.: Não combina com a campanha deste mês.' : 'Escreva para a equipe…'} />
           <div className="row">
             <button className="btn line sm" onClick={() => setPanel(null)}>Cancelar</button>
-            <button className="btn sm" onClick={submitPanel} disabled={busy}>{panel === 'changes' ? 'Solicitar alteração' : 'Enviar comentário'}</button>
+            <button className={`btn sm${panel === 'reject' ? ' danger' : ''}`} onClick={submitPanel} disabled={busy}>
+              {panel === 'changes' ? 'Solicitar alteração' : panel === 'reject' ? 'Reprovar conteúdo' : 'Enviar comentário'}
+            </button>
           </div>
         </div>
       )}

@@ -101,7 +101,7 @@ create table if not exists public.posts (
   format           text not null default 'carrossel'
                    check (format in ('foto', 'video', 'reels', 'carrossel', 'arte', 'stories', 'texto')),
   status           text not null default 'pending'
-                   check (status in ('pending', 'adjustment_requested', 'approved')),
+                   check (status in ('pending', 'adjustment_requested', 'approved', 'rejected')),
   scheduled_date   date,
   version          integer not null default 1,
   sent_at          timestamptz not null default now(),
@@ -131,7 +131,7 @@ create table if not exists public.comments (
   author_name  text not null default '',
   author_role  text not null check (author_role in ('agency', 'client')),
   kind         text not null default 'comment'
-               check (kind in ('comment', 'approval', 'adjustment', 'version')),
+               check (kind in ('comment', 'approval', 'adjustment', 'version', 'rejection')),
   content      text not null check (char_length(content) between 1 and 5000),
   version      integer not null default 1,
   created_at   timestamptz not null default now()
@@ -401,6 +401,29 @@ begin
 end;
 $$;
 
+create or replace function public.portal_reject(p_token text, p_post_id uuid, p_name text, p_content text default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare c public.clients; p public.posts; who text := public._clean_name(p_name);
+        body text := left(btrim(coalesce(p_content, '')), 5000);
+begin
+  c := public._portal_client(p_token);
+  p := public._portal_post(c.id, p_post_id);
+  update public.posts
+     set status = 'rejected', decided_at = now(), decided_by = who,
+         first_viewed_at = coalesce(first_viewed_at, now())
+   where id = p.id;
+  insert into public.comments (post_id, author_name, author_role, kind, content, version)
+  values (p.id, who, 'client', 'rejection',
+          case when body = '' then 'Reprovado: não publicar.' else 'Reprovado: ' || body end, p.version);
+  insert into public.activity_logs (client_id, post_id, type, actor, action_text)
+  values (c.id, p.id, 'reprovado', who, 'Reprovou ' || p.title);
+end;
+$$;
+
 -- Funções internas não ficam expostas na API.
 revoke all on function public._portal_client(text)       from public, anon, authenticated;
 revoke all on function public._portal_post(uuid, uuid)   from public, anon, authenticated;
@@ -411,6 +434,7 @@ grant execute on function public.portal_mark_viewed(text, uuid, text)           
 grant execute on function public.portal_approve(text, uuid, text)                 to anon, authenticated;
 grant execute on function public.portal_request_changes(text, uuid, text, text)   to anon, authenticated;
 grant execute on function public.portal_comment(text, uuid, text, text)           to anon, authenticated;
+grant execute on function public.portal_reject(text, uuid, text, text)            to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- 5. Storage: bucket público "approvals-media"

@@ -58,7 +58,8 @@ export function DashboardHome({ clients, recent, error }: { clients: ClientCard[
                     {c.counts.pendente > 0 && <span className="status pendente">{c.counts.pendente} aguardando</span>}
                     {c.counts.ajustes > 0 && <span className="status ajustes">{c.counts.ajustes} em ajuste</span>}
                     {c.counts.aprovado > 0 && <span className="status aprovado">{c.counts.aprovado} aprovado{c.counts.aprovado > 1 ? 's' : ''}</span>}
-                    {!c.counts.pendente && !c.counts.ajustes && !c.counts.aprovado && <span className="muted small">Nenhum material ainda</span>}
+                    {c.counts.reprovado > 0 && <span className="status reprovado">{c.counts.reprovado} reprovado{c.counts.reprovado > 1 ? 's' : ''}</span>}
+                    {!c.counts.pendente && !c.counts.ajustes && !c.counts.aprovado && !c.counts.reprovado && <span className="muted small">Nenhum material ainda</span>}
                   </div>
                   <div className="foot" suppressHydrationWarning>
                     <Icon name="eye" />

@@ -16,7 +16,7 @@ export default async function DashboardPage() {
     supabase
       .from('activity_logs')
       .select('*, clients(name), posts(title)')
-      .in('type', ['acesso', 'aprovado', 'ajustes', 'comentario_cliente'])
+      .in('type', ['acesso', 'aprovado', 'ajustes', 'reprovado', 'comentario_cliente'])
       .order('created_at', { ascending: false })
       .limit(12),
   ]);

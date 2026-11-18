@@ -35,7 +35,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
   const months = Array.from(new Set([...posts.map(planMonth), nowMonth, addMonths(nowMonth, 1)])).sort();
   const monthList = posts.filter((p) => planMonth(p) === month);
   // o que o cliente enxerga hoje no link: enviados neste mês + pendências anteriores
-  const clientSees = posts.filter((p) => sentMonth(p) === nowMonth || p.status !== 'approved');
+  const clientSees = posts.filter((p) => sentMonth(p) === nowMonth || p.status === 'pending' || p.status === 'adjustment_requested');
   const seen = countStatuses(clientSees);
 
   const counts = countStatuses(monthList);
@@ -46,6 +46,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
     ['pending', 'Aguardando', counts.pendente],
     ['adjustment_requested', 'Em ajuste', counts.ajustes],
     ['approved', 'Aprovados', counts.aprovado],
+    ...(counts.reprovado ? [['rejected', 'Reprovados', counts.reprovado] as [Filter, string, number]] : []),
   ];
   const detail = detailId ? posts.find((p) => p.id === detailId) ?? null : null;
 
@@ -93,13 +94,13 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
               const c = countStatuses(ps);
               const info = !ps.length ? 'Nada ainda'
                 : c.pendente || c.ajustes
-                  ? [`${c.aprovado} aprovado${c.aprovado === 1 ? '' : 's'}`, c.pendente && `${c.pendente} aguardando`, c.ajustes && `${c.ajustes} em ajuste`].filter(Boolean).join(' · ')
-                  : `${c.aprovado}/${ps.length} aprovados ✓`;
+                  ? [`${c.aprovado} aprovado${c.aprovado === 1 ? '' : 's'}`, c.pendente && `${c.pendente} aguardando`, c.ajustes && `${c.ajustes} em ajuste`, c.reprovado && `${c.reprovado} reprovado${c.reprovado === 1 ? '' : 's'}`].filter(Boolean).join(' · ')
+                  : `${c.aprovado}/${ps.length - c.reprovado} aprovados ✓${c.reprovado ? ` · ${c.reprovado} reprovado${c.reprovado === 1 ? '' : 's'}` : ''}`;
               return (
                 <button key={k} className={`mchip ${month === k ? 'on' : ''}`} onClick={() => { setMonth(k); setFilter('todos'); }} suppressHydrationWarning>
                   <b>{monthLabel(k)}{k === nowMonth && <span className="pill">atual</span>}</b>
                   <small>{info}</small>
-                  {ps.length > 0 && <div className="bar"><i style={{ width: `${(c.aprovado / ps.length) * 100}%` }} /></div>}
+                  {ps.length > c.reprovado && <div className="bar"><i style={{ width: `${(c.aprovado / (ps.length - c.reprovado)) * 100}%` }} /></div>}
                 </button>
               );
             })}
@@ -132,7 +133,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
               <b>{monthLabel(nowMonth)}</b><br />
               {clientSees.length
-                ? `${seen.aprovado} de ${clientSees.length} aprovados · ${seen.pendente} aguardando${seen.ajustes ? ` · ${seen.ajustes} em ajuste` : ''}`
+                ? `${seen.aprovado} de ${clientSees.length - seen.reprovado} aprovados · ${seen.pendente} aguardando${seen.ajustes ? ` · ${seen.ajustes} em ajuste` : ''}${seen.reprovado ? ` · ${seen.reprovado} reprovado${seen.reprovado === 1 ? '' : 's'}` : ''}`
                 : 'Nada enviado neste mês ainda.'}
             </p>
             <p className="small muted" style={{ margin: '8px 0 0' }}>No link, o cliente vê só o que foi enviado neste mês (e o que ainda estiver pendente). Os outros meses ficam só aqui no painel.</p>
@@ -256,6 +257,32 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
     router.refresh();
   }
 
+  // ajuste simples feito internamente (ex.: só enquadrar a imagem): não precisa voltar para o cliente
+  async function markAdjusted() {
+    const ok = await confirm({
+      title: 'Marcar como ajustado e agendado?',
+      text: `“${m.title}” passa a contar como aprovado, sem enviar nova versão para o cliente. No link dele aparece que a equipe já fez o ajuste.`,
+      okLabel: 'Ajustado e agendado',
+    });
+    if (!ok) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('posts')
+      .update({ status: 'approved', decided_at: new Date().toISOString(), decided_by: me.name })
+      .eq('id', m.id);
+    if (error) return toast(errMsg(error), 'err');
+    await supabase.from('comments').insert({
+      post_id: m.id, author_name: me.name, author_role: 'agency', kind: 'comment', version: m.version,
+      content: 'Ajuste feito pela nossa equipe e conteúdo agendado. ✓',
+    });
+    await supabase.from('activity_logs').insert({
+      client_id: m.client_id, post_id: m.id, type: 'ajustado_interno', actor: me.name,
+      action_text: `${me.name} marcou ${m.title} como ajustado e agendado`,
+    });
+    toast('Marcado como ajustado e agendado');
+    onClose();
+    router.refresh();
+  }
+
   async function del() {
     const ok = await confirm({
       title: 'Excluir material?',
@@ -299,7 +326,7 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
             <div className="fact"><div className="k">Enviado</div><div className="v">{fmtDate(m.sent_at)}</div></div>
             <div className="fact"><div className="k">Cliente viu</div><div className="v">{m.first_viewed_at ? fmtDate(m.first_viewed_at) : '—'}</div></div>
             <div className="fact">
-              <div className="k">{m.status === 'adjustment_requested' ? 'Ajuste pedido' : 'Aprovado'}</div>
+              <div className="k">{m.status === 'adjustment_requested' ? 'Ajuste pedido' : m.status === 'rejected' ? 'Reprovado' : 'Aprovado'}</div>
               <div className="v">
                 {m.decided_at && m.status !== 'pending' ? (
                   <>{fmtDate(m.decided_at)}{m.decided_by && <><br /><span className="muted" style={{ fontWeight: 400 }}>por {m.decided_by}</span></>}</>
@@ -321,6 +348,11 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
             <button className="btn" onClick={send} disabled={sending} aria-label="Enviar"><Icon name="send" /></button>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
+            {m.status === 'adjustment_requested' && (
+              <button className="btn ok" onClick={markAdjusted} title="Para ajustes simples que não precisam voltar para o cliente">
+                <Icon name="check" />Ajustado e agendado
+              </button>
+            )}
             <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
             <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
           </div>

@@ -397,3 +397,10 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .mchip.on .pill{background:rgba(255,255,255,.18);color:#fff} .mchip.on .bar{background:rgba(255,255,255,.18)}
 .cnow{background:var(--ok-bg);border-color:transparent} .cnow h3{color:var(--ok);margin-bottom:10px}
 @media (max-width:640px){ .months{margin:0 -16px 14px;padding:0 16px 2px} }
+
+/* ---------- Reprovado (não publicar) ---------- */
+.status.reprovado{color:#8A3B32;background:#F6E1DE}
+.decision.reprovado{background:#F6E1DE;color:#8A3B32}
+.msg.k-reprovacao .bubble{background:#F6E1DE;color:#8A3B32}
+.preject{display:block;margin:0 16px 14px;background:none;border:0;padding:0;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit}
+.preject:hover{color:#8A3B32}

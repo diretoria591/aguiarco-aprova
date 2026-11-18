@@ -16,20 +16,23 @@ export const STATUS_CLASS: Record<PostStatus, keyof Counts> = {
   pending: 'pendente',
   adjustment_requested: 'ajustes',
   approved: 'aprovado',
+  rejected: 'reprovado',
 };
 export const STATUS_LABEL: Record<PostStatus, string> = {
   pending: 'Aguardando aprovação',
   adjustment_requested: 'Ajustes solicitados',
   approved: 'Aprovado',
+  rejected: 'Reprovado · não publicar',
 };
 export const STATUS_SHORT: Record<PostStatus, string> = {
   pending: 'Aguardando',
   adjustment_requested: 'Em ajuste',
   approved: 'Aprovado',
+  rejected: 'Reprovado',
 };
 
 export function countStatuses(posts: { status: PostStatus }[]): Counts {
-  const o: Counts = { pendente: 0, ajustes: 0, aprovado: 0 };
+  const o: Counts = { pendente: 0, ajustes: 0, aprovado: 0, reprovado: 0 };
   posts.forEach((p) => o[STATUS_CLASS[p.status]]++);
   return o;
 }

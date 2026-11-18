@@ -4,7 +4,7 @@ import { fmtDate } from '@/lib/format';
 import { Icon, type IconName } from './icon';
 
 const KIND_CLASS: Record<Comment['kind'], string> = {
-  comment: 'comentario', approval: 'aprovacao', adjustment: 'ajuste', version: 'versao',
+  comment: 'comentario', approval: 'aprovacao', adjustment: 'ajuste', version: 'versao', rejection: 'reprovacao',
 };
 
 export function Thread({ comments }: { comments: Comment[] }) {
@@ -12,7 +12,7 @@ export function Thread({ comments }: { comments: Comment[] }) {
   return (
     <div className="thread">
       {comments.map((c) => {
-        const label = c.kind === 'approval' ? 'aprovou' : c.kind === 'adjustment' ? 'pediu alteração' : '';
+        const label = c.kind === 'approval' ? 'aprovou' : c.kind === 'adjustment' ? 'pediu alteração' : c.kind === 'rejection' ? 'reprovou' : '';
         const role = c.author_role === 'agency' ? 'equipe' : 'cliente';
         return (
           <div key={c.id} className={`msg ${role} k-${KIND_CLASS[c.kind]}`}>
@@ -34,14 +34,16 @@ const EV: Record<string, [IconName, string, (e: ActivityLog) => ReactNode]> = {
   visualizou: ['eye', 'view', (e) => <>Visualizou <b>{e.posts?.title}</b></>],
   aprovado: ['check', 'ok', (e) => <>Aprovou <b>{e.posts?.title}</b></>],
   ajustes: ['edit', 'fix', (e) => <>Pediu alterações em <b>{e.posts?.title}</b></>],
+  reprovado: ['x', 'fix', (e) => <>Reprovou <b>{e.posts?.title}</b> (não publicar)</>],
   comentario_cliente: ['chat', '', (e) => <>Comentou em <b>{e.posts?.title}</b></>],
   enviado: ['upload', '', (e) => <>{e.actor} enviou <b>{e.posts?.title}</b></>],
   nova_versao: ['refresh', '', (e) => <>{e.actor} enviou nova versão de <b>{e.posts?.title}</b> ({e.meta})</>],
   resposta: ['chat', '', (e) => <>{e.actor} respondeu em <b>{e.posts?.title}</b></>],
+  ajustado_interno: ['check', 'ok', (e) => <>{e.actor} marcou <b>{e.posts?.title}</b> como ajustado e agendado</>],
   aviso: ['bell', '', (e) => <>{e.actor} avisou o cliente ({e.meta})</>],
   cliente_criado: ['plus', '', (e) => <>{e.actor} cadastrou o cliente</>],
 };
-const CLIENT_SIDE = ['acesso', 'visualizou', 'aprovado', 'ajustes', 'comentario_cliente'];
+const CLIENT_SIDE = ['acesso', 'visualizou', 'aprovado', 'ajustes', 'reprovado', 'comentario_cliente'];
 
 export function Timeline({ events, withClient }: { events: ActivityLog[]; withClient?: boolean }) {
   if (!events.length) return null;

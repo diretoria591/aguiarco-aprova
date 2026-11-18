@@ -1,4 +1,4 @@
-export type PostStatus = 'pending' | 'adjustment_requested' | 'approved';
+export type PostStatus = 'pending' | 'adjustment_requested' | 'approved' | 'rejected';
 export type PostFormat = 'foto' | 'video' | 'reels' | 'carrossel' | 'arte' | 'stories' | 'texto';
 
 export interface Client {
@@ -29,7 +29,7 @@ export interface Comment {
   post_id: string;
   author_name: string;
   author_role: 'agency' | 'client';
-  kind: 'comment' | 'approval' | 'adjustment' | 'version';
+  kind: 'comment' | 'approval' | 'adjustment' | 'version' | 'rejection';
   content: string;
   version: number;
   created_at: string;
@@ -77,4 +77,5 @@ export interface Counts {
   pendente: number;
   ajustes: number;
   aprovado: number;
+  reprovado: number;
 }
