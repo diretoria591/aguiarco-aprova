@@ -593,3 +593,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
   .rt-date{display:flex;gap:6px;align-items:baseline;padding:4px 10px;flex:none}
   .rt-head .btn{margin-left:0}
 }
+
+.rt-send{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid var(--sand);margin-bottom:16px}
+.rt-send.hot{background:#dcebdd;border-color:#9cc7a2}

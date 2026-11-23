@@ -12,9 +12,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function RoteirosClientPage({
   params, searchParams,
-}: { params: Promise<{ clientId: string }>; searchParams: Promise<{ mes?: string }> }) {
+}: { params: Promise<{ clientId: string }>; searchParams: Promise<{ mes?: string; enviar?: string }> }) {
   const { clientId } = await params;
-  const { mes } = await searchParams;
+  const { mes, enviar } = await searchParams;
   if (!UUID.test(clientId)) notFound();
   const { clients, roteiros, teams } = await loadRoteiros();
   const c = clients.find((x) => x.client_id === clientId);
@@ -22,6 +22,7 @@ export default async function RoteirosClientPage({
   return (
     <ClientArea
       client={c.clients!}
+      justSaved={enviar === '1'}
       selfRecord={c.self_record}
       team={teams.find((t) => t.id === c.team_id) ?? null}
       roteiros={roteiros.filter((r) => r.client_id === clientId)}

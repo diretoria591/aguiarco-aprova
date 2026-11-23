@@ -72,7 +72,7 @@ export function NewForm({ clients, initialClient, initialMonth, error }: {
       const { error: e } = await createClient().from('roteiros').insert(payload);
       if (e) throw e;
       toast(`${todo.length} roteiro${todo.length > 1 ? 's cadastrados' : ' cadastrado'}. Já aparece${todo.length > 1 ? 'm' : ''} para quem grava.`);
-      router.push(`/dashboard/roteiros/${clientId}?mes=${todo[0].pub ? todo[0].pub.slice(0, 7) : month}`);
+      router.push(`/dashboard/roteiros/${clientId}?mes=${todo[0].pub ? todo[0].pub.slice(0, 7) : month}&enviar=1`);
       router.refresh();
     } catch (e) {
       toast(errMsg(e), 'err');
