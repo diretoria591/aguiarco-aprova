@@ -8,6 +8,7 @@ export interface Client {
   logo_url: string | null;
   logo_path: string | null;
   contact_name: string;
+  revision_limit?: number;
   whatsapp: string;
   email: string;
   access_token: string;
@@ -35,6 +36,7 @@ export interface Comment {
   kind: 'comment' | 'approval' | 'adjustment' | 'version' | 'rejection';
   content: string;
   version: number;
+  agency_error?: boolean;
   created_at: string;
 }
 

@@ -2,7 +2,7 @@ import { createClient as createPlainClient, type SupabaseClient } from '@supabas
 import { supabaseEnv } from './supabase/env';
 import type { Post } from './types';
 
-export type PortalClient = { name: string; contact_name: string; logo_url: string | null };
+export type PortalClient = { name: string; contact_name: string; logo_url: string | null; revision_limit: number };
 export type PortalData = { client: PortalClient; posts: Post[] };
 
 export const TOKEN_RE = /^[A-Za-z0-9_-]{32,128}$/;
@@ -19,7 +19,7 @@ export function portalSupabase(token: string): SupabaseClient {
 /** Lê os dados do cliente — RLS garante que só voltam os dados deste token. */
 export async function fetchPortal(supabase: SupabaseClient): Promise<PortalData | null> {
   const { data: client, error } = await supabase
-    .from('clients').select('id,name,contact_name,logo_url').maybeSingle();
+    .from('clients').select('id,name,contact_name,logo_url,revision_limit').maybeSingle();
   if (error) throw error;
   if (!client) return null;
   const { data: posts, error: e2 } = await supabase
@@ -31,7 +31,7 @@ export async function fetchPortal(supabase: SupabaseClient): Promise<PortalData 
     .order('created_at', { ascending: true });
   if (e2) throw e2;
   return {
-    client: { name: client.name, contact_name: client.contact_name, logo_url: client.logo_url },
+    client: { name: client.name, contact_name: client.contact_name, logo_url: client.logo_url, revision_limit: client.revision_limit ?? 2 },
     posts: ((posts ?? []) as Post[]).map((p) => ({
       ...p,
       post_media: [...p.post_media].sort((a, b) => a.order_index - b.order_index),

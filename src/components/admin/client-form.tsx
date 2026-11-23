@@ -49,6 +49,7 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
       email: (f.email || '').trim(),
       instagram: normalizeIg(f.instagram || ''),
       segment,
+      revision_limit: Math.min(20, Math.max(0, Math.round(Number(f.revision_limit)) || 0)),
     };
     if (!fields.name) return toast('Dê um nome para o cliente.', 'err');
     setBusy(true);
@@ -219,6 +220,12 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
           <label htmlFor="cf-ig">Instagram do cliente</label>
           <input className="input" id="cf-ig" name="instagram" defaultValue={client?.instagram ?? ''} placeholder="@perfil" autoComplete="off" />
           <span className="hint">Usado para lembrar a marcação na hora de agendar.</span>
+        </div>
+        <div className="field">
+          <label htmlFor="cf-rev">Rodadas de revisão por conteúdo</label>
+          <input className="input" id="cf-rev" name="revision_limit" type="number" min={0} max={20} inputMode="numeric"
+            defaultValue={client?.revision_limit ?? 2} style={{ maxWidth: 120 }} />
+          <span className="hint">Depois desse número, o cliente é avisado de que a alteração será cobrada à parte. Erros da agência não contam.</span>
         </div>
         <div className="field">
           <label>Área do cliente</label>

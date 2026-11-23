@@ -9,6 +9,7 @@ import type { Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Viewer, Wordmark, useUI } from '@/components/ui';
 import { Thread } from '@/components/thread';
+import { roundsUsed } from '@/lib/rounds';
 
 type Tab = 'todos' | PostStatus;
 
@@ -120,7 +121,7 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
         <div className="feed" ref={feed}>
           {list.length ? list.map((m) => (
             <PostCard key={`${m.id}-${m.version}-${m.status}`} m={m} isNew={m.status === 'pending' && fresh.current!.has(m.id)}
-              token={token} supabase={supabase} askName={askName} reload={load} />
+              token={token} supabase={supabase} askName={askName} reload={load} limit={data.client.revision_limit} />
           )) : tab === 'pending' ? (
             <div className="card celebrate">
               <div className="ring"><Icon name="check" /></div>
@@ -174,8 +175,9 @@ function monthPosts(all: Post[]): Post[] {
 const isNew = (m: Post) => m.status === 'pending' && !m.first_viewed_at;
 
 function PostCard({
-  m, isNew, token, supabase, askName, reload,
+  m, isNew, token, supabase, askName, reload, limit,
 }: {
+  limit: number;
   m: Post;
   isNew: boolean;
   token: string;
@@ -194,6 +196,8 @@ function PostCard({
   const [expanded, setExpanded] = useState(false);
   const ta = useRef<HTMLTextAreaElement>(null);
   const long = m.caption.length > 260;
+  const used = roundsUsed(m.comments);
+  const overLimit = used >= limit; // próxima alteração já é rodada extra (cobrada à parte)
 
   useEffect(() => { if (panel) ta.current?.focus(); }, [panel]);
 
@@ -308,12 +312,20 @@ function PostCard({
           <label className="small" style={{ fontWeight: 500 }}>
             {panel === 'changes' ? 'O que você gostaria de alterar?' : panel === 'reject' ? 'Reprovar: este conteúdo não será publicado. Quer contar o motivo? (opcional)' : 'Seu comentário'}
           </label>
+          {panel === 'changes' && (overLimit ? (
+            <div className="note" role="alert" style={{ margin: '8px 0' }}><span>
+              <b>Atenção:</b> {limit === 1 ? 'a rodada de revisão incluída' : `as ${limit} rodadas de revisão incluídas`} neste conteúdo já {limit === 1 ? 'foi utilizada' : 'foram utilizadas'}.
+              Esta nova alteração será <b>cobrada à parte</b>. Se mesmo assim quiser prosseguir, é só enviar.
+            </span></div>
+          ) : limit > 0 ? (
+            <p className="small muted" style={{ margin: '4px 0 8px' }}>Esta será a rodada {used + 1} de {limit} incluídas neste conteúdo.</p>
+          ) : null)}
           <textarea ref={ta} className="textarea" value={text} maxLength={5000} onChange={(e) => setText(e.target.value)}
             placeholder={panel === 'changes' ? 'Ex.: Trocar a foto da 3ª tela e deixar o título mais curto.' : panel === 'reject' ? 'Ex.: Não combina com a campanha deste mês.' : 'Escreva para a equipe…'} />
           <div className="row">
             <button className="btn line sm" onClick={() => setPanel(null)}>Cancelar</button>
             <button className={`btn sm${panel === 'reject' ? ' danger' : ''}`} onClick={submitPanel} disabled={busy}>
-              {panel === 'changes' ? 'Solicitar alteração' : panel === 'reject' ? 'Reprovar conteúdo' : 'Enviar comentário'}
+              {panel === 'changes' ? (overLimit ? 'Solicitar mesmo assim (cobrada à parte)' : 'Solicitar alteração') : panel === 'reject' ? 'Reprovar conteúdo' : 'Enviar comentário'}
             </button>
           </div>
         </div>

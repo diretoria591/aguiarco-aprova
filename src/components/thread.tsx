@@ -1,14 +1,20 @@
 import type { ReactNode } from 'react';
 import type { ActivityLog, Comment } from '@/lib/types';
 import { fmtDate } from '@/lib/format';
+import { roundMap } from '@/lib/rounds';
 import { Icon, type IconName } from './icon';
 
 const KIND_CLASS: Record<Comment['kind'], string> = {
   comment: 'comentario', approval: 'aprovacao', adjustment: 'ajuste', version: 'versao', rejection: 'reprovacao',
 };
 
-export function Thread({ comments }: { comments: Comment[] }) {
+export function Thread({ comments, admin }: {
+  comments: Comment[];
+  /** Só no painel da equipe: mostra a rodada de cada pedido e deixa marcar "erro da agência". */
+  admin?: { limit: number; onToggleError: (c: Comment) => void };
+}) {
   if (!comments.length) return null;
+  const rounds = admin ? roundMap(comments, admin.limit) : null;
   return (
     <div className="thread">
       {comments.map((c) => {
@@ -17,6 +23,19 @@ export function Thread({ comments }: { comments: Comment[] }) {
         return (
           <div key={c.id} className={`msg ${role} k-${KIND_CLASS[c.kind]}`}>
             <div className="bubble">{c.content}</div>
+            {admin && rounds?.get(c.id) && (() => {
+              const r = rounds.get(c.id)!;
+              return (
+                <div className="meta" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <b style={{ color: r.extra ? 'var(--fix)' : undefined }}>
+                    {r.free ? 'Erro da agência · não conta como rodada' : r.extra ? `Rodada extra (${r.n}ª) · cobrar à parte` : `Rodada ${r.n} de ${admin.limit}`}
+                  </b>
+                  <button type="button" className="more" onClick={() => admin.onToggleError(c)}>
+                    {r.free ? 'Desfazer' : 'Foi erro nosso'}
+                  </button>
+                </div>
+              );
+            })()}
             <div className="meta" suppressHydrationWarning>
               {c.kind === 'version' ? '' : `${c.author_name}${label ? ' · ' + label : ''} · `}
               {fmtDate(c.created_at)}
@@ -33,7 +52,7 @@ const EV: Record<string, [IconName, string, (e: ActivityLog) => ReactNode]> = {
   acesso: ['eye', 'view', () => 'Acessou a área de aprovação'],
   visualizou: ['eye', 'view', (e) => <>Visualizou <b>{e.posts?.title}</b></>],
   aprovado: ['check', 'ok', (e) => <>Aprovou <b>{e.posts?.title}</b></>],
-  ajustes: ['edit', 'fix', (e) => <>Pediu alterações em <b>{e.posts?.title}</b></>],
+  ajustes: ['edit', 'fix', (e) => <>Pediu alterações em <b>{e.posts?.title}</b>{e.meta === 'extra' ? ' (rodada extra, cobrada à parte)' : ''}</>],
   reprovado: ['x', 'fix', (e) => <>Reprovou <b>{e.posts?.title}</b> (não publicar)</>],
   comentario_cliente: ['chat', '', (e) => <>Comentou em <b>{e.posts?.title}</b></>],
   enviado: ['upload', '', (e) => <>{e.actor} enviou <b>{e.posts?.title}</b></>],
