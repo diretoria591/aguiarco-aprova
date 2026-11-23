@@ -7,10 +7,11 @@ import {
 import { Icon } from './icon';
 
 /* ------------------------------------------------------------ toasts */
-type ToastItem = { id: number; msg: string; err: boolean };
+type ToastAction = { label: string; run: () => void };
+type ToastItem = { id: number; msg: string; err: boolean; action?: ToastAction };
 type ConfirmOpts = { title: ReactNode; text: ReactNode; okLabel?: string; danger?: boolean };
 type UICtx = {
-  toast: (msg: string, type?: 'err') => void;
+  toast: (msg: string, type?: 'err', action?: ToastAction) => void;
   confirm: (o: ConfirmOpts) => Promise<boolean>;
 };
 const Ctx = createContext<UICtx | null>(null);
@@ -26,10 +27,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const [conf, setConf] = useState<(ConfirmOpts & { resolve: (v: boolean) => void }) | null>(null);
   const seq = useRef(0);
 
-  const toast = useCallback((msg: string, type?: 'err') => {
+  const toast = useCallback((msg: string, type?: 'err', action?: ToastAction) => {
     const id = ++seq.current;
-    setToasts((t) => [...t, { id, msg, err: type === 'err' }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3400);
+    setToasts((t) => [...t, { id, msg, err: type === 'err', action }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), action ? 6000 : 3400);
   }, []);
 
   const confirm = useCallback(
@@ -67,6 +68,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
             <div key={t.id} className={`toast${t.err ? ' err' : ''}`}>
               {!t.err && <Icon name="check" style={{ width: 16, height: 16 }} />}
               <span>{t.msg}</span>
+              {t.action && (
+                <button className="undo" onClick={() => { t.action!.run(); setToasts((all) => all.filter((x) => x.id !== t.id)); }}>
+                  {t.action.label}
+                </button>
+              )}
             </div>
           ))}
         </div>

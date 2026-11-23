@@ -4,7 +4,9 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { initials } from '@/lib/format';
-import type { Profile } from '@/lib/types';
+import type { Profile, TeamRole } from '@/lib/types';
+
+const ROLE_LABEL: Record<TeamRole, string> = { admin: 'Admin', team: 'Equipe', scheduler: 'Agendamento' };
 import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
@@ -16,6 +18,15 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
   const { toast, confirm } = useUI();
   const [addOpen, setAddOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+
+  const isAdmin = me.role === 'admin';
+  async function setRole(u: Profile, role: TeamRole) {
+    if ((u.role ?? 'team') === role) return;
+    const { error } = await createClient().from('profiles').update({ role }).eq('id', u.id);
+    if (error) return toast(/função/.test(error.message) ? error.message : 'Não foi possível mudar a função.', 'err');
+    toast(`${u.name.split(/\s+/)[0]} agora é ${ROLE_LABEL[role]}`);
+    router.refresh();
+  }
 
   async function del(u: Profile) {
     const ok = await confirm({ title: `Remover ${u.name}?`, text: 'A pessoa perde o acesso ao painel imediatamente.', okLabel: 'Remover', danger: true });
@@ -41,6 +52,15 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
                 <div style={{ fontWeight: 500 }}>{u.name}{u.id === me.id && <> <span className="muted small">(você)</span></>}</div>
                 <div className="small muted">{u.email}</div>
               </div>
+              {isAdmin && u.id !== me.id ? (
+                <div className="rolepick" role="group" aria-label={`Função de ${u.name}`}>
+                  {(Object.keys(ROLE_LABEL) as TeamRole[]).map((r) => (
+                    <button key={r} className={(u.role ?? 'team') === r ? 'on' : ''} onClick={() => setRole(u, r)}>{ROLE_LABEL[r]}</button>
+                  ))}
+                </div>
+              ) : (
+                <span className="role-tag">{ROLE_LABEL[u.role ?? 'team']}</span>
+              )}
               {u.id === me.id
                 ? <button className="btn sm line" onClick={() => setPwOpen(true)}><Icon name="key" />Trocar senha</button>
                 : <button className="btn sm danger" onClick={() => del(u)}>Remover</button>}
@@ -52,6 +72,9 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
             <h3>Como funciona</h3>
             <p className="small muted" style={{ margin: 0 }}>
               Todas as pessoas da equipe veem todos os clientes, enviam materiais e respondem comentários. Clientes não precisam de senha: cada um acessa pelo próprio link.
+            </p>
+            <p className="small muted" style={{ margin: '10px 0 0' }}>
+              <b style={{ color: 'var(--ink)', fontWeight: 500 }}>Agendamento</b>: vê só a aba Agendamento (marca como agendado e avisa o cliente). Só o admin muda as funções.
             </p>
             {!canManage && (
               <p className="small muted" style={{ margin: '10px 0 0' }}>

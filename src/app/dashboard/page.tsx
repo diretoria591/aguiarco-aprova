@@ -1,3 +1,4 @@
+import { blockScheduler } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { countStatuses } from '@/lib/constants';
 import type { ActivityLog, Client, PostStatus } from '@/lib/types';
@@ -6,6 +7,7 @@ import { DashboardHome, type ClientCard } from './dashboard-home';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  await blockScheduler();
   const supabase = await createClient();
   const [clientsRes, postsRes, recentRes] = await Promise.all([
     supabase.from('clients').select('*').order('name'),

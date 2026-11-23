@@ -9,6 +9,7 @@ Plataforma de aprovação de conteúdo da Aguiar&Co — Next.js 16 (App Router),
 
 1. **SQL Editor → New query** → cole todo o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) → **Run**.
    Isso cria tabelas, RLS, funções da área do cliente, o bucket público `approvals-media` e liga o Realtime.
+   Depois rode, **na ordem do nome**, cada arquivo de [`supabase/migrations/`](supabase/migrations) (todos podem ser rodados de novo sem problema).
 2. **Authentication → Sign In / Providers** → desative **Allow new users to sign up**.
    (Só a equipe tem login; o cliente entra pelo link.)
 3. **Authentication → Users → Add user → Create new user** → e-mail e senha da primeira pessoa da equipe, marcando **Auto Confirm User**.
@@ -45,6 +46,27 @@ Na Vercel: **Add New → Project → Import** o repositório → em **Environmen
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (ex.: `https://aprova.aguiareco.com.br`) e, se quiser, `SUPABASE_SERVICE_ROLE_KEY` → **Deploy**.
 
 Depois, no Supabase: **Authentication → URL Configuration → Site URL** = o domínio da Vercel.
+
+## Agendamento (fila da Eduarda)
+
+Quando o cliente aprova um post pelo link, ele aparece sozinho na aba **Agendamento**, separado por cliente, com cada material identificado (vídeo, capa, telas do carrossel) e botão para baixar. A pessoa marca **Agendado** e depois **Cliente avisado**; as duas ações ficam em "Movimento dos clientes".
+
+- **Funções** (`profiles.role`): `admin` e `team` veem tudo; `scheduler` vê só a aba Agendamento e, pelo banco, só consegue marcar Agendado / Cliente avisado. Só um admin muda funções (página Equipe).
+- **"Ajustado e agendado"**: aprova sem voltar ao cliente e manda para a fila com uma ressalva (o último pedido do cliente + recado opcional), para ajustes que só dá para fazer na hora de agendar (ex.: música).
+- **Área da beleza**: no cadastro do cliente, escolha a área e informe o Instagram. No envio, informe (opcional) o @ da profissional que aparece. A fila mostra o lembrete de marcação.
+- **Aviso por e-mail** quando o cliente aprova: o banco anota o aviso (`notification_outbox`, 1 por aprovação, sem duplicar) e chama `POST /api/notify/dispatch` via `pg_net`; o servidor envia pela Resend. Falhas ficam em `activity_logs` e são tentadas de novo (até 3 vezes) no próximo disparo. A aprovação do cliente nunca depende do aviso.
+
+Configuração (uma vez, depois da migration `2026-11-23_agendamento.sql`):
+
+1. Vercel → Environment Variables: `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, `SCHEDULER_EMAIL`, `NOTIFY_WEBHOOK_SECRET` (texto longo aleatório) e `NEXT_PUBLIC_SITE_URL` → Redeploy.
+2. Supabase → SQL Editor (não salve no repositório, ele é público):
+   ```sql
+   select vault.create_secret('https://SEU-DOMINIO/api/notify/dispatch', 'notify_dispatch_url');
+   select vault.create_secret('O-MESMO-NOTIFY_WEBHOOK_SECRET', 'notify_webhook_secret');
+   update profiles set role = 'admin'     where email = 'email-da-kimberly';
+   update profiles set role = 'scheduler' where email = 'email-da-eduarda';
+   ```
+3. Vídeos no Google Drive: compartilhe como "Qualquer pessoa com o link" para o botão de download funcionar direto.
 
 ## Segurança
 

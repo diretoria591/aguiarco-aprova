@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { removeFiles, safePath, uploadFile } from '@/lib/upload';
 import { portalLink } from '@/lib/constants';
-import type { Client } from '@/lib/types';
+import type { Client, ClientSegment } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Mono, copyText, useUI } from '@/components/ui';
 import { useMe } from './me';
@@ -23,6 +23,7 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
   const { toast, confirm } = useUI();
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [segment, setSegment] = useState<ClientSegment>(client?.segment ?? '');
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(client?.logo_url ?? null);
   const [removeLogo, setRemoveLogo] = useState(false);
@@ -46,6 +47,8 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
       contact_name: (f.contact_name || '').trim(),
       whatsapp: (f.whatsapp || '').trim(),
       email: (f.email || '').trim(),
+      instagram: normalizeIg(f.instagram || ''),
+      segment,
     };
     if (!fields.name) return toast('Dê um nome para o cliente.', 'err');
     setBusy(true);
@@ -212,6 +215,20 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
             <input className="input" name="email" type="email" defaultValue={client?.email ?? ''} placeholder="contato@cliente.com" />
           </div>
         </div>
+        <div className="field">
+          <label htmlFor="cf-ig">Instagram do cliente</label>
+          <input className="input" id="cf-ig" name="instagram" defaultValue={client?.instagram ?? ''} placeholder="@perfil" autoComplete="off" />
+          <span className="hint">Usado para lembrar a marcação na hora de agendar.</span>
+        </div>
+        <div className="field">
+          <label>Área do cliente</label>
+          <div className="chips">
+            {SEGMENTS.map(([k, l]) => (
+              <button type="button" key={k} className={`chip-opt ${segment === k ? 'on' : ''}`} onClick={() => setSegment(segment === k ? '' : k)}>{l}</button>
+            ))}
+          </div>
+          {segment === 'beleza' && <span className="hint">Na área da beleza, quem agenda recebe o lembrete de marcar o salão e a profissional que aparece.</span>}
+        </div>
         {editing && (
           <div className="card" style={{ padding: '14px 16px', boxShadow: 'none', margin: '6px 0 4px', display: 'grid', gap: 10 }}>
             <div className="small muted">Gerar um link novo desativa o link antigo — use se o link foi compartilhado com alguém por engano.</div>
@@ -225,6 +242,16 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
       </form>
     </Modal>
   );
+}
+
+const SEGMENTS: [Exclude<ClientSegment, ''>, string][] = [
+  ['saude', 'Saúde'], ['gastronomia', 'Gastronomia'], ['beleza', 'Área da beleza'], ['empresas', 'Empresas / B2B'], ['outra', 'Outra'],
+];
+
+/** "perfil", "@perfil" ou "instagram.com/perfil" → "@perfil". */
+export function normalizeIg(v: string) {
+  const h = v.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/[/?#].*$/, '').replace(/^@+/, '');
+  return h ? `@${h}` : '';
 }
 
 export function errMsg(e: unknown): string {

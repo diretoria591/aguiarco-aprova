@@ -79,3 +79,9 @@ export const sentMonth = (p: { sent_at: string }) => monthOf(p.sent_at);
 /** Mês de publicação (ou de envio, se não houver data) — usado no painel da agência. */
 export const planMonth = (p: { scheduled_date: string | null; sent_at: string }) =>
   p.scheduled_date ? p.scheduled_date.slice(0, 7) : monthOf(p.sent_at);
+
+/** Hoje no fuso da agência, como "AAAA-MM-DD". */
+export function todayYMD(): string {
+  const p = parts(new Date());
+  return `${p.y}-${pad(p.m)}-${pad(p.d)}`;
+}

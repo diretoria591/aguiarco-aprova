@@ -106,3 +106,93 @@ export function embedThumb(url: string): string | null {
 }
 
 export const embedLabel = (fileType: string) => PROVIDER_LABEL[fileType.slice(EMBED_PREFIX.length)] ?? 'Link';
+
+/* ------------------------------------------------------------------
+ * Materiais para agendar: cada arquivo do post, identificado (vídeo,
+ * capa, tela do carrossel…), com link para abrir e para baixar.
+ * ------------------------------------------------------------------ */
+export type MaterialKind = 'video' | 'cover' | 'image' | 'file';
+export type Material = {
+  key: string;
+  kind: MaterialKind;
+  label: string;
+  /** texto pequeno: origem + nome do arquivo */
+  detail: string;
+  /** imagem para miniatura (quando houver) */
+  thumb: string | null;
+  /** abre o arquivo/vídeo em outra aba */
+  openUrl: string | null;
+  /** baixa direto (null quando o provedor não permite, ex.: YouTube) */
+  downloadUrl: string | null;
+  /** texto do botão de download */
+  downloadLabel: string;
+  source: 'drive' | 'upload' | 'link';
+};
+
+const driveId = (url: string) => url.match(/drive\.google\.com\/file\/d\/([\w-]+)/)?.[1] ?? null;
+
+/** Link do Supabase Storage que já baixa com o nome original do arquivo. */
+export function storageDownloadUrl(url: string, name: string) {
+  return `${url}${url.includes('?') ? '&' : '?'}download=${encodeURIComponent(name || 'arquivo')}`;
+}
+
+export function materialsOf(post: { format: string; post_media: PostMedia[] }): Material[] {
+  const sorted = [...post.post_media].sort((a, b) => a.order_index - b.order_index);
+  const { cover, items } = splitMedia(sorted);
+  const videos = items.filter(isVideoLike);
+  const images = items.filter((m) => m.file_type.startsWith('image/'));
+  const reels = post.format === 'reels';
+  const out: Material[] = [];
+  let img = 0;
+
+  items.forEach((m, i) => {
+    if (isEmbed(m)) {
+      const provider = m.file_type.slice(EMBED_PREFIX.length);
+      const id = provider === 'drive' ? driveId(m.file_url) : null;
+      const n = videos.length > 1 ? ` ${videos.indexOf(m) + 1}` : '';
+      out.push({
+        key: m.id, kind: 'video', source: provider === 'drive' ? 'drive' : 'link',
+        label: `Vídeo${reels ? ' do Reels' : ''}${n}`,
+        detail: `${provider === 'drive' ? 'No Google Drive' : embedLabel(m.file_type)}`,
+        thumb: embedThumb(m.file_url),
+        openUrl: id ? `https://drive.google.com/file/d/${id}/view` : (/^https?:\/\//.test(m.file_name) ? m.file_name : m.file_url),
+        downloadUrl: id ? `https://drive.google.com/uc?export=download&id=${id}` : null,
+        downloadLabel: 'Clique aqui para baixar o vídeo',
+      });
+    } else if (m.file_type.startsWith('video/')) {
+      const n = videos.length > 1 ? ` ${videos.indexOf(m) + 1}` : '';
+      out.push({
+        key: m.id, kind: 'video', source: 'upload', label: `Vídeo${reels ? ' do Reels' : ''}${n}`,
+        detail: `Arquivo enviado · ${m.file_name}`, thumb: null,
+        openUrl: m.file_url, downloadUrl: storageDownloadUrl(m.file_url, m.file_name),
+        downloadLabel: 'Clique aqui para baixar o vídeo',
+      });
+    } else if (m.file_type.startsWith('image/')) {
+      img++;
+      const many = images.length > 1;
+      out.push({
+        key: m.id, kind: 'image', source: 'upload',
+        label: many ? `Tela ${img} de ${images.length}` : post.format === 'stories' ? 'Imagem do stories' : 'Imagem do post',
+        detail: `Imagem estática · ${m.file_name}`, thumb: m.file_url,
+        openUrl: m.file_url, downloadUrl: storageDownloadUrl(m.file_url, m.file_name),
+        downloadLabel: many ? `Baixar tela ${img}` : 'Clique aqui para baixar a imagem',
+      });
+    } else {
+      out.push({
+        key: m.id || String(i), kind: 'file', source: 'upload', label: 'Arquivo', detail: m.file_name, thumb: null,
+        openUrl: m.file_url, downloadUrl: storageDownloadUrl(m.file_url, m.file_name),
+        downloadLabel: 'Clique aqui para baixar o arquivo',
+      });
+    }
+  });
+
+  if (cover) {
+    out.push({
+      key: cover.id, kind: 'cover', source: 'upload', label: `Capa${reels ? ' do Reels' : ''}`,
+      detail: `Imagem estática · ${cover.file_name}`, thumb: cover.file_url,
+      openUrl: cover.file_url, downloadUrl: storageDownloadUrl(cover.file_url, cover.file_name),
+      downloadLabel: 'Clique aqui para baixar a capa',
+    });
+  }
+  return out;
+}

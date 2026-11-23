@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
+import type { TeamRole } from '@/lib/types';
 
-export type Me = { id: string; name: string; email: string };
+export type Me = { id: string; name: string; email: string; role: TeamRole };
 const MeCtx = createContext<Me | null>(null);
 
 export function MeProvider({ me, children }: { me: Me; children: ReactNode }) {
