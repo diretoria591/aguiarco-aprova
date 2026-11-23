@@ -258,27 +258,19 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
   }
 
   // ajuste simples feito internamente (ex.: só enquadrar a imagem): não precisa voltar para o cliente
+  // ajuste que só dá para fazer na hora de agendar (ex.: colocar música):
+  // aprova sem voltar ao cliente e manda para a fila da Duda com ressalva
+  const [adjOpen, setAdjOpen] = useState(false);
+  const [adjNote, setAdjNote] = useState('');
+  const [adjBusy, setAdjBusy] = useState(false);
+  const lastAsk = [...m.comments].reverse().find((c) => c.author_role === 'client' && c.kind === 'adjustment');
   async function markAdjusted() {
-    const ok = await confirm({
-      title: 'Marcar como ajustado e agendado?',
-      text: `“${m.title}” passa a contar como aprovado, sem enviar nova versão para o cliente. No link dele aparece que a equipe já fez o ajuste.`,
-      okLabel: 'Ajustado e agendado',
-    });
-    if (!ok) return;
-    const supabase = createClient();
-    const { error } = await supabase.from('posts')
-      .update({ status: 'approved', decided_at: new Date().toISOString(), decided_by: me.name })
-      .eq('id', m.id);
+    setAdjBusy(true);
+    const { error } = await createClient().rpc('team_approve_with_note', { p_post_id: m.id, p_extra: adjNote.trim() || null });
+    setAdjBusy(false);
     if (error) return toast(errMsg(error), 'err');
-    await supabase.from('comments').insert({
-      post_id: m.id, author_name: me.name, author_role: 'agency', kind: 'comment', version: m.version,
-      content: 'Ajuste feito pela nossa equipe e conteúdo agendado. ✓',
-    });
-    await supabase.from('activity_logs').insert({
-      client_id: m.client_id, post_id: m.id, type: 'ajustado_interno', actor: me.name,
-      action_text: `${me.name} marcou ${m.title} como ajustado e agendado`,
-    });
-    toast('Marcado como ajustado e agendado');
+    toast('Aprovado e enviado para a fila de agendamento');
+    setAdjOpen(false);
     onClose();
     router.refresh();
   }
@@ -303,62 +295,90 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
   const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
 
   return (
-    <Modal wide onClose={onClose} bodyStyle={{ padding: 0 }}>
-      <div className="mdetail">
-        <div className="media">
-          <Viewer
-            files={items.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
-            cover={cover?.file_url}
-            caption={m.caption}
-            ratio={isVideo ? '9 / 16' : '4 / 5'}
-          />
-        </div>
-        <div className="info">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
-            <div>
-              <p className="eyebrow" style={{ margin: '0 0 6px' }}>{t.label}{m.version > 1 ? ` · versão ${m.version}` : ''}</p>
-              <h2>{m.title}</h2>
-            </div>
-            <button className="icon-btn" onClick={onClose} aria-label="Fechar"><Icon name="x" /></button>
+    <>
+      <Modal wide onClose={onClose} bodyStyle={{ padding: 0 }}>
+        <div className="mdetail">
+          <div className="media">
+            <Viewer
+              files={items.map((f) => ({ url: f.file_url, mime: f.file_type, name: f.file_name }))}
+              cover={cover?.file_url}
+              caption={m.caption}
+              ratio={isVideo ? '9 / 16' : '4 / 5'}
+            />
           </div>
-          <div><span className={`status ${STATUS_CLASS[m.status]}`}>{STATUS_LABEL[m.status]}</span></div>
-          <div className="facts" suppressHydrationWarning>
-            <div className="fact"><div className="k">Enviado</div><div className="v">{fmtDate(m.sent_at)}</div></div>
-            <div className="fact"><div className="k">Cliente viu</div><div className="v">{m.first_viewed_at ? fmtDate(m.first_viewed_at) : '—'}</div></div>
-            <div className="fact">
-              <div className="k">{m.status === 'adjustment_requested' ? 'Ajuste pedido' : m.status === 'rejected' ? 'Reprovado' : 'Aprovado'}</div>
-              <div className="v">
-                {m.decided_at && m.status !== 'pending' ? (
-                  <>{fmtDate(m.decided_at)}{m.decided_by && <><br /><span className="muted" style={{ fontWeight: 400 }}>por {m.decided_by}</span></>}</>
-                ) : '—'}
+          <div className="info">
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+              <div>
+                <p className="eyebrow" style={{ margin: '0 0 6px' }}>{t.label}{m.version > 1 ? ` · versão ${m.version}` : ''}</p>
+                <h2>{m.title}</h2>
               </div>
+              <button className="icon-btn" onClick={onClose} aria-label="Fechar"><Icon name="x" /></button>
             </div>
-            <div className="fact"><div className="k">Publicação</div><div className="v">{m.scheduled_date ? fmtDay(m.scheduled_date) : '—'}</div></div>
-          </div>
-          {m.caption && items.length > 0 && (
-            <div><p className="eyebrow" style={{ margin: '0 0 8px' }}>Legenda / texto</p><div className="caption">{m.caption}</div></div>
-          )}
-          <div ref={threadEnd}>
-            <p className="eyebrow" style={{ margin: '0 0 12px' }}>Conversa</p>
-            {m.comments.length ? <Thread comments={m.comments} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
-          </div>
-          <div className="reply">
-            <textarea className="textarea" placeholder="Responder ao cliente…" value={reply} onChange={(e) => setReply(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }} />
-            <button className="btn" onClick={send} disabled={sending} aria-label="Enviar"><Icon name="send" /></button>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
-            {m.status === 'adjustment_requested' && (
-              <button className="btn ok" onClick={markAdjusted} title="Para ajustes simples que não precisam voltar para o cliente">
-                <Icon name="check" />Ajustado e agendado
-              </button>
+            <div><span className={`status ${STATUS_CLASS[m.status]}`}>{STATUS_LABEL[m.status]}</span></div>
+            <div className="facts" suppressHydrationWarning>
+              <div className="fact"><div className="k">Enviado</div><div className="v">{fmtDate(m.sent_at)}</div></div>
+              <div className="fact"><div className="k">Cliente viu</div><div className="v">{m.first_viewed_at ? fmtDate(m.first_viewed_at) : '—'}</div></div>
+              <div className="fact">
+                <div className="k">{m.status === 'adjustment_requested' ? 'Ajuste pedido' : m.status === 'rejected' ? 'Reprovado' : 'Aprovado'}</div>
+                <div className="v">
+                  {m.decided_at && m.status !== 'pending' ? (
+                    <>{fmtDate(m.decided_at)}{m.decided_by && <><br /><span className="muted" style={{ fontWeight: 400 }}>por {m.decided_by}</span></>}</>
+                  ) : '—'}
+                </div>
+              </div>
+              <div className="fact"><div className="k">Publicação</div><div className="v">{m.scheduled_date ? fmtDay(m.scheduled_date) : '—'}</div></div>
+            </div>
+            {m.caption && items.length > 0 && (
+              <div><p className="eyebrow" style={{ margin: '0 0 8px' }}>Legenda / texto</p><div className="caption">{m.caption}</div></div>
             )}
-            <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
-            <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
+            <div ref={threadEnd}>
+              <p className="eyebrow" style={{ margin: '0 0 12px' }}>Conversa</p>
+              {m.comments.length ? <Thread comments={m.comments} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
+            </div>
+            <div className="reply">
+              <textarea className="textarea" placeholder="Responder ao cliente…" value={reply} onChange={(e) => setReply(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }} />
+              <button className="btn" onClick={send} disabled={sending} aria-label="Enviar"><Icon name="send" /></button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
+              {m.status === 'adjustment_requested' && (
+                <button className="btn ok" onClick={() => setAdjOpen(true)} title="Para ajustes que só dá para fazer na hora de agendar (ex.: música)">
+                  <Icon name="check" />Ajustado e agendado
+                </button>
+              )}
+              <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
+              <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
+            </div>
           </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+      {adjOpen && (
+        <Modal
+          title={<>Ajustado e <b>agendado</b></>}
+          onClose={() => setAdjOpen(false)}
+          foot={
+            <>
+              <button className="btn line" onClick={() => setAdjOpen(false)}>Cancelar</button>
+              <button className="btn" onClick={markAdjusted} disabled={adjBusy}><Icon name="check" />Aprovar e mandar para a fila</button>
+            </>
+          }
+        >
+          <p className="muted" style={{ margin: '0 0 14px' }}>
+            “{m.title}” passa a contar como aprovado, sem voltar para o cliente, e entra na fila de agendamento com uma ressalva para quem for agendar.
+          </p>
+          {lastAsk && (
+            <div className="note" style={{ marginBottom: 14 }}>
+              <span className="h"><Icon name="alert" />Pedido do cliente (vai junto)</span>{lastAsk.content}
+            </div>
+          )}
+          <div className="field">
+            <label htmlFor="adj-note">Recado para quem agenda <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+            <textarea id="adj-note" className="textarea" value={adjNote} onChange={(e) => setAdjNote(e.target.value)}
+              placeholder="Ex.: usar a versão instrumental e cortar os 2 primeiros segundos." />
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
 

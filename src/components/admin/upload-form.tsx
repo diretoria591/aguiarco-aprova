@@ -9,7 +9,7 @@ import { COVER_PREFIX, EMBED_PREFIX, parseVideoLink, splitMedia, type Embed } fr
 import type { Client, Post, PostFormat } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
-import { errMsg } from './client-form';
+import { errMsg, normalizeIg } from './client-form';
 import { useMe } from './me';
 
 const ACCEPT = /^(image|video)\/|application\/pdf/;
@@ -143,9 +143,10 @@ export function UploadForm({
     try {
       if (!isVersion) {
         const scheduled = String(fd.get('scheduled_date') ?? '') || null;
+        const pro = normalizeIg(String(fd.get('featured_professional') ?? '')).slice(0, 80);
         const { data: post, error } = await supabase
           .from('posts')
-          .insert({ client_id: client.id, title, format: type, caption, scheduled_date: scheduled, created_by: me.id })
+          .insert({ client_id: client.id, title, format: type, caption, scheduled_date: scheduled, created_by: me.id, ...(pro ? { featured_professional: pro } : {}) })
           .select('id')
           .single();
         if (error) throw error;
@@ -335,10 +336,19 @@ export function UploadForm({
             <input className="input" name="note" placeholder="Ex.: Ajustamos a cor do título como você pediu." />
           </div>
         ) : (
-          <div className="field" style={{ maxWidth: 220 }}>
-            <label>Data prevista de publicação <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
-            <input className="input" type="date" name="scheduled_date" />
-          </div>
+          <>
+            <div className="field" style={{ maxWidth: 220 }}>
+              <label>Data prevista de publicação <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+              <input className="input" type="date" name="scheduled_date" />
+            </div>
+            {client.segment === 'beleza' && (
+              <div className="field">
+                <label htmlFor="uf-pro">Profissional que aparece <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+                <input className="input" id="uf-pro" name="featured_professional" placeholder="@ da profissional" autoComplete="off" />
+                <span className="hint">Se ficar em branco, quem agenda recebe o aviso para conferir quem aparece.</span>
+              </div>
+            )}
+          </>
         )}
 
         <div className="progress" hidden={!busy}><i style={{ width: `${Math.round((progress ?? 0) * 100)}%` }} /></div>

@@ -5,6 +5,7 @@ import { AdminShell } from '@/components/admin/shell';
 import { MeProvider } from '@/components/admin/me';
 import { ConfigWarning } from '@/components/config-warning';
 import { Wordmark } from '@/components/ui';
+import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: profile } = await supabase.from('profiles').select('id,name,email').eq('id', user.id).maybeSingle();
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
   if (!profile) {
     return (
       <div className="invalid">
@@ -32,9 +33,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     );
   }
 
+  // quantos posts aprovados esperam agendamento (número na aba Agendamento)
+  const { count } = await supabase.from('posts').select('id', { count: 'exact', head: true })
+    .eq('status', 'approved').is('scheduled_at', null);
+  const queueCount = count ?? 0;
+
   return (
-    <MeProvider me={{ id: profile.id, name: profile.name || user.email || 'Equipe', email: profile.email || user.email || '' }}>
-      <AdminShell>{children}</AdminShell>
+    <MeProvider me={{ id: profile.id, name: profile.name || user.email || 'Equipe', email: profile.email || user.email || '', role: (profile.role as TeamRole) || 'team' }}>
+      <AdminShell queueCount={queueCount}>{children}</AdminShell>
     </MeProvider>
   );
 }

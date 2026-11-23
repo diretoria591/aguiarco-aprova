@@ -12,8 +12,10 @@ async function requireTeam() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
-  return data ? user : null;
+  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  // quem só agenda não gerencia a equipe
+  if (!data || (data as { role?: string }).role === 'scheduler') return null;
+  return user;
 }
 
 export async function addMember(input: { name: string; email: string; password: string }): Promise<Result> {

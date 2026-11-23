@@ -25,6 +25,16 @@ alter table public.posts add column if not exists approved_at         timestampt
 -- que só dá para colocar na hora de agendar)
 alter table public.posts add column if not exists schedule_note       text;
 
+-- área da beleza: @ da profissional que aparece (opcional, preenchido no envio)
+alter table public.posts add column if not exists featured_professional text not null default '';
+
+-- clientes: Instagram (para lembrar a marcação) e área de atuação
+alter table public.clients add column if not exists instagram text not null default '';
+alter table public.clients add column if not exists segment   text not null default '';
+alter table public.clients drop constraint if exists clients_segment_check;
+alter table public.clients add constraint clients_segment_check
+  check (segment in ('', 'saude', 'gastronomia', 'beleza', 'empresas', 'outra'));
+
 create index if not exists posts_schedule_queue_idx
   on public.posts (approved_at)
   where status = 'approved' and scheduled_at is null;
@@ -179,6 +189,51 @@ begin
   values (p.client_id, p.id, 'cliente_avisado', who, who || ' avisou o cliente do agendamento de ' || p.title);
 end;
 $$;
+
+-- Desfazer (aparece por alguns segundos depois de cada clique)
+create or replace function public.team_undo_scheduled(p_post_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare p public.posts; who text;
+begin
+  if not public.is_team() then raise exception 'Sem permissão.' using errcode = '42501'; end if;
+  select * into p from public.posts where id = p_post_id for update;
+  if not found or p.scheduled_at is null then return; end if;
+  if p.client_notified_at is not null then
+    raise exception 'O cliente já foi avisado. Desfaça o aviso primeiro.' using errcode = '22023';
+  end if;
+  who := public._team_name();
+  update public.posts set scheduled_at = null, scheduled_by = null where id = p.id;
+  insert into public.activity_logs (client_id, post_id, type, actor, action_text)
+  values (p.client_id, p.id, 'agendamento_desfeito', who, who || ' desfez o agendamento de ' || p.title);
+end;
+$$;
+
+create or replace function public.team_undo_client_notified(p_post_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare p public.posts; who text;
+begin
+  if not public.is_team() then raise exception 'Sem permissão.' using errcode = '42501'; end if;
+  select * into p from public.posts where id = p_post_id for update;
+  if not found or p.client_notified_at is null then return; end if;
+  who := public._team_name();
+  update public.posts set client_notified_at = null, client_notified_by = null where id = p.id;
+  insert into public.activity_logs (client_id, post_id, type, actor, action_text)
+  values (p.client_id, p.id, 'aviso_desfeito', who, who || ' desfez o aviso ao cliente de ' || p.title);
+end;
+$$;
+
+revoke all on function public.team_undo_scheduled(uuid)       from public, anon;
+revoke all on function public.team_undo_client_notified(uuid) from public, anon;
+grant execute on function public.team_undo_scheduled(uuid)       to authenticated;
+grant execute on function public.team_undo_client_notified(uuid) to authenticated;
 
 revoke all on function public.team_mark_scheduled(uuid)       from public, anon;
 revoke all on function public.team_mark_client_notified(uuid) from public, anon;

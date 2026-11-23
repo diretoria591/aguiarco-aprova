@@ -1,4 +1,5 @@
 export type PostStatus = 'pending' | 'adjustment_requested' | 'approved' | 'rejected';
+export type ClientSegment = '' | 'saude' | 'gastronomia' | 'beleza' | 'empresas' | 'outra';
 export type PostFormat = 'foto' | 'video' | 'reels' | 'carrossel' | 'arte' | 'stories' | 'texto';
 
 export interface Client {
@@ -12,6 +13,8 @@ export interface Client {
   access_token: string;
   last_accessed_at: string | null;
   created_at: string;
+  instagram?: string;
+  segment?: ClientSegment;
 }
 
 export interface PostMedia {
@@ -49,6 +52,13 @@ export interface Post {
   decided_at: string | null;
   decided_by: string | null;
   created_at: string;
+  approved_at?: string | null;
+  scheduled_at?: string | null;
+  scheduled_by?: string | null;
+  client_notified_at?: string | null;
+  client_notified_by?: string | null;
+  schedule_note?: string | null;
+  featured_professional?: string;
   post_media: PostMedia[];
   comments: Comment[];
 }
@@ -66,10 +76,13 @@ export interface ActivityLog {
   posts?: { title: string } | null;
 }
 
+export type TeamRole = 'admin' | 'scheduler' | 'team';
+
 export interface Profile {
   id: string;
   name: string;
   email: string;
+  role?: TeamRole;
   created_at: string;
 }
 

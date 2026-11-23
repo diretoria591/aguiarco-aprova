@@ -8,10 +8,13 @@ import { initials } from '@/lib/format';
 import { Icon } from '@/components/icon';
 import { useMe } from './me';
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export function AdminShell({ children, queueCount = 0 }: { children: ReactNode; queueCount?: number }) {
   const me = useMe();
   const path = usePathname();
-  const section = path.startsWith('/dashboard/equipe') ? 'equipe' : 'clientes';
+  const section = path.startsWith('/dashboard/equipe') ? 'equipe'
+    : path.startsWith('/dashboard/agendamento') ? 'agendamento' : 'clientes';
+  const scheduler = me.role === 'scheduler';
+  const badge = queueCount > 0 ? <span className="nbadge">{queueCount}</span> : null;
 
   async function logout() {
     await createClient().auth.signOut().catch(() => {});
@@ -22,13 +25,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <>
       <header className="topbar">
         <div className="in">
-          <Link className="brand" href="/dashboard">
+          <Link className="brand" href={scheduler ? '/dashboard/agendamento' : '/dashboard'}>
             <span className="wm">Aguiar<b>&amp;co</b></span>
             <span className="tag">Aprova</span>
           </Link>
           <nav className="topnav">
-            <Link href="/dashboard" className={section === 'clientes' ? 'on' : ''}>Clientes</Link>
-            <Link href="/dashboard/equipe" className={section === 'equipe' ? 'on' : ''}>Equipe</Link>
+            {!scheduler && <Link href="/dashboard" className={section === 'clientes' ? 'on' : ''}>Clientes</Link>}
+            <Link href="/dashboard/agendamento" className={section === 'agendamento' ? 'on' : ''}>Agendamento{badge}</Link>
+            {!scheduler && <Link href="/dashboard/equipe" className={section === 'equipe' ? 'on' : ''}>Equipe</Link>}
           </nav>
           <div className="who">
             <span>{me.name}</span>
