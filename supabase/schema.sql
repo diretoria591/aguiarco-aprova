@@ -88,6 +88,7 @@ create table if not exists public.clients (
   contact_name      text not null default '',
   whatsapp          text not null default '',
   email             text not null default '',
+  revision_limit    integer not null default 2 check (revision_limit between 0 and 20),
   access_token      text not null unique default public.new_access_token(),
   last_accessed_at  timestamptz,
   created_at        timestamptz not null default now()
@@ -134,6 +135,7 @@ create table if not exists public.comments (
                check (kind in ('comment', 'approval', 'adjustment', 'version', 'rejection')),
   content      text not null check (char_length(content) between 1 and 5000),
   version      integer not null default 1,
+  agency_error boolean not null default false,
   created_at   timestamptz not null default now()
 );
 create index if not exists comments_post_idx on public.comments (post_id, created_at);
@@ -362,7 +364,7 @@ security definer
 set search_path = public
 as $$
 declare c public.clients; p public.posts; who text := public._clean_name(p_name);
-        body text := left(btrim(coalesce(p_content, '')), 5000);
+        body text := left(btrim(coalesce(p_content, '')), 5000); used integer;
 begin
   if body = '' then
     raise exception 'Conte o que você gostaria de alterar.' using errcode = '22023';
@@ -373,10 +375,14 @@ begin
      set status = 'adjustment_requested', decided_at = now(), decided_by = who,
          first_viewed_at = coalesce(first_viewed_at, now())
    where id = p.id;
+  select count(*) into used from public.comments
+   where post_id = p.id and author_role = 'client' and kind = 'adjustment' and not agency_error;
   insert into public.comments (post_id, author_name, author_role, kind, content, version)
   values (p.id, who, 'client', 'adjustment', body, p.version);
-  insert into public.activity_logs (client_id, post_id, type, actor, action_text)
-  values (c.id, p.id, 'ajustes', who, 'Pediu alterações em ' || p.title);
+  insert into public.activity_logs (client_id, post_id, type, actor, action_text, meta)
+  values (c.id, p.id, 'ajustes', who,
+          'Pediu alterações em ' || p.title || case when used >= c.revision_limit then ' (rodada extra, cobrada à parte)' else '' end,
+          case when used >= c.revision_limit then 'extra' else '' end);
 end;
 $$;
 

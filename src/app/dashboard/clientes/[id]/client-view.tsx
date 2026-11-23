@@ -8,10 +8,11 @@ import { removeFiles } from '@/lib/upload';
 import { STATUS_CLASS, STATUS_LABEL, STATUS_SHORT, TYPES, countStatuses, portalLink } from '@/lib/constants';
 import { addMonths, currentMonth, fmtAgo, fmtDate, fmtDay, firstName, monthLabel, planMonth, sentMonth } from '@/lib/format';
 import { embedThumb, isEmbed, isVideoLike, splitMedia } from '@/lib/media';
-import type { ActivityLog, Client, Post, PostStatus } from '@/lib/types';
+import type { ActivityLog, Client, Comment, Post, PostStatus } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Mono, Viewer, copyText, useUI } from '@/components/ui';
 import { Thread, Timeline } from '@/components/thread';
+import { DEFAULT_REVISION_LIMIT } from '@/lib/rounds';
 import { ClientForm, errMsg } from '@/components/admin/client-form';
 import { UploadForm } from '@/components/admin/upload-form';
 import { LiveRefresh } from '@/components/admin/live-refresh';
@@ -169,6 +170,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
       {detail && (
         <PostDetail
           m={detail}
+          limit={client.revision_limit ?? DEFAULT_REVISION_LIMIT}
           onClose={() => setDetailId(null)}
           onNewVersion={() => { setDetailId(null); setUpload({ material: detail }); }}
         />
@@ -225,7 +227,7 @@ function MaterialCard({ m, onOpen }: { m: Post; onOpen: () => void }) {
   );
 }
 
-function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void; onNewVersion: () => void }) {
+function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: number; onClose: () => void; onNewVersion: () => void }) {
   const router = useRouter();
   const me = useMe();
   const { toast, confirm } = useUI();
@@ -238,6 +240,13 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
     const th = threadEnd.current?.querySelector('.thread');
     th?.lastElementChild?.scrollIntoView({ block: 'nearest' });
   }, [m.comments.length]);
+
+  async function toggleError(c: Comment) {
+    const { error } = await createClient().from('comments').update({ agency_error: !c.agency_error }).eq('id', c.id);
+    if (error) return toast(errMsg(error), 'err');
+    toast(c.agency_error ? 'Voltou a contar como rodada' : 'Marcado como erro da agência: não conta como rodada');
+    router.refresh();
+  }
 
   async function send() {
     const body = reply.trim();
@@ -333,7 +342,7 @@ function PostDetail({ m, onClose, onNewVersion }: { m: Post; onClose: () => void
             )}
             <div ref={threadEnd}>
               <p className="eyebrow" style={{ margin: '0 0 12px' }}>Conversa</p>
-              {m.comments.length ? <Thread comments={m.comments} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
+              {m.comments.length ? <Thread comments={m.comments} admin={{ limit, onToggleError: toggleError }} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
             </div>
             <div className="reply">
               <textarea className="textarea" placeholder="Responder ao cliente…" value={reply} onChange={(e) => setReply(e.target.value)}
