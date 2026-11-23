@@ -13,7 +13,8 @@ export function AdminShell({ children, queueCount = 0 }: { children: ReactNode; 
   const path = usePathname();
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
     : path.startsWith('/dashboard/agendamento') ? 'agendamento'
-    : path.startsWith('/dashboard/roteiros') ? 'roteiros' : 'clientes';
+    : path.startsWith('/dashboard/roteiros') ? 'roteiros'
+    : path.startsWith('/dashboard/rodadas') ? 'rodadas' : 'clientes';
   const scheduler = me.role === 'scheduler';
   const badge = queueCount > 0 ? <span className="nbadge">{queueCount}</span> : null;
 
@@ -34,6 +35,7 @@ export function AdminShell({ children, queueCount = 0 }: { children: ReactNode; 
             {!scheduler && <Link href="/dashboard" className={section === 'clientes' ? 'on' : ''}>Clientes</Link>}
             <Link href="/dashboard/agendamento" className={section === 'agendamento' ? 'on' : ''}>Agendamento{badge}</Link>
             <Link href="/dashboard/roteiros" className={section === 'roteiros' ? 'on' : ''}>Roteiros</Link>
+            {!scheduler && <Link href="/dashboard/rodadas" className={section === 'rodadas' ? 'on' : ''}>Rodadas extras</Link>}
             {!scheduler && <Link href="/dashboard/equipe" className={section === 'equipe' ? 'on' : ''}>Equipe</Link>}
           </nav>
           <div className="who">
