@@ -10,8 +10,9 @@ import {
   FILTERS, LEAD, LEVEL_LABEL, PHASE_COLOR, STATUS_TEXT, addDaysYMD, levelOf, phaseOf, whenText,
   type Equipe, type Roteiro,
 } from '@/lib/roteiros';
+import { gravacaoLink } from '@/lib/roteiros';
 import { Icon } from '@/components/icon';
-import { Modal, Mono, useUI } from '@/components/ui';
+import { Modal, Mono, copyText, useUI } from '@/components/ui';
 import { errMsg } from '@/components/admin/client-form';
 import { useMe } from '@/components/admin/me';
 import { RoteirosLive } from '@/components/admin/roteiros-live';
@@ -19,8 +20,8 @@ import { MONTHS_SHORT, Pill, Stepper } from '@/components/roteiros/parts';
 
 type C = { id: string; name: string; logo_url: string | null };
 
-export function ClientArea({ client, team, selfRecord, roteiros, initialMonth }: {
-  client: C; team: Equipe | null; selfRecord: boolean; roteiros: Roteiro[]; initialMonth: string;
+export function ClientArea({ client, team, selfRecord, justSaved, roteiros, initialMonth }: {
+  client: C; team: Equipe | null; selfRecord: boolean; justSaved: boolean; roteiros: Roteiro[]; initialMonth: string;
 }) {
   const me = useMe();
   const router = useRouter();
@@ -39,6 +40,17 @@ export function ClientArea({ client, team, selfRecord, roteiros, initialMonth }:
   const inMonth = roteiros.filter((r) => r.month === mo);
   const filter = FILTERS.find((x) => x.key === f) ?? FILTERS[0];
   const list = inMonth.filter(filter.test);
+
+  function link() { return team ? gravacaoLink(team.access_token, window.location.origin) : ''; }
+  function whats() {
+    if (!team) return;
+    const msg = `Oi, ${team.first_name || team.name}! Já cadastrei os roteiros de ${client.name}. Você vê tudo e entrega por aqui: ${link()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  }
+  async function copyTeamLink() {
+    const ok = await copyText(link());
+    toast(ok ? 'Link copiado' : 'Não deu para copiar. Tente de novo.', ok ? undefined : 'err');
+  }
 
   async function patch(r: Roteiro, values: Partial<Roteiro>, msg: string) {
     setBusy(r.id);
@@ -81,6 +93,19 @@ export function ClientArea({ client, team, selfRecord, roteiros, initialMonth }:
         </div>
         <Link className="btn sand" href={`/dashboard/roteiros/novo?cliente=${client.id}&mes=${mo}`}><Icon name="plus" />Novo roteiro</Link>
       </div>
+
+      {team && !selfRecord && (
+        <div className={`rt-send${justSaved ? ' hot' : ''}`}>
+          <div>
+            <b>{justSaved ? 'Roteiros cadastrados! ' : ''}Avise {team.first_name || team.name}</b>
+            <div className="rt-meta">Mande o link da área de gravação de {team.name}. É o mesmo link sempre, não precisa gerar outro.</div>
+          </div>
+          <div className="rt-row">
+            <button className="btn sm" onClick={whats}>Enviar no WhatsApp</button>
+            <button className="btn sm line" onClick={copyTeamLink}><Icon name="copy" />Copiar link</button>
+          </div>
+        </div>
+      )}
 
       <div className="rt-months">
         {keys.map((k) => (
