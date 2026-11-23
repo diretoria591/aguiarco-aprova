@@ -94,7 +94,7 @@ export function TeamConfig({ clients, allClients, roteiros, teams, error }: {
         {teams.map((t) => (
           <div key={t.id} className="card rt-pad">
             <div className="rt-rowhead">
-              <div><b>{t.name}</b><div className="muted small">“Oi, filmmaker da {t.first_name || t.name}!”</div></div>
+              <div><b>{t.name}</b><div className="muted small">“Oi, {t.first_name || t.name}!”</div></div>
               <div className="rt-row">
                 <button className="btn sm line" onClick={() => copyLink(t)}><Icon name="copy" />Copiar link</button>
                 <button className="btn sm ghost" onClick={() => newLink(t)}><Icon name="refresh" />Novo link</button>

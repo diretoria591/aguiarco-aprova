@@ -39,7 +39,7 @@ export function GravacaoView({ token, initial }: { token: string; initial: Grava
       </header>
       <main className="pmain">
         <div className="rt-hero">
-          <div className="s">Oi, filmmaker da {data.team.first_name || data.team.name}!</div>
+          <div className="s">Oi, {data.team.first_name || data.team.name}!</div>
           <div className="big">{n}</div>
           <div className="s">Você já entregou {n} vídeo{n === 1 ? '' : 's'} este mês.</div>
         </div>
