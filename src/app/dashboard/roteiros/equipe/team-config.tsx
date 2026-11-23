@@ -60,6 +60,9 @@ export function TeamConfig({ clients, allClients, roteiros, teams, error }: {
   }
   const setTeam = (c: RtClient, team: string) =>
     run(sb().from('roteiro_clientes').update({ team_id: team || null }).eq('client_id', c.client_id), 'Quem grava foi atualizado');
+  const setSelf = (c: RtClient, v: boolean) =>
+    run(sb().from('roteiro_clientes').update({ self_record: v, team_id: v ? null : c.team_id }).eq('client_id', c.client_id),
+      v ? 'Agora o próprio cliente grava' : 'Cliente volta a usar equipe de gravação');
   async function unenroll(c: RtClient) {
     const ok = await confirm({ title: `Tirar ${c.clients!.name} de Roteiros?`, text: 'Os roteiros dele serão apagados. O cliente continua normal no Aprova.', okLabel: 'Tirar', danger: true });
     if (!ok) return;
@@ -117,10 +120,13 @@ export function TeamConfig({ clients, allClients, roteiros, teams, error }: {
             <div className="rt-rowhead">
               <b>{c.clients!.name}</b>
               <div className="rt-row">
-                <select className="input rt-sel" value={c.team_id ?? ''} onChange={(e) => setTeam(c, e.target.value)}>
-                  <option value="">Sem equipe definida</option>
-                  {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                <label className="rt-chk"><input type="checkbox" checked={c.self_record} onChange={(e) => setSelf(c, e.target.checked)} />Cliente grava sozinho</label>
+                {!c.self_record && (
+                  <select className="input rt-sel" value={c.team_id ?? ''} onChange={(e) => setTeam(c, e.target.value)}>
+                    <option value="">Sem equipe definida</option>
+                    {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                )}
                 <button className="btn sm ghost" onClick={() => unenroll(c)} aria-label="Tirar de Roteiros"><Icon name="trash" /></button>
               </div>
             </div>

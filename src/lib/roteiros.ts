@@ -42,6 +42,7 @@ export interface Equipe {
 export interface RtClient {
   client_id: string;
   team_id: string | null;
+  self_record: boolean;
   clients: { id: string; name: string; logo_url: string | null } | null;
 }
 

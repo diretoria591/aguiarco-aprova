@@ -152,7 +152,7 @@ export function RoteirosHome({ clients, roteiros, teams, error }: {
             <Link key={c.client_id} href={`/dashboard/roteiros/${c.client_id}`} className="card rt-ccard">
               <div className="rt-ctop">
                 <Mono name={c.clients!.name} logo={c.clients!.logo_url} />
-                <div className="rt-cname"><h3>{c.clients!.name}</h3><span className="muted small">{team ? `Grava: ${team.name}` : 'Sem equipe de gravação'}</span></div>
+                <div className="rt-cname"><h3>{c.clients!.name}</h3><span className="muted small">{c.self_record ? 'Grava: o próprio cliente' : team ? `Grava: ${team.name}` : 'Sem equipe de gravação'}</span></div>
               </div>
               <PhaseBar items={mine} />
               <div className="muted small">{mine.length} roteiros</div>

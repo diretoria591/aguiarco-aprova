@@ -22,6 +22,7 @@ export default async function RoteirosClientPage({
   return (
     <ClientArea
       client={c.clients!}
+      selfRecord={c.self_record}
       team={teams.find((t) => t.id === c.team_id) ?? null}
       roteiros={roteiros.filter((r) => r.client_id === clientId)}
       initialMonth={mes && MONTH_RE.test(mes) ? mes : currentMonth()}

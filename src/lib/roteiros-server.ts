@@ -6,7 +6,7 @@ import type { Equipe, Roteiro, RtClient } from '@/lib/roteiros';
 export async function loadRoteiros() {
   const supabase = await createClient();
   const [rc, ro, eq] = await Promise.all([
-    supabase.from('roteiro_clientes').select('client_id, team_id, clients(id,name,logo_url)'),
+    supabase.from('roteiro_clientes').select('client_id, team_id, self_record, clients(id,name,logo_url)'),
     supabase.from('roteiros').select('*').order('pub_date', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true }),
     supabase.from('roteiro_equipes').select('*').order('name'),
   ]);

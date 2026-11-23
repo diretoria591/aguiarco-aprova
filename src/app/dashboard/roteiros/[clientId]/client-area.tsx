@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { removeFiles } from '@/lib/upload';
+import { removeFiles, safePath, uploadFile } from '@/lib/upload';
 import { addMonths, currentMonth, fmtDate, monthLabel } from '@/lib/format';
 import {
   FILTERS, LEAD, LEVEL_LABEL, PHASE_COLOR, STATUS_TEXT, addDaysYMD, levelOf, phaseOf, whenText,
@@ -19,8 +19,8 @@ import { MONTHS_SHORT, Pill, Stepper } from '@/components/roteiros/parts';
 
 type C = { id: string; name: string; logo_url: string | null };
 
-export function ClientArea({ client, team, roteiros, initialMonth }: {
-  client: C; team: Equipe | null; roteiros: Roteiro[]; initialMonth: string;
+export function ClientArea({ client, team, selfRecord, roteiros, initialMonth }: {
+  client: C; team: Equipe | null; selfRecord: boolean; roteiros: Roteiro[]; initialMonth: string;
 }) {
   const me = useMe();
   const router = useRouter();
@@ -31,6 +31,8 @@ export function ClientArea({ client, team, roteiros, initialMonth }: {
   const [busy, setBusy] = useState<string | null>(null);
   const [alt, setAlt] = useState<Roteiro | null>(null);
   const [altText, setAltText] = useState('');
+  const [edit, setEdit] = useState<Roteiro | null>(null);
+  const [reg, setReg] = useState<Roteiro | null>(null);
 
   const base = currentMonth();
   const keys = [...new Set([...roteiros.map((r) => r.month), base, addMonths(base, 1), addMonths(base, 2), initialMonth])].sort();
@@ -75,7 +77,7 @@ export function ClientArea({ client, team, roteiros, initialMonth }: {
         <div>
           <div className="rt-eyebrow">Você está vendo</div>
           <h1>{client.name}</h1>
-          <div className="rt-sub">{team ? `Grava: ${team.name}` : 'Sem equipe de gravação definida'} · {roteiros.length} roteiros no total</div>
+          <div className="rt-sub">{selfRecord ? 'Grava: o próprio cliente' : team ? `Grava: ${team.name}` : 'Sem equipe de gravação definida'} · {roteiros.length} roteiros no total</div>
         </div>
         <Link className="btn sand" href={`/dashboard/roteiros/novo?cliente=${client.id}&mes=${mo}`}><Icon name="plus" />Novo roteiro</Link>
       </div>
@@ -136,6 +138,8 @@ export function ClientArea({ client, team, roteiros, initialMonth }: {
                 </div>
                 <div className="rt-acts">
                   {r.status === 'bruto' && <button className="btn sm" disabled={busy === r.id} onClick={() => patch(r, { status: 'edit', brenda_at: new Date().toISOString() }, 'Brenda sinalizada para editar')}>Incluí no calendário e sinalizei a Brenda</button>}
+                  {own && r.status === 'grav' && <button className="btn sm line" onClick={() => setEdit(r)}><Icon name="edit" />Editar</button>}
+                  {own && selfRecord && r.status === 'grav' && <button className="btn sm" onClick={() => setReg(r)}>Registrar gravação do cliente</button>}
                   {own && ['edit', 'rec', 'alt'].includes(r.status) && (
                     <>
                       <button className="btn sm" disabled={busy === r.id} onClick={() => patch(r, { status: 'pronto' }, 'Pronto para entrar no calendário')}>Pronto para o calendário</button>
@@ -150,6 +154,8 @@ export function ClientArea({ client, team, roteiros, initialMonth }: {
         })}
       </div>
 
+      {edit && <EditModal r={edit} months={keys} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); router.refresh(); }} />}
+      {reg && <RegisterModal r={reg} onClose={() => setReg(null)} onSaved={() => { setReg(null); router.refresh(); }} />}
       {alt && (
         <Modal title={<>Solicitar <b>alteração</b></>} onClose={() => setAlt(null)}
           foot={<><button className="btn line" onClick={() => setAlt(null)}>Cancelar</button><button className="btn" onClick={sendAlt}>Enviar</button></>}>
@@ -160,5 +166,94 @@ export function ClientArea({ client, team, roteiros, initialMonth }: {
         </Modal>
       )}
     </>
+  );
+}
+
+function EditModal({ r, months, onClose, onSaved }: { r: Roteiro; months: string[]; onClose: () => void; onSaved: () => void }) {
+  const { toast } = useUI();
+  const [t, setT] = useState(r.title);
+  const [tx, setTx] = useState(r.content);
+  const [ref, setRef] = useState(r.ref_url ?? '');
+  const [pub, setPub] = useState(r.pub_date ?? '');
+  const [notes, setNotes] = useState(r.notes);
+  const [month, setMonth] = useState(r.month);
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    if (!t.trim()) return toast('O roteiro precisa de um título.', 'err');
+    setBusy(true);
+    try {
+      const v: Partial<Roteiro> = {
+        title: t.trim(), content: tx.trim(), ref_url: ref.trim() || null, pub_date: pub || null,
+        notes: notes.trim(), month: pub ? pub.slice(0, 7) : month,
+      };
+      if (file) { v.content_url = await uploadFile(safePath(`roteiros/${r.client_id}`, file, 0), file); v.content_name = file.name; }
+      const { error } = await createClient().from('roteiros').update({ ...v, updated_at: new Date().toISOString() }).eq('id', r.id);
+      if (error) throw error;
+      toast('Roteiro atualizado');
+      onSaved();
+    } catch (e) { toast(errMsg(e), 'err'); setBusy(false); }
+  }
+  return (
+    <Modal title={<>Editar <b>roteiro</b></>} onClose={onClose}
+      foot={<><button className="btn line" onClick={onClose}>Cancelar</button><button className="btn" disabled={busy} onClick={save}>{busy ? 'Salvando…' : 'Salvar'}</button></>}>
+      <div className="field"><label>Título</label><input className="input" value={t} maxLength={200} onChange={(e) => setT(e.target.value)} /></div>
+      <div className="field"><label>Roteiro (texto ou link do Doc)</label><textarea className="textarea" value={tx} onChange={(e) => setTx(e.target.value)} /></div>
+      <div className="field"><label>Trocar arquivo do roteiro{r.content_name ? ` (atual: ${r.content_name})` : ''}</label><input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></div>
+      <div className="row2">
+        <div className="field"><label>Data prevista de publicação</label><input className="input" type="date" value={pub} onChange={(e) => setPub(e.target.value)} /></div>
+        <div className="field"><label>Mês</label>
+          <select className="input" value={month} onChange={(e) => setMonth(e.target.value)}>
+            {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="field"><label>Link de inspiração</label><input className="input" type="url" value={ref} onChange={(e) => setRef(e.target.value)} /></div>
+      <div className="field"><label>Observações</label><input className="input" value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+    </Modal>
+  );
+}
+
+function RegisterModal({ r, onClose, onSaved }: { r: Roteiro; onClose: () => void; onSaved: () => void }) {
+  const { toast } = useUI();
+  const me = useMe();
+  const [type, setType] = useState<'bruto' | 'editado'>('bruto');
+  const [video, setVideo] = useState('');
+  const [photos, setPhotos] = useState('');
+  const [cover, setCover] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const ok = (u: string) => !u.trim() || /^https?:\/\//i.test(u.trim());
+
+  async function save() {
+    if (!/^https?:\/\//i.test(video.trim())) return toast('Cole o link do vídeo (começa com https://).', 'err');
+    if (!ok(photos) || !ok(cover)) return toast('Os links de fotos e capa precisam começar com https://.', 'err');
+    setBusy(true);
+    const { error } = await createClient().from('roteiros').update({
+      status: type === 'bruto' ? 'bruto' : 'rec', video_type: type, video_url: video.trim(),
+      photos_url: photos.trim() || null, cover_url: cover.trim() || null, delivery_note: note.trim() || null,
+      delivered_at: new Date().toISOString(), delivered_by: `Cliente (registrado por ${me.name})`, delivered_team: null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', r.id);
+    if (error) { setBusy(false); return toast(errMsg(error), 'err'); }
+    toast('Gravação registrada');
+    onSaved();
+  }
+  return (
+    <Modal title={<>Registrar <b>gravação do cliente</b></>} onClose={onClose}
+      foot={<><button className="btn line" onClick={onClose}>Cancelar</button><button className="btn" disabled={busy} onClick={save}>{busy ? 'Salvando…' : 'Registrar'}</button></>}>
+      <p className="muted" style={{ margin: '0 0 12px' }}>{r.title}</p>
+      <div className="field"><label>Tipo de vídeo</label>
+        <div className="rt-opt">
+          <button type="button" className={type === 'bruto' ? 'on br' : ''} onClick={() => setType('bruto')}>Vídeo bruto</button>
+          <button type="button" className={type === 'editado' ? 'on ed' : ''} onClick={() => setType('editado')}>Vídeo editado</button>
+        </div>
+      </div>
+      <div className="field"><label>Link do vídeo</label><input className="input" type="url" value={video} onChange={(e) => setVideo(e.target.value)} placeholder="https://drive.google.com/…" /></div>
+      <div className="field"><label>Link das fotos (opcional)</label><input className="input" type="url" value={photos} onChange={(e) => setPhotos(e.target.value)} /></div>
+      <div className="field"><label>Link da capa (opcional)</label><input className="input" type="url" value={cover} onChange={(e) => setCover(e.target.value)} /></div>
+      <div className="field"><label>Observação (opcional)</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+    </Modal>
   );
 }

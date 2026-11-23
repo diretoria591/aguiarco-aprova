@@ -243,3 +243,9 @@ $$;
 
 grant execute on function public.gravacao_get(text) to anon, authenticated;
 grant execute on function public.gravacao_deliver(text, uuid, text, text, text, text, text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- 6. Cliente que grava sozinho (equipe interna registra a entrega)
+-- ---------------------------------------------------------------------
+alter table public.roteiro_clientes
+  add column if not exists self_record boolean not null default false;
