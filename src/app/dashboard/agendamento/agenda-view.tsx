@@ -12,6 +12,7 @@ import { Modal, Mono, Viewer, copyText, useUI } from '@/components/ui';
 import { errMsg } from '@/components/admin/client-form';
 import { LiveRefresh } from '@/components/admin/live-refresh';
 import { useMe } from '@/components/admin/me';
+import { MockupModal } from './mockup';
 
 export type AgendaPost = Post & {
   client: Pick<Client, 'id' | 'name' | 'logo_url' | 'instagram' | 'segment'>;
@@ -41,6 +42,8 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
   const [focus, setFocus] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [viewing, setViewing] = useState<AgendaPost | null>(null);
+  const [sel, setSel] = useState<string[]>([]);
+  const [mockup, setMockup] = useState<AgendaPost[] | null>(null);
 
   const by = (f: Filter) => posts.filter((p) => stateOf(p) === f);
   const counts = { queue: by('queue').length, scheduled: by('scheduled').length, done: by('done').length };
@@ -55,6 +58,15 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
   })();
   const focusOk = focus && groups.some((g) => g[0].client.id === focus) ? focus : null;
   const shown = focusOk ? groups.filter((g) => g[0].client.id === focusOk) : groups;
+
+  // seleção para o mockup: sempre de um cliente só
+  function toggleSel(p: AgendaPost) {
+    setSel((cur) => {
+      const same = cur.filter((id) => posts.find((x) => x.id === id)?.client.id === p.client.id);
+      return same.includes(p.id) ? same.filter((id) => id !== p.id) : [...same, p.id];
+    });
+  }
+  const selPosts = posts.filter((p) => sel.includes(p.id) && stateOf(p) === 'queue');
 
   async function call(fn: string, p: AgendaPost) {
     const { error: e } = await createClient().rpc(fn, { p_post_id: p.id });
@@ -156,6 +168,12 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
                   </div>
                 </div>
                 {filter === 'queue' && (
+                  <button className="more" onClick={() => setSel(ps.map((x) => x.id))}>Selecionar todos</button>
+                )}
+                {filter === 'scheduled' && (
+                  <button className="btn sand sm" onClick={() => setMockup(ps)}><Icon name="image" />Gerar mockup para o cliente</button>
+                )}
+                {filter === 'queue' && (
                   <div className="gprog" title="Aprovados deste cliente que já saíram da fila">
                     <span>{doneN} de {all.length} agendados</span>
                     <div className="bar"><i style={{ width: `${all.length ? (doneN / all.length) * 100 : 0}%` }} /></div>
@@ -164,7 +182,7 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
               </header>
               <div className="queue">
                 {ps.map((p) => (
-                  <Row key={p.id} p={p} busy={busy === p.id} onSchedule={() => schedule(p)} onNotified={() => notified(p)} onView={() => setViewing(p)} />
+                  <Row key={p.id} p={p} busy={busy === p.id} selected={sel.includes(p.id)} onToggle={() => toggleSel(p)} onSchedule={() => schedule(p)} onNotified={() => notified(p)} onView={() => setViewing(p)} />
                 ))}
               </div>
             </section>
@@ -173,6 +191,24 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
       </div>
 
       {viewing && <MediaModal p={viewing} onClose={() => setViewing(null)} />}
+
+      {filter === 'queue' && selPosts.length > 0 && !mockup && (
+        <div className="selbar" role="region" aria-label="Seleção para o mockup">
+          <span><b>{selPosts.length}</b> {selPosts.length === 1 ? 'conteúdo selecionado' : 'conteúdos selecionados'} · {selPosts[0].client.name}</span>
+          <span style={{ display: 'flex', gap: 8 }}>
+            <button className="btn ghost sm" onClick={() => setSel([])}>Limpar</button>
+            <button className="btn sm" onClick={() => setMockup(selPosts)}><Icon name="calendar" />Marcar como agendado e gerar mockup</button>
+          </span>
+        </div>
+      )}
+      {mockup && (
+        <MockupModal
+          clientName={mockup[0].client.name}
+          posts={mockup}
+          onClose={() => { setMockup(null); setSel([]); }}
+          onChanged={() => router.refresh()}
+        />
+      )}
     </>
   );
 }
@@ -194,8 +230,8 @@ function thumbOf(p: AgendaPost) {
   return { bg, video, count: items.length, tall: video };
 }
 
-function Row({ p, busy, onSchedule, onNotified, onView }: {
-  p: AgendaPost; busy: boolean; onSchedule: () => void; onNotified: () => void; onView: () => void;
+function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
+  p: AgendaPost; busy: boolean; selected: boolean; onToggle: () => void; onSchedule: () => void; onNotified: () => void; onView: () => void;
 }) {
   const { toast } = useUI();
   const [expanded, setExpanded] = useState(false);
@@ -233,7 +269,12 @@ function Row({ p, busy, onSchedule, onNotified, onView }: {
       </button>
 
       <div className="sbody">
-        <div><span className="type-badge" style={{ background: 'var(--line-2)' }}><Icon name={t.icon} />{t.label}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span className="type-badge" style={{ background: 'var(--line-2)' }}><Icon name={t.icon} />{t.label}</span>
+          {st === 'queue' && (
+            <label className="selbox"><input type="checkbox" checked={selected} onChange={onToggle} />Selecionar para o mockup</label>
+          )}
+        </div>
         <h3>{p.title}</h3>
         <div className="smeta" suppressHydrationWarning>
           <DueLabel ymd={p.scheduled_date} />
