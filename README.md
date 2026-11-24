@@ -159,3 +159,7 @@ Clientes cadastrados antes do onboarding ficam como "antigo": não recebem nada,
 ## Estrategista responsável
 
 No cadastro de cliente recorrente escolhe-se a **estrategista responsável** (`clients.strategist_id`). Pautas, relatórios, lembretes e avisos de números prontos desse cliente vão para ela; em Relatórios cada estrategista vê só os próprios clientes (a dona da conta vê todos). Migration: [`2026-11-25_estrategista.sql`](supabase/migrations/2026-11-25_estrategista.sql).
+
+## Termômetro de entregas
+
+Aba **Entregas**: para cada cliente recorrente, a meta mensal do contrato (`clients.meta_posts_min/max`, `meta_videos_min`) × o que foi aprovado no mês (Aprova + posts_externos), com o que está em aprovação à parte e o esperado até hoje. Status: em dia, atenção (abaixo de 90% do ritmo), atrasado (abaixo de 70%) e acima do contrato (passou do máximo). A dona da conta vê todos; quem acompanha as entregas (`delivery_supervisor_id`) vê só os seus. Avisos por e-mail nos dias 15 e 25.

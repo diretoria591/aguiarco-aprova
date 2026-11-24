@@ -30,6 +30,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
     : path.startsWith('/dashboard/roteiros') ? 'roteiros'
     : path.startsWith('/dashboard/lembretes') ? 'lembretes'
     : path.startsWith('/dashboard/cobrar') ? 'cobrar'
+    : path.startsWith('/dashboard/entregas') ? 'entregas'
     : path.startsWith('/dashboard/relatorios') ? 'relatorios'
     : path.startsWith('/dashboard/numeros') ? 'numeros'
     : path.startsWith('/dashboard/rodadas') ? 'rodadas' : 'clientes';
