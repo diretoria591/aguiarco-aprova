@@ -29,3 +29,8 @@ alter table public.entregas_manuais enable row level security;
 drop policy if exists "team full access entregas_manuais" on public.entregas_manuais;
 create policy "team full access entregas_manuais" on public.entregas_manuais
   for all to authenticated using (public.is_team()) with check (public.is_team());
+
+-- Várias entregas avulsas por cliente e mês (ex.: post agendado a pedido do cliente fora do Aprova)
+alter table public.entregas_manuais drop constraint if exists entregas_manuais_client_id_ref_month_key;
+alter table public.entregas_manuais add column if not exists created_by text not null default '';
+create index if not exists entregas_manuais_client_month_idx on public.entregas_manuais (client_id, ref_month);

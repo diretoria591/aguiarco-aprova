@@ -762,3 +762,11 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .ent-bar b.exp{background:var(--ink-2)} .ent-bar b.goal{background:var(--ink)}
 .ent-nums{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--ink-2)}
 @media (max-width:760px){ .ent-list + *, .summary{grid-template-columns:1fr 1fr !important} }
+
+.ent-extras{display:grid;gap:6px}
+.ent-extras ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.ent-extras li{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--sand-3);border-radius:8px;padding:6px 10px}
+.ent-x{margin-left:auto;border:0;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:2px}
+.ent-x svg{width:14px;height:14px}
+.ent-form{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ent-form .input:nth-child(2){flex:1;min-width:200px}

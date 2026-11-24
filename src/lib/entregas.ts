@@ -9,6 +9,8 @@ export type EntregaRow = {
   delivered: number;
   /** Vídeos/Reels aprovados no mês. */
   videos: number;
+  /** Entregas avulsas (fora do Aprova), já somadas em delivered. */
+  extras: { id: string; quantidade: number; nota: string; created_by: string; created_at: string }[];
   /** Ainda em aprovação ou em ajuste, com data no mês. */
   inProgress: number;
   /** Quanto já deveria ter saído até hoje, no ritmo da meta. */
