@@ -21,6 +21,9 @@ export interface Relatorio {
   /** Google Slides gerado a partir do relatório pronto. */
   slides_url: string;
   slides_at: string | null;
+  /** Quem preencheu os números do Instagram (tela Números). */
+  metrics_by: string;
+  metrics_at: string | null;
   metrics: Partial<Record<MetricKey, string>>;
   reviewed_by: string;
   reviewed_at: string | null;

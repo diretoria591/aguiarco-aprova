@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 
 const I = {
   check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>',
   chat: '<path d="M4 5h16v11H9l-5 4V5z"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',

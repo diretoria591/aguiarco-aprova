@@ -36,3 +36,9 @@ alter table public.relatorios add column if not exists post_marks jsonb not null
 -- Apresentação editável (Google Slides) gerada depois que o relatório fica pronto
 alter table public.relatorios add column if not exists slides_url text not null default '';
 alter table public.relatorios add column if not exists slides_at timestamptz;
+
+-- Quem preencheu os números do Instagram (tela Números, feita pela social media)
+alter table public.relatorios add column if not exists metrics_by text not null default '';
+alter table public.relatorios add column if not exists metrics_at timestamptz;
+-- Quando a estrategista foi avisada de que os números chegaram
+alter table public.relatorios add column if not exists metrics_notified_at timestamptz;
