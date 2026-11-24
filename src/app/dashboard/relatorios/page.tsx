@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { blockScheduler } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth, fmtDate, monthLabel } from '@/lib/format';
-import { reportMonth } from '@/lib/relatorio';
+import { monthRange, reportMonth } from '@/lib/relatorio';
 import { Mono } from '@/components/ui';
 
 export const metadata: Metadata = { title: 'Relatórios' };
@@ -19,10 +19,12 @@ export default async function RelatoriosPage({ searchParams }: { searchParams: P
   const month = sp.mes && MONTH_RE.test(sp.mes) ? sp.mes : addMonths(now, -1);
 
   const supabase = await createClient();
-  const [clientsRes, postsRes, repRes] = await Promise.all([
+  const [from, to] = monthRange(month);
+  const [clientsRes, postsRes, repRes, extRes] = await Promise.all([
     supabase.from('clients').select('id,name,logo_url').order('name'),
     supabase.from('posts').select('client_id,status,scheduled_date,sent_at'),
     supabase.from('relatorios').select('client_id,status,reviewed_by,reviewed_at,updated_at').eq('ref_month', month),
+    supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),
   ]);
   const error = clientsRes.error ?? postsRes.error ?? repRes.error;
 
@@ -31,6 +33,7 @@ export default async function RelatoriosPage({ searchParams }: { searchParams: P
   for (const p of (postsRes.data ?? []) as P[]) {
     if (reportMonth(p) === month) count.set(p.client_id, (count.get(p.client_id) ?? 0) + 1);
   }
+  for (const e of (extRes.data ?? []) as { client_id: string }[]) count.set(e.client_id, (count.get(e.client_id) ?? 0) + 1);
   type R = { client_id: string; status: string; reviewed_by: string; reviewed_at: string | null; updated_at: string };
   const reps = new Map(((repRes.data ?? []) as R[]).map((r) => [r.client_id, r]));
   const clients = ((clientsRes.data ?? []) as { id: string; name: string; logo_url: string | null }[])

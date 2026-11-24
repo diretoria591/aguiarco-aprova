@@ -125,4 +125,5 @@ Aba **Relatórios**: um relatório por cliente e mês, para a reunião de desemp
 - Cada post pode ser marcado como **Performou** ou **Não performou**; eles aparecem nas seções próprias, junto com a **Estratégia do mês**.
 - Depois de **Marcar como pronto**, a apresentação editável é gerada no Google Slides (dias úteis, 11h47 e 16h47), compartilhada com a estrategista e o link aparece no relatório. "Gerar de novo" pede uma nova versão.
   A geração usa [`scripts/apresentacao.sql`](scripts/apresentacao.sql) e [`scripts/apresentacao.py`](scripts/apresentacao.py) (`pip install python-pptx pillow`).
+- **Posts de outras plataformas** (ex.: Aprova Job) ficam na tabela `posts_externos` ([migration](supabase/migrations/2026-11-25_posts_externos.sql)) e entram só nos relatórios e apresentações: não aparecem no link do cliente nem na fila de agendamento. Novembro/2026 foi importado da planilha do Aprova Job.
 - Nada vai para o cliente automaticamente.

@@ -133,12 +133,12 @@ class Deck:
             s.shapes.add_picture(io.BytesIO(data), Inches(x), Inches(y), Inches(w), Inches(h))
         else:
             box = self.rect(s, x, y, w, h, BG)
-            box.text_frame.text = TYPES.get(post['format'], post['format'])
+            box.text_frame.text = TYPES.get(post['format']) or post.get('format_label') or 'Post'
             for p in box.text_frame.paragraphs:
                 p.alignment = PP_ALIGN.CENTER
                 for r in p.runs:
                     r.font.name, r.font.size, r.font.color.rgb = FONT, Pt(11), MUTED
-        meta = TYPES.get(post['format'], post['format'])
+        meta = TYPES.get(post['format']) or post.get('format_label') or 'Post'
         if post.get('scheduled_date'):
             meta += ' · ' + day_label(post['scheduled_date'])
         self.text(s, x, y + h + 0.08, w, 0.25, meta.upper(), size=8, color=MUTED)
@@ -174,20 +174,22 @@ def build(data, out):
            color=INK if rep.get('strategy') else MUTED, spacing=8)
 
     # 3. resumo e números do Aprova
-    approved = len(posts)
+    own = [p for p in posts if not p.get('external')]
+    external = len(posts) - len(own)
+    approved = len(own)
     published = len([p for p in posts if p.get('scheduled_at')])
-    first_try = len([p for p in posts if not p.get('adjustments')])
+    first_try = len([p for p in own if not p.get('adjustments')])
     rounds = sum(int(p.get('adjustments') or 0) for p in data['posts'])
     hours = [(datetime.fromisoformat(p['approved_at'].replace('Z', '+00:00')) -
               datetime.fromisoformat(p['created_at'].replace('Z', '+00:00'))).total_seconds() / 3600
-             for p in posts if p.get('approved_at')]
+             for p in own if p.get('approved_at') and p.get('created_at')]
     hours = [h for h in hours if h >= 0]
     avg = sum(hours) / len(hours) if hours else None
     avg_txt = '—' if avg is None else ('menos de 1 h' if avg < 1 else f'{round(avg)} h' if avg < 48 else f'{round(avg / 24)} dias')
     s = d.slide()
     d.header(s, 'Resumo do mês', f'{published} conteúdos publicados', name, label)
     kpis = [(str(published), 'publicados e agendados'),
-            (f'{first_try}/{approved}' if approved else '—', 'aprovados sem alteração'),
+            (f'{first_try}/{approved}' if approved else '—', 'aprovados sem alteração' + (' (no Aprova)' if external else '')),
             (avg_txt, 'tempo médio até a aprovação'),
             (str(rounds), 'rodadas de alteração')]
     for i, (n, l) in enumerate(kpis):
@@ -199,7 +201,10 @@ def build(data, out):
     for p in posts:
         fmts[p['format']] = fmts.get(p['format'], 0) + 1
     if fmts:
-        d.text(s, 0.7, 3.55, 11.9, 0.3, '  ·  '.join(f'{n} {TYPES.get(f, f)}' for f, n in sorted(fmts.items(), key=lambda x: -x[1])),
+        parts = [f'{n} {TYPES.get(f, "sem formato informado")}' for f, n in sorted(fmts.items(), key=lambda x: -x[1])]
+        if external:
+            parts.append(f'{external} pelo Aprova Job')
+        d.text(s, 0.7, 3.55, 11.9, 0.3, '  ·  '.join(parts),
                size=12, color=BROWN, bold=True)
     d.text(s, 0.7, 4.05, 11.9, 2.7, rep.get('summary') or 'Escreva aqui o resumo do mês.', size=15,
            color=INK if rep.get('summary') else MUTED, spacing=6)

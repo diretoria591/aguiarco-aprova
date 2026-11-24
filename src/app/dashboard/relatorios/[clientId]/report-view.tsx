@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { TYPES } from '@/lib/constants';
 import { fmtDate, fmtDay, monthLabel } from '@/lib/format';
 import {
-  METRICS, coverOf, fmtHours, reportStats, type MetricKey, type PostMark, type Relatorio, type ReportPost,
+  METRICS, coverOf, fmtHours, formatLabel, reportStats, type MetricKey, type PostMark, type Relatorio, type ReportPost,
 } from '@/lib/relatorio';
 import { Icon } from '@/components/icon';
 import { Mono, useUI } from '@/components/ui';
@@ -121,13 +121,14 @@ export function ReportView({ client, month, posts, report, error }: {
 
         <section className="rp-kpis">
           <Kpi n={stats.published} l={`publicado${stats.published === 1 ? '' : 's'} e agendado${stats.published === 1 ? '' : 's'}`} />
-          <Kpi n={stats.approved ? `${stats.firstTry}/${stats.approved}` : '—'} l="aprovados sem alteração" />
+          <Kpi n={stats.approved ? `${stats.firstTry}/${stats.approved}` : '—'} l={stats.external ? 'aprovados sem alteração (no Aprova)' : 'aprovados sem alteração'} />
           <Kpi n={fmtHours(stats.avgApprovalHours)} l="tempo médio até a aprovação" />
           <Kpi n={stats.roundsUsed} l={`rodada${stats.roundsUsed === 1 ? '' : 's'} de alteração${stats.extraRounds ? ` (${stats.extraRounds} extra${stats.extraRounds > 1 ? 's' : ''})` : ''}`} />
         </section>
         {(stats.byFormat.length > 0 || stats.inProgress > 0 || stats.waitingSchedule > 0) && (
           <div className="rp-chips">
-            {stats.byFormat.map((f) => <span key={f.format}>{f.n} {TYPES[f.format]?.label ?? f.format}</span>)}
+            {stats.byFormat.map((f) => <span key={f.format}>{f.n} {TYPES[f.format]?.label ?? 'sem formato informado'}</span>)}
+            {stats.external > 0 && <span className="soft">{stats.external} publicado{stats.external > 1 ? 's' : ''} pelo Aprova Job</span>}
             {stats.waitingSchedule > 0 && <span className="soft">{stats.waitingSchedule} aprovado{stats.waitingSchedule > 1 ? 's' : ''} aguardando agendamento</span>}
             {stats.inProgress > 0 && <span className="soft">{stats.inProgress} em aprovação</span>}
           </div>
@@ -172,10 +173,10 @@ export function ReportView({ client, month, posts, report, error }: {
                   <div key={p.id} className="rp-post">
                     <div className="rp-thumb">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {cover ? <img src={cover} alt="" loading="eager" /> : t && <Icon name={t.icon} />}
+                      {cover ? <img src={cover} alt="" loading="eager" /> : <Icon name={t?.icon ?? 'image'} />}
                     </div>
                     <div className="rp-meta" suppressHydrationWarning>
-                      {t?.label ?? p.format}{p.scheduled_date ? ` · ${fmtDay(p.scheduled_date)}` : ` · enviado ${fmtDate(p.sent_at, false)}`}
+                      {formatLabel(p, TYPES)}{p.scheduled_date ? ` · ${fmtDay(p.scheduled_date)}` : ` · enviado ${fmtDate(p.sent_at, false)}`}
                     </div>
                     <b>{p.title}</b>
                     {p.caption && <p>{p.caption}</p>}
@@ -231,9 +232,9 @@ function PostsBlock({ title, posts, value, placeholder, onChange, hint }: {
               <div key={p.id} className="rp-mini-item">
                 <div className="rp-thumb">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {cover ? <img src={cover} alt="" loading="eager" /> : t && <Icon name={t.icon} />}
+                  {cover ? <img src={cover} alt="" loading="eager" /> : <Icon name={t?.icon ?? 'image'} />}
                 </div>
-                <div className="rp-meta" suppressHydrationWarning>{t?.label ?? p.format}{p.scheduled_date ? ` · ${fmtDay(p.scheduled_date)}` : ''}</div>
+                <div className="rp-meta" suppressHydrationWarning>{formatLabel(p, TYPES)}{p.scheduled_date ? ` · ${fmtDay(p.scheduled_date)}` : ''}</div>
                 <b>{p.title}</b>
               </div>
             );

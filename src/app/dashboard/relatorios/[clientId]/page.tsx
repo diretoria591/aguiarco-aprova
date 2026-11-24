@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 import { blockScheduler } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth } from '@/lib/format';
-import { REPORT_POST_SELECT, reportMonth, type Relatorio, type ReportPost } from '@/lib/relatorio';
+import {
+  EXTERNAL_SELECT, REPORT_POST_SELECT, externalToReportPost, monthRange, reportMonth,
+  type ExternalPost, type Relatorio, type ReportPost,
+} from '@/lib/relatorio';
 import { ReportView } from './report-view';
 
 export const metadata: Metadata = { title: 'Relatório mensal' };
@@ -20,14 +23,17 @@ export default async function RelatorioPage({ params, searchParams }: {
   const month = sp.mes && MONTH_RE.test(sp.mes) ? sp.mes : addMonths(currentMonth(), -1);
 
   const supabase = await createClient();
-  const [clientRes, postsRes, repRes] = await Promise.all([
+  const [from, to] = monthRange(month);
+  const [clientRes, postsRes, repRes, extRes] = await Promise.all([
     supabase.from('clients').select('id,name,logo_url,instagram,revision_limit').eq('id', clientId).maybeSingle(),
     supabase.from('posts').select(REPORT_POST_SELECT).eq('client_id', clientId),
     supabase.from('relatorios').select('*').eq('client_id', clientId).eq('ref_month', month).maybeSingle(),
+    supabase.from('posts_externos').select(EXTERNAL_SELECT).eq('client_id', clientId).gte('publish_date', from).lt('publish_date', to),
   ]);
   if (!clientRes.data) notFound();
   const posts = ((postsRes.data ?? []) as unknown as ReportPost[])
     .filter((p) => reportMonth(p) === month)
+    .concat(((extRes.data ?? []) as ExternalPost[]).map(externalToReportPost))
     .sort((a, b) => (a.scheduled_date ?? a.sent_at).localeCompare(b.scheduled_date ?? b.sent_at));
 
   return (
