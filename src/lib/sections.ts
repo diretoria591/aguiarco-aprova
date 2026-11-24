@@ -6,6 +6,7 @@ export const SECTIONS = [
   { key: 'agendamento', label: 'Agendamento', href: '/dashboard/agendamento' },
   { key: 'roteiros', label: 'Roteiros', href: '/dashboard/roteiros' },
   { key: 'cobrar', label: 'Cobrar hoje', href: '/dashboard/cobrar' },
+  { key: 'entregas', label: 'Entregas', href: '/dashboard/entregas' },
   { key: 'numeros', label: 'Números', href: '/dashboard/numeros' },
   { key: 'relatorios', label: 'Relatórios', href: '/dashboard/relatorios' },
   { key: 'lembretes', label: 'Lembretes', href: '/dashboard/lembretes' },

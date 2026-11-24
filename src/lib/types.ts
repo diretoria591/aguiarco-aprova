@@ -22,6 +22,17 @@ export interface Client {
   client_type?: 'recorrente' | 'pontual';
   /** Estrategista responsável (pautas, relatórios e lembretes vão para ela). */
   strategist_id?: string | null;
+  /** Contrato e termômetro de entregas. */
+  contract_start?: string | null;
+  contract_end?: string | null;
+  contract_value?: string;
+  contract_doc_url?: string;
+  meta_posts_min?: number | null;
+  meta_posts_max?: number | null;
+  meta_videos_min?: number | null;
+  meta_obs?: string;
+  /** Quem acompanha as entregas (além da dona da conta). */
+  delivery_supervisor_id?: string | null;
   drive_url?: string;
   welcome_sent_at?: string | null;
   briefing?: Record<string, string | string[]>;
