@@ -65,6 +65,7 @@ const EV: Record<string, [IconName, string, (e: ActivityLog) => ReactNode]> = {
   aviso_desfeito: ['refresh', '', (e) => <>{e.actor} desfez o aviso ao cliente de <b>{e.posts?.title}</b></>],
   aviso_falhou: ['alert', 'fix', (e) => <>Falha ao avisar a equipe por {e.meta} sobre <b>{e.posts?.title}</b></>],
   aviso: ['bell', '', (e) => <>{e.actor} avisou o cliente ({e.meta})</>],
+  cobranca: ['bell', '', (e) => <>{e.actor} cobrou a aprovação ({e.meta})</>],
   cliente_criado: ['plus', '', (e) => <>{e.actor} cadastrou o cliente</>],
 };
 const CLIENT_SIDE = ['acesso', 'visualizou', 'aprovado', 'ajustes', 'reprovado', 'comentario_cliente'];
@@ -76,7 +77,7 @@ export function Timeline({ events, withClient }: { events: ActivityLog[]; withCl
       {events.map((e) => {
         const d = EV[e.type];
         // post excluído: usa o texto gravado no log
-        const text = d && (e.post_id === null && !['acesso', 'aviso', 'cliente_criado'].includes(e.type))
+        const text = d && (e.post_id === null && !['acesso', 'aviso', 'cobranca', 'cliente_criado'].includes(e.type))
           ? e.action_text
           : d ? d[2](e) : e.action_text;
         const who = CLIENT_SIDE.includes(e.type) ? (

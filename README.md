@@ -92,3 +92,24 @@ src/app/aprovar/[token]          área do cliente
 src/components                   UI compartilhada (modal, toasts, visualizador, timeline)
 src/lib                          clientes Supabase, upload, formatação, tipos
 ```
+
+## Cobrar hoje
+
+Aba **Cobrar hoje** no painel: clientes com conteúdo aguardando aprovação há mais de 2 dias, ou com publicação em até 3 dias (urgente).
+Um clique abre o WhatsApp do cliente com o lembrete pronto e registra a cobrança; o cliente sai da lista e volta em 2 dias (1 se urgente) se ainda não respondeu.
+O número ao lado da aba mostra quantos clientes estão para cobrar.
+
+## Fechamento do mês (e-mail no dia 1)
+
+Todo dia 1, às 8h (horário de Brasília), a Vercel Cron chama `/api/fechamento` e envia por e-mail as **rodadas extras do mês anterior por cliente**, para ajustar a cobrança.
+Configure na Vercel: `FECHAMENTO_EMAIL` (quem recebe), `CRON_SECRET` (senha longa) e as mesmas `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM` e `SUPABASE_SERVICE_ROLE_KEY` dos avisos.
+O agendamento está em [`vercel.json`](vercel.json).
+
+Para testar sem esperar o dia 1 (troque o domínio e a senha):
+
+```bash
+# só ver o e-mail, sem enviar
+curl -H "Authorization: Bearer SEU_CRON_SECRET" "https://SEU-DOMINIO/api/fechamento?mes=2026-11&preview=1" > fechamento.html
+# enviar de verdade
+curl -H "Authorization: Bearer SEU_CRON_SECRET" "https://SEU-DOMINIO/api/fechamento?mes=2026-11"
+```
