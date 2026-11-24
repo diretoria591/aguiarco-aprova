@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { firstName, initials, monthName } from '@/lib/format';
+import { firstName, greet, initials, monthName } from '@/lib/format';
 import { Icon } from '@/components/icon';
 import { useMe } from './me';
 import { SECTIONS } from '@/lib/sections';
@@ -19,8 +19,10 @@ const links0 = SECTIONS.map((x) => ({ key: x.key as string, href: x.href as stri
 
 export type ShellPauta = { id: string; client_id: string; name: string; ref_month: string; doc_url: string; sent_at: string };
 
-export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [] }: {
-  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[];
+export type ShellEntregas = { atrasado: string[]; atencao: string[]; acima: string[]; total: number } | null;
+
+export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null }: {
+  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas;
 }) {
   const me = useMe();
   const path = usePathname();
@@ -111,6 +113,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
             <button className="btn sm line" onClick={() => viewAs('')}>Voltar para a minha visão</button>
           </div>
         )}
+        {section !== 'entregas' && <EntregasBanner data={entregas} name={firstName(me.viewingAs?.name ?? me.name)} />}
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
         <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
@@ -171,6 +174,28 @@ function PautasBanner({ pautas, name }: { pautas: ShellPauta[]; name: string }) 
         . Revise e transforme em roteiros e demandas.
       </span>
       <button className="btn sm" disabled={busy} onClick={reviewed}><Icon name="check" />Marcar como revisadas</button>
+    </div>
+  );
+}
+
+/** Termômetro sempre à vista para quem acompanha entregas: urgente quando há cliente atrasado. */
+function EntregasBanner({ data, name }: { data: ShellEntregas; name: string }) {
+  if (!data) return null;
+  const late = data.atrasado.length, warn = data.atencao.length, over = data.acima.length;
+  const tone = late ? 'late' : warn ? '' : 'ok';
+  const list = (xs: string[]) => xs.slice(0, 4).join(', ') + (xs.length > 4 ? ` e mais ${xs.length - 4}` : '');
+  return (
+    <div className={`task-banner ent-banner ${tone}`}>
+      <span suppressHydrationWarning>
+        <b>{greet()}, {name}! </b>
+        {late ? <><b>{late} cliente{late > 1 ? 's' : ''} com entrega atrasada</b> ({list(data.atrasado)})</>
+          : warn ? <><b>{warn} cliente{warn > 1 ? 's' : ''} em atenção</b> ({list(data.atencao)})</>
+          : <>Todas as entregas dos seus {data.total} clientes estão em dia</>}
+        {late && warn ? <> e {warn} em atenção ({list(data.atencao)})</> : null}
+        {over ? <> · {over} acima do contrato</> : null}
+        {late || warn ? '. Acesse agora o termômetro.' : '.'}
+      </span>
+      <Link className="btn sm" href="/dashboard/entregas">Abrir termômetro</Link>
     </div>
   );
 }

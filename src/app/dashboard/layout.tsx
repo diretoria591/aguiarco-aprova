@@ -9,6 +9,8 @@ import { loadCobrar } from '@/lib/cobrar-server';
 import { loadMonthTasks } from '@/lib/month-tasks';
 import { currentViewer } from '@/lib/auth';
 import { loadPendingPautas } from '@/lib/pautas-pending';
+import { loadEntregas } from '@/lib/entregas-server';
+import { currentMonth } from '@/lib/format';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -47,16 +49,24 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const queueCount = count ?? 0;
   const role = view.role;
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
-  const [cobrarCount, tasks, pautas] = await Promise.all([
+  const [cobrarCount, tasks, pautas, entregas] = await Promise.all([
     view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
     loadMonthTasks(supabase, view.owner ? null : view.id),
     // pautas de sábado: lembrete na segunda para quem cuida da estratégia (aba Relatórios)
     view.sections.includes('relatorios') ? loadPendingPautas(supabase, view.owner ? null : view.id) : Promise.resolve([]),
+    // termômetro no topo para quem acompanha entregas (ex.: João); a dona vê pela aba
+    view.sections.includes('entregas') && !view.owner ? loadEntregas(supabase, view.id, currentMonth()) : Promise.resolve(null),
   ]);
+  const entregasAlert = entregas && entregas.rows.length ? {
+    atrasado: entregas.rows.filter((r) => r.status === 'atrasado').map((r) => r.name),
+    atencao: entregas.rows.filter((r) => r.status === 'atencao').map((r) => r.name),
+    acima: entregas.rows.filter((r) => r.status === 'acima').map((r) => r.name),
+    total: entregas.rows.length,
+  } : null;
 
   return (
     <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
-      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas}
+      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas} entregas={entregasAlert}
         team={team?.map((t) => ({ id: t.id, name: t.name || 'Sem nome', role: t.role || 'team' })) ?? null}>{children}</AdminShell>
     </MeProvider>
   );
