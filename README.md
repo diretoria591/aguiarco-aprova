@@ -142,3 +142,14 @@ Rode [`supabase/migrations/2026-11-25_permissoes.sql`](supabase/migrations/2026-
 - **Dona da conta** (`profiles.owner`): vê todas as abas, é a única que muda funções e permissões (o banco recusa de qualquer outra pessoa) e tem o seletor **Ver como** no topo para abrir o painel de qualquer pessoa da equipe sem senha. O que ela faz no "Ver como" fica registrado no nome dela.
 - **Demais pessoas**: veem só as abas marcadas em **Equipe → Vê** (`profiles.sections`). Páginas fora da lista redirecionam para a primeira aba liberada.
 - As permissões controlam o painel; no banco os dados continuam acessíveis para a equipe.
+
+## Onboarding de cliente novo
+
+Rode [`supabase/migrations/2026-11-25_onboarding.sql`](supabase/migrations/2026-11-25_onboarding.sql) uma vez.
+
+1. A equipe cadastra o cliente (nome, e-mail, WhatsApp).
+2. A rotina de onboarding (a cada hora, das 8h às 20h) cria a pasta do cliente no Drive (Briefing, Materiais, Relatórios), manda o e-mail de boas-vindas com o link do briefing e avisa a equipe.
+3. O cliente responde o briefing em `/briefing/<token>` (mesmo token do link de aprovação, sem senha). As perguntas ficam em [`src/lib/briefing.ts`](src/lib/briefing.ts).
+4. A rotina salva as respostas como Google Doc na pasta do cliente e manda para a equipe. Na página do cliente aparecem as etapas, a pasta, o link do briefing e as respostas.
+
+Clientes cadastrados antes do onboarding ficam como "antigo": não recebem nada, mas dá para mandar o briefing pelo botão na página deles.

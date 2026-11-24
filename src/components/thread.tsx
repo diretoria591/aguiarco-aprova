@@ -67,6 +67,8 @@ const EV: Record<string, [IconName, string, (e: ActivityLog) => ReactNode]> = {
   aviso: ['bell', '', (e) => <>{e.actor} avisou o cliente ({e.meta})</>],
   cobranca: ['bell', '', (e) => <>{e.actor} cobrou a aprovação ({e.meta})</>],
   cliente_criado: ['plus', '', (e) => <>{e.actor} cadastrou o cliente</>],
+  briefing: ['doc', 'ok', (e) => <>{e.action_text}</>],
+  onboarding: ['sparkle', '', (e) => <>{e.action_text}</>],
 };
 const CLIENT_SIDE = ['acesso', 'visualizou', 'aprovado', 'ajustes', 'reprovado', 'comentario_cliente'];
 

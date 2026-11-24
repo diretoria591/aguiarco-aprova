@@ -711,3 +711,19 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .perm-row{flex-basis:100%;display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding-top:10px;margin-top:4px;border-top:1px solid var(--line-2)}
 .perm-row button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer;color:var(--muted)}
 .perm-row button.on{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:500}
+
+/* Briefing do cliente (página pública) */
+.bf-sec{padding:20px 20px 6px;margin-bottom:16px}
+.bf-sec h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);font-weight:600;margin:0 0 14px}
+.bf-chips{display:flex;flex-wrap:wrap;gap:6px}
+.bf-chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 13px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.bf-chips button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.bf-mono .mono{width:56px;height:56px;border-radius:16px;background:var(--ink);color:var(--sand);display:grid;place-items:center;font-weight:600;font-size:18px;overflow:hidden}
+/* Onboarding na página do cliente (painel) */
+.onb{padding:16px 18px;margin-bottom:20px;display:grid;gap:10px}
+.onb-steps{display:flex;flex-wrap:wrap;gap:6px}
+.onb-steps span{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--line-2);color:var(--ink-2)}
+.onb-steps span.done{background:var(--ok-bg);color:var(--ok)}
+.onb dl{margin:0;display:grid;gap:10px}
+.onb dt{font-size:12px;font-weight:600;color:var(--ink-2)}
+.onb dd{margin:2px 0 0;white-space:pre-wrap;font-size:13.5px}
