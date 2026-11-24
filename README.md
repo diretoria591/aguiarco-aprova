@@ -113,3 +113,17 @@ curl -H "Authorization: Bearer SEU_CRON_SECRET" "https://SEU-DOMINIO/api/fechame
 # enviar de verdade
 curl -H "Authorization: Bearer SEU_CRON_SECRET" "https://SEU-DOMINIO/api/fechamento?mes=2026-11"
 ```
+
+## Relatórios mensais
+
+Aba **Relatórios**: um relatório por cliente e mês, para a reunião de desempenho. Rode [`supabase/migrations/2026-11-25_relatorios.sql`](supabase/migrations/2026-11-25_relatorios.sql) uma vez.
+
+- **Datas:** dia 1 o rascunho chega; **prazo até o dia 5** para os relatórios ficarem prontos; dia 4 sai um lembrete com o que ainda está em rascunho. A estrategista marca a reunião com cada cliente (botão **Marcar reunião**).
+- No dia 1 o rascunho do mês anterior é preparado (textos de resumo, destaques e próximos passos) e a estrategista recebe o aviso por e-mail.
+- Na página do relatório dá para editar os textos, digitar os números do Instagram (até a API da Meta entrar) e **Marcar como pronto**.
+- **Baixar PDF** abre a impressão do navegador já no formato A4: escolha "Salvar como PDF". Campos vazios não aparecem no PDF.
+- Cada post pode ser marcado como **Performou** ou **Não performou**; eles aparecem nas seções próprias, junto com a **Estratégia do mês**.
+- Depois de **Marcar como pronto**, a apresentação editável é gerada no Google Slides (dias úteis, 11h47 e 16h47), compartilhada com a estrategista e o link aparece no relatório. "Gerar de novo" pede uma nova versão.
+  A geração usa [`scripts/apresentacao.sql`](scripts/apresentacao.sql) e [`scripts/apresentacao.py`](scripts/apresentacao.py) (`pip install python-pptx pillow`).
+- **Posts de outras plataformas** (ex.: Aprova Job) ficam na tabela `posts_externos` ([migration](supabase/migrations/2026-11-25_posts_externos.sql)) e entram só nos relatórios e apresentações: não aparecem no link do cliente nem na fila de agendamento. Novembro/2026 foi importado da planilha do Aprova Job.
+- Nada vai para o cliente automaticamente.

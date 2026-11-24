@@ -16,6 +16,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0 }: { chil
     : path.startsWith('/dashboard/roteiros') ? 'roteiros'
     : path.startsWith('/dashboard/lembretes') ? 'lembretes'
     : path.startsWith('/dashboard/cobrar') ? 'cobrar'
+    : path.startsWith('/dashboard/relatorios') ? 'relatorios'
     : path.startsWith('/dashboard/rodadas') ? 'rodadas' : 'clientes';
   const scheduler = me.role === 'scheduler';
   const badge = queueCount > 0 ? <span className="nbadge">{queueCount}</span> : null;
@@ -38,6 +39,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0 }: { chil
             <Link href="/dashboard/agendamento" className={section === 'agendamento' ? 'on' : ''}>Agendamento{badge}</Link>
             <Link href="/dashboard/roteiros" className={section === 'roteiros' ? 'on' : ''}>Roteiros</Link>
             {!scheduler && <Link href="/dashboard/cobrar" className={section === 'cobrar' ? 'on' : ''}>Cobrar hoje{cobrarCount > 0 ? <span className="nbadge">{cobrarCount}</span> : null}</Link>}
+            {!scheduler && <Link href="/dashboard/relatorios" className={section === 'relatorios' ? 'on' : ''}>Relatórios</Link>}
             {!scheduler && <Link href="/dashboard/lembretes" className={section === 'lembretes' ? 'on' : ''}>Lembretes</Link>}
             {!scheduler && <Link href="/dashboard/rodadas" className={section === 'rodadas' ? 'on' : ''}>Rodadas extras</Link>}
             {!scheduler && <Link href="/dashboard/equipe" className={section === 'equipe' ? 'on' : ''}>Equipe</Link>}
