@@ -33,11 +33,12 @@ export default async function EntregasPage({ searchParams }: { searchParams: Pro
     .neq('client_type', 'pontual');
   // a dona vê todos; os outros, só os clientes que acompanham
   if (!viewer.view.owner) q = q.eq('delivery_supervisor_id', viewer.view.id);
-  const [clientsRes, postsRes, extRes, profRes] = await Promise.all([
+  const [clientsRes, postsRes, extRes, profRes, manRes] = await Promise.all([
     q.order('name'),
     supabase.from('posts').select('client_id,status,format,scheduled_date,sent_at'),
     supabase.from('posts_externos').select('client_id,format').gte('publish_date', from).lt('publish_date', to),
     supabase.from('profiles').select('id,name'),
+    supabase.from('entregas_manuais').select('client_id,quantidade').eq('ref_month', month),
   ]);
   const error = clientsRes.error ?? postsRes.error ?? extRes.error;
   const names = new Map(((profRes.data ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
@@ -50,6 +51,8 @@ export default async function EntregasPage({ searchParams }: { searchParams: Pro
     if (p.status === 'approved') { a.delivered++; if (VIDEO.has(p.format)) a.videos++; }
     else if (p.status === 'pending' || p.status === 'adjustment_requested') a.inProgress++;
   }
+  // entregas informadas à mão (sem detalhes dos posts)
+  for (const m of (manRes.data ?? []) as { client_id: string; quantidade: number }[]) add(m.client_id).delivered += m.quantidade;
   for (const e of (extRes.data ?? []) as { client_id: string; format: string }[]) {
     const a = add(e.client_id);
     a.delivered++;
