@@ -33,6 +33,7 @@ begin
   c := public._portal_client(p_token);
   return json_build_object(
     'name', c.name, 'contact_name', c.contact_name, 'logo_url', c.logo_url,
+    'email', c.email, 'whatsapp', c.whatsapp, 'instagram', coalesce(c.instagram, ''),
     'answers', c.briefing, 'answered_at', c.briefing_answered_at);
 end;
 $$;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { fmtDate, firstName } from '@/lib/format';
-import { BRIEFING, answerText, type BriefingAnswers } from '@/lib/briefing';
+import { BRIEFING, answerFor, type BriefingAnswers } from '@/lib/briefing';
 import type { Client } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { copyText, useUI } from '@/components/ui';
@@ -79,9 +79,16 @@ export function OnboardingCard({ client }: { client: Client }) {
           {open && (
             <dl>
               <dd className="small muted" style={{ margin: 0 }} suppressHydrationWarning>Respondido {fmtDate(client.briefing_answered_at)}</dd>
-              {BRIEFING.flatMap((s) => s.questions).filter((q) => answerText(answers[q.id])).map((q) => (
-                <div key={q.id}><dt>{q.label}</dt><dd>{answerText(answers[q.id])}</dd></div>
-              ))}
+              {BRIEFING.map((sec) => {
+                const qs = sec.questions.filter((q) => answerFor(answers, q));
+                if (!qs.length) return null;
+                return (
+                  <div key={sec.title} style={{ display: 'grid', gap: 8 }}>
+                    <dt style={{ fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--brown)' }}>{sec.title}</dt>
+                    {qs.map((q) => <div key={q.id}><dt>{q.label}</dt><dd>{answerFor(answers, q)}</dd></div>)}
+                  </div>
+                );
+              })}
             </dl>
           )}
         </>
