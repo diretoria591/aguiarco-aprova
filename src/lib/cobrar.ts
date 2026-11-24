@@ -93,6 +93,6 @@ export function reminderMessage(item: CobrarItem, origin?: string): string {
     return `• ${p.title}${when}`;
   }).join('\n');
   const head = n === 1 ? 'tem 1 conteúdo esperando a sua aprovação' : `tem ${n} conteúdos esperando a sua aprovação`;
-  const pressa = item.urgent ? '\n\nAlguns já estão com a data de publicação chegando, então se conseguir dar uma olhadinha hoje, ajuda muito a gente a manter tudo no prazo.' : '';
+  const pressa = item.urgent ? `\n\n${n === 1 ? 'A data de publicação já está chegando' : 'Alguns já estão com a data de publicação chegando'}, então se conseguir dar uma olhadinha hoje, ajuda muito a gente a manter tudo no prazo.` : '';
   return `Oi, ${nome}! Tudo bem? 🤍\n\nPassando para lembrar que ${head}:\n\n${lista}${n > 6 ? `\n• e mais ${n - 6}` : ''}${pressa}\n\nÉ só abrir o link para ver, aprovar ou pedir algum ajuste:\n${portalLink(c.access_token, origin)}\n\nQualquer dúvida, estamos por aqui!\nEquipe Aguiar&Co`;
 }
