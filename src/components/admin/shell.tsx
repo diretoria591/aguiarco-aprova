@@ -111,7 +111,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
           </div>
         )}
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
-        <TaskBanner tasks={tasks} numbers={can('numeros') && !can('relatorios')} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
+        <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
       </div>
     </div>
@@ -122,8 +122,8 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
 function TaskBanner({ tasks, numbers, reports, name, section }: { tasks: ShellTasks; numbers: boolean; reports: boolean; name: string; section: string }) {
   if (!tasks) return null;
   const mes = monthName(tasks.month);
-  if (numbers || section === 'numeros') {
-    if (tasks.day > 3 || tasks.numbersMissing === 0 || section === 'numeros') return null;
+  if ((numbers && tasks.day <= 3 && tasks.numbersMissing > 0) || section === 'numeros') {
+    if (section === 'numeros') return null;
     return (
       <div className={`task-banner${tasks.day >= 2 ? ' late' : ''}`}>
         <span><b>{name}, {tasks.day === 1 ? 'hoje é dia de preencher' : 'faltam preencher'} os números do Instagram de {mes}:</b>{' '}

@@ -12,7 +12,9 @@ export const dynamic = 'force-dynamic';
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export default async function RelatoriosPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  await requireSection('relatorios');
+  const viewer = await requireSection('relatorios');
+  // cada estrategista vê só os próprios clientes; a dona da conta vê todos
+  const mine = viewer.view.owner ? null : viewer.view.id;
   const sp = await searchParams;
   const now = currentMonth();
   // padrão: mês anterior, que é o da reunião de desempenho
@@ -21,7 +23,10 @@ export default async function RelatoriosPage({ searchParams }: { searchParams: P
   const supabase = await createClient();
   const [from, to] = monthRange(month);
   const [clientsRes, postsRes, repRes, extRes] = await Promise.all([
-    supabase.from('clients').select('id,name,logo_url').neq('client_type', 'pontual').order('name'),
+    (mine
+      ? supabase.from('clients').select('id,name,logo_url').neq('client_type', 'pontual').eq('strategist_id', mine)
+      : supabase.from('clients').select('id,name,logo_url').neq('client_type', 'pontual')
+    ).order('name'),
     supabase.from('posts').select('client_id,status,scheduled_date,sent_at'),
     supabase.from('relatorios').select('client_id,status,reviewed_by,reviewed_at,updated_at').eq('ref_month', month),
     supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),

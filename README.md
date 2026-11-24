@@ -155,3 +155,7 @@ Rode [`supabase/migrations/2026-11-25_onboarding.sql`](supabase/migrations/2026-
 **Tipo de cliente** (no cadastro): *recorrente* (mensal) passa por tudo; *pontual* (vídeo ou posts avulsos) fica só com o link de aprovação e o Cobrar hoje, sem onboarding, números ou relatórios.
 
 Clientes cadastrados antes do onboarding ficam como "antigo": não recebem nada, mas dá para mandar o briefing pelo botão na página deles.
+
+## Estrategista responsável
+
+No cadastro de cliente recorrente escolhe-se a **estrategista responsável** (`clients.strategist_id`). Pautas, relatórios, lembretes e avisos de números prontos desse cliente vão para ela; em Relatórios cada estrategista vê só os próprios clientes (a dona da conta vê todos). Migration: [`2026-11-25_estrategista.sql`](supabase/migrations/2026-11-25_estrategista.sql).

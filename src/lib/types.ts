@@ -20,6 +20,8 @@ export interface Client {
   onboarding_status?: 'novo' | 'enviado' | 'respondido' | 'antigo' | 'pontual';
   /** recorrente = mensal (onboarding, números, relatórios); pontual = avulso, sem automações. */
   client_type?: 'recorrente' | 'pontual';
+  /** Estrategista responsável (pautas, relatórios e lembretes vão para ela). */
+  strategist_id?: string | null;
   drive_url?: string;
   welcome_sent_at?: string | null;
   briefing?: Record<string, string | string[]>;

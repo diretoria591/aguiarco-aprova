@@ -49,9 +49,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
   const [cobrarCount, tasks, pautas] = await Promise.all([
     view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
-    loadMonthTasks(supabase),
+    loadMonthTasks(supabase, view.owner ? null : view.id),
     // pautas de sábado: lembrete na segunda para quem cuida da estratégia (aba Relatórios)
-    view.sections.includes('relatorios') ? loadPendingPautas(supabase) : Promise.resolve([]),
+    view.sections.includes('relatorios') ? loadPendingPautas(supabase, view.owner ? null : view.id) : Promise.resolve([]),
   ]);
 
   return (

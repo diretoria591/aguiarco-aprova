@@ -17,17 +17,18 @@ export type MonthTasks = {
 };
 
 /** Tarefas do começo do mês (números da social media, relatórios da estrategista). Fora da janela: null. */
-export async function loadMonthTasks(supabase: SupabaseClient): Promise<MonthTasks | null> {
+export async function loadMonthTasks(supabase: SupabaseClient, strategistId: string | null = null): Promise<MonthTasks | null> {
   const day = Number(todayYMD().slice(8, 10));
   if (day > TASKS_UNTIL_DAY) return null;
   const month = addMonths(currentMonth(), -1);
   const [from, to] = monthRange(month);
-  const [postsRes, extRes, repRes, pontRes] = await Promise.all([
+  const [postsRes, extRes, repRes, pontRes, stratRes] = await Promise.all([
     supabase.from('posts').select('client_id,scheduled_date,sent_at').eq('status', 'approved'),
     supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),
     supabase.from('relatorios').select('client_id,status,metrics_at').eq('ref_month', month),
     // clientes pontuais (avulsos) não têm números nem relatório mensal
     supabase.from('clients').select('id').eq('client_type', 'pontual'),
+    supabase.from('clients').select('id,strategist_id'),
   ]);
   if (postsRes.error || extRes.error || repRes.error) return null;
   const withContent = new Set<string>();
@@ -39,10 +40,13 @@ export async function loadMonthTasks(supabase: SupabaseClient): Promise<MonthTas
     .map((r) => [r.client_id, r]));
   for (const c of (pontRes.data ?? []) as { id: string }[]) withContent.delete(c.id);
   const ids = [...withContent];
+  // relatórios: só os clientes da estrategista (sem estrategista = todos, para a dona)
+  const owners = new Map(((stratRes.data ?? []) as { id: string; strategist_id: string | null }[]).map((c) => [c.id, c.strategist_id]));
+  const mine = strategistId ? ids.filter((id) => owners.get(id) === strategistId) : ids;
   return {
     day, month,
     numbersMissing: ids.filter((id) => !reps.get(id)?.metrics_at).length,
-    reportsTotal: ids.length,
-    reportsReady: ids.filter((id) => reps.get(id)?.status === 'pronto').length,
+    reportsTotal: mine.length,
+    reportsReady: mine.filter((id) => reps.get(id)?.status === 'pronto').length,
   };
 }
