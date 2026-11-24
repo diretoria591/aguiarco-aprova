@@ -56,7 +56,7 @@ export default async function RelatoriosPage({ searchParams }: { searchParams: P
           <>
             <p className="muted small" style={{ margin: 0 }}>
               {withContent} cliente{withContent === 1 ? '' : 's'} com conteúdo em {monthLabel(month)} · {ready} relatório{ready === 1 ? '' : 's'} pronto{ready === 1 ? '' : 's'}.
-              {' '}O rascunho é gerado no dia 1; revise os textos, preencha os números do Instagram, marque como pronto e baixe o PDF.
+              {' '}O rascunho chega no dia 1. <b>Prazo: relatórios prontos até o dia 5</b> e reunião marcada com cada cliente para apresentar o planejamento estratégico.
             </p>
             {clients.map((c) => (
               <Link key={c.id} href={`/dashboard/relatorios/${c.id}?mes=${month}`} className="card"

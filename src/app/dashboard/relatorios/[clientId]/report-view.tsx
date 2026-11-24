@@ -89,6 +89,7 @@ export function ReportView({ client, month, posts, report, error }: {
           ? <span className="status aprovado">Pronto{report?.reviewed_by ? ` · ${report.reviewed_by}` : ''}</span>
           : <span className="status pendente">Rascunho</span>}
         <span style={{ flex: 1 }} />
+        <a className="btn line sm" target="_blank" rel="noopener noreferrer" href={meetingLink(client.name, label)}><Icon name="calendar" />Marcar reunião</a>
         <button className="btn line sm" disabled={busy || !dirty} onClick={() => save()}>{dirty ? 'Salvar' : 'Salvo'}</button>
         {status === 'pronto'
           ? <button className="btn line sm" disabled={busy} onClick={() => save('rascunho')}>Voltar para rascunho</button>
@@ -264,4 +265,14 @@ function SlidesNote({ report, status, onRedo }: { report: Relatorio | null; stat
         : 'Ao marcar como pronto, a apresentação editável (Google Slides) é gerada até o fim do dia e chega por e-mail.'}
     </p>
   );
+}
+
+/** Abre o Google Agenda com a reunião de planejamento já preenchida. */
+function meetingLink(name: string, label: string) {
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Reunião de planejamento estratégico · ${name}`,
+    details: `Apresentação do relatório de ${label.toLowerCase()} e do planejamento estratégico do próximo mês. Aguiar&Co.`,
+  });
+  return `https://calendar.google.com/calendar/render?${q}`;
 }

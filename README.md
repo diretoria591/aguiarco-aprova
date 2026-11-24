@@ -118,6 +118,7 @@ curl -H "Authorization: Bearer SEU_CRON_SECRET" "https://SEU-DOMINIO/api/fechame
 
 Aba **Relatórios**: um relatório por cliente e mês, para a reunião de desempenho. Rode [`supabase/migrations/2026-11-25_relatorios.sql`](supabase/migrations/2026-11-25_relatorios.sql) uma vez.
 
+- **Datas:** dia 1 o rascunho chega; **prazo até o dia 5** para os relatórios ficarem prontos; dia 4 sai um lembrete com o que ainda está em rascunho. A estrategista marca a reunião com cada cliente (botão **Marcar reunião**).
 - No dia 1 o rascunho do mês anterior é preparado (textos de resumo, destaques e próximos passos) e a estrategista recebe o aviso por e-mail.
 - Na página do relatório dá para editar os textos, digitar os números do Instagram (até a API da Meta entrar) e **Marcar como pronto**.
 - **Baixar PDF** abre a impressão do navegador já no formato A4: escolha "Salvar como PDF". Campos vazios não aparecem no PDF.
