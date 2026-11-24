@@ -5,6 +5,7 @@ import { AdminShell } from '@/components/admin/shell';
 import { MeProvider } from '@/components/admin/me';
 import { ConfigWarning } from '@/components/config-warning';
 import { Wordmark } from '@/components/ui';
+import { loadCobrar } from '@/lib/cobrar-server';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -37,10 +38,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const { count } = await supabase.from('posts').select('id', { count: 'exact', head: true })
     .eq('status', 'approved').is('scheduled_at', null);
   const queueCount = count ?? 0;
+  const role = (profile.role as TeamRole) || 'team';
+  // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
+  const cobrarCount = role === 'scheduler' ? 0 : (await loadCobrar(supabase)).items.length;
 
   return (
-    <MeProvider me={{ id: profile.id, name: profile.name || user.email || 'Equipe', email: profile.email || user.email || '', role: (profile.role as TeamRole) || 'team' }}>
-      <AdminShell queueCount={queueCount}>{children}</AdminShell>
+    <MeProvider me={{ id: profile.id, name: profile.name || user.email || 'Equipe', email: profile.email || user.email || '', role }}>
+      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount}>{children}</AdminShell>
     </MeProvider>
   );
 }
