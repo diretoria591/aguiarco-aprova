@@ -153,7 +153,11 @@ export function ReportView({ client, month, posts, report, error }: {
               );
             })}
           </div>
-          <p className="small muted no-print" style={{ margin: '8px 0 0' }}>Copie os números do Insights do Instagram do cliente (período: {label}).</p>
+          <p className="small muted no-print" style={{ margin: '8px 0 0' }} suppressHydrationWarning>
+            {report?.metrics_at
+              ? `Números preenchidos por ${report.metrics_by || 'equipe'} em ${fmtDate(report.metrics_at, false)} (tela Números). Dá para ajustar aqui se precisar.`
+              : <>A Duda preenche estes números na tela <Link href={`/dashboard/numeros?mes=${month}`}>Números</Link> até o dia 3.</>}
+          </p>
         </section>
 
         <PostsBlock title="Conteúdos que performaram" posts={tops} value={texts.highlights} placeholder={PLACEHOLDER.highlights}
