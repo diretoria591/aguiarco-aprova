@@ -95,6 +95,11 @@ export function ReportView({ client, month, posts, report, error }: {
           : <button className="btn line sm" disabled={busy} onClick={() => save('pronto')}><Icon name="check" />Marcar como pronto</button>}
         <button className="btn sm" disabled={busy} onClick={pdf}><Icon name="download" />Baixar PDF</button>
       </div>
+      <SlidesNote report={report} status={status} onRedo={async () => {
+        const { error: err } = await createClient().from('relatorios').update({ slides_url: '', slides_at: null })
+          .eq('client_id', client.id).eq('ref_month', month);
+        if (err) toast(`Não foi possível pedir: ${err.message}`, 'err'); else { toast('Nova apresentação pedida'); router.refresh(); }
+      }} />
       {error && <div className="card empty no-print" style={{ marginBottom: 16 }}><p style={{ margin: 0 }}>Algo não carregou: {error}</p></div>}
       <p className="small muted no-print" style={{ margin: '0 0 16px', maxWidth: 820 }}>
         Edite os textos e os números direto na página. No PDF, campos vazios não aparecem. Para salvar o PDF, escolha
@@ -238,5 +243,25 @@ function PostsBlock({ title, posts, value, placeholder, onChange, hint }: {
       <textarea className="textarea no-print" rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       <div className="rp-text print-only">{value}</div>
     </section>
+  );
+}
+
+function SlidesNote({ report, status, onRedo }: { report: Relatorio | null; status: string; onRedo: () => void }) {
+  if (report?.slides_url) {
+    return (
+      <div className="card no-print" style={{ padding: '12px 16px', marginBottom: 16, maxWidth: 820, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Icon name="layers" />
+        <span className="small" style={{ flex: 1 }}>Apresentação editável (Google Slides) gerada a partir deste relatório.</span>
+        <a className="btn sm" href={report.slides_url} target="_blank" rel="noopener noreferrer"><Icon name="ext" />Abrir apresentação</a>
+        <button className="btn line sm" onClick={onRedo}>Gerar de novo</button>
+      </div>
+    );
+  }
+  return (
+    <p className="small muted no-print" style={{ margin: '0 0 16px', maxWidth: 820 }}>
+      {status === 'pronto'
+        ? 'Apresentação editável a caminho: ela é gerada no Google Slides até o fim do dia e chega por e-mail.'
+        : 'Ao marcar como pronto, a apresentação editável (Google Slides) é gerada até o fim do dia e chega por e-mail.'}
+    </p>
   );
 }

@@ -32,3 +32,7 @@ create policy "team full access relatorios" on public.relatorios
 alter table public.relatorios add column if not exists strategy text not null default '';
 alter table public.relatorios add column if not exists low_text text not null default '';
 alter table public.relatorios add column if not exists post_marks jsonb not null default '{}'::jsonb;
+
+-- Apresentação editável (Google Slides) gerada depois que o relatório fica pronto
+alter table public.relatorios add column if not exists slides_url text not null default '';
+alter table public.relatorios add column if not exists slides_at timestamptz;

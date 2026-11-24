@@ -18,6 +18,9 @@ export interface Relatorio {
   strategy: string;
   low_text: string;
   post_marks: Record<string, PostMark>;
+  /** Google Slides gerado a partir do relatório pronto. */
+  slides_url: string;
+  slides_at: string | null;
   metrics: Partial<Record<MetricKey, string>>;
   reviewed_by: string;
   reviewed_at: string | null;

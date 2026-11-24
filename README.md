@@ -121,4 +121,7 @@ Aba **Relatórios**: um relatório por cliente e mês, para a reunião de desemp
 - No dia 1 o rascunho do mês anterior é preparado (textos de resumo, destaques e próximos passos) e a estrategista recebe o aviso por e-mail.
 - Na página do relatório dá para editar os textos, digitar os números do Instagram (até a API da Meta entrar) e **Marcar como pronto**.
 - **Baixar PDF** abre a impressão do navegador já no formato A4: escolha "Salvar como PDF". Campos vazios não aparecem no PDF.
+- Cada post pode ser marcado como **Performou** ou **Não performou**; eles aparecem nas seções próprias, junto com a **Estratégia do mês**.
+- Depois de **Marcar como pronto**, a apresentação editável é gerada no Google Slides (dias úteis, 11h47 e 16h47), compartilhada com a estrategista e o link aparece no relatório. "Gerar de novo" pede uma nova versão.
+  A geração usa [`scripts/apresentacao.sql`](scripts/apresentacao.sql) e [`scripts/apresentacao.py`](scripts/apresentacao.py) (`pip install python-pptx pillow`).
 - Nada vai para o cliente automaticamente.
