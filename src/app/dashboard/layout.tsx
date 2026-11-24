@@ -7,6 +7,7 @@ import { ConfigWarning } from '@/components/config-warning';
 import { Wordmark } from '@/components/ui';
 import { loadCobrar } from '@/lib/cobrar-server';
 import { loadMonthTasks } from '@/lib/month-tasks';
+import { currentViewer } from '@/lib/auth';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -19,11 +20,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     return <ConfigWarning message={(e as Error).message} />;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-  if (!profile) {
+  const viewer = await currentViewer();
+  if (!viewer) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect('/login');
     return (
       <div className="invalid">
         <div>
@@ -34,21 +34,27 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </div>
     );
   }
+  const { real, view } = viewer;
+  // só a dona escolhe "Ver como": lista da equipe para o seletor
+  const team = real.owner
+    ? ((await supabase.from('profiles').select('id,name,role').order('name')).data ?? []) as { id: string; name: string; role: TeamRole | null }[]
+    : null;
 
   // quantos posts aprovados esperam agendamento (número na aba Agendamento)
   const { count } = await supabase.from('posts').select('id', { count: 'exact', head: true })
     .eq('status', 'approved').is('scheduled_at', null);
   const queueCount = count ?? 0;
-  const role = (profile.role as TeamRole) || 'team';
+  const role = view.role;
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
   const [cobrarCount, tasks] = await Promise.all([
-    role === 'scheduler' ? 0 : loadCobrar(supabase).then((r) => r.items.length),
+    view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
     loadMonthTasks(supabase),
   ]);
 
   return (
-    <MeProvider me={{ id: profile.id, name: profile.name || user.email || 'Equipe', email: profile.email || user.email || '', role }}>
-      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks}>{children}</AdminShell>
+    <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
+      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks}
+        team={team?.map((t) => ({ id: t.id, name: t.name || 'Sem nome', role: t.role || 'team' })) ?? null}>{children}</AdminShell>
     </MeProvider>
   );
 }

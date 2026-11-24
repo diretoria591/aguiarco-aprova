@@ -1,4 +1,4 @@
-import { blockScheduler } from '@/lib/auth';
+import { requireSection } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { ActivityLog, Client, Post } from '@/lib/types';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
-  await blockScheduler();
+  await requireSection('clientes');
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();

@@ -86,6 +86,10 @@ export interface Profile {
   name: string;
   email: string;
   role?: TeamRole;
+  /** Dona da conta. */
+  owner?: boolean;
+  /** Abas liberadas (null = padrão da função). */
+  sections?: string[] | null;
   created_at: string;
 }
 

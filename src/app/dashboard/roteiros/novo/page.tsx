@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { loadRoteiros } from '@/lib/roteiros-server';
+import { requireSection } from '@/lib/auth';
 import { MONTH_RE } from '@/lib/roteiros';
 import { NewForm } from './new-form';
 
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function NewRoteirosPage({
   searchParams,
 }: { searchParams: Promise<{ cliente?: string; mes?: string }> }) {
+  await requireSection('roteiros');
   const { cliente, mes } = await searchParams;
   const { clients, teams, error } = await loadRoteiros();
   return (

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { loadRoteiros } from '@/lib/roteiros-server';
+import { requireSection } from '@/lib/auth';
 import { MONTH_RE } from '@/lib/roteiros';
 import { currentMonth } from '@/lib/format';
 import { ClientArea } from './client-area';
@@ -13,6 +14,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function RoteirosClientPage({
   params, searchParams,
 }: { params: Promise<{ clientId: string }>; searchParams: Promise<{ mes?: string; enviar?: string }> }) {
+  await requireSection('roteiros');
   const { clientId } = await params;
   const { mes, enviar } = await searchParams;
   if (!UUID.test(clientId)) notFound();

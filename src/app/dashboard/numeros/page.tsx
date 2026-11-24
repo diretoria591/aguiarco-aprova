@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { requireSection } from '@/lib/auth';
 import { addMonths, currentMonth } from '@/lib/format';
 import { monthRange, reportMonth, type MetricKey } from '@/lib/relatorio';
 import { NumerosView, type NumerosRow } from './numeros-view';
@@ -12,6 +13,7 @@ type Metrics = Partial<Record<MetricKey, string>>;
 
 /** Social media preenche os números do Instagram de cada cliente; a estrategista usa no relatório. */
 export default async function NumerosPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
+  await requireSection('numeros');
   const sp = await searchParams;
   const month = sp.mes && MONTH_RE.test(sp.mes) ? sp.mes : addMonths(currentMonth(), -1);
   const prev = addMonths(month, -1);

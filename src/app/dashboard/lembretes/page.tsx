@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { blockScheduler } from '@/lib/auth';
+import { requireSection } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth, fmtDay, monthLabel } from '@/lib/format';
 
@@ -26,7 +26,7 @@ function Item({ l }: { l: Lembrete }) {
 }
 
 export default async function LembretesPage() {
-  await blockScheduler();
+  await requireSection('lembretes');
   const now = currentMonth();
   const next = addMonths(now, 1);
 

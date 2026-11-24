@@ -134,3 +134,11 @@ Aba **Relatórios**: um relatório por cliente e mês, para a reunião de desemp
 - Menu lateral à esquerda no computador; no celular abre pelo botão ☰.
 - Do dia 1 ao 10 aparece a aba **Números** (com quantos clientes faltam) e um aviso no topo, só para quem tem a tarefa:
   a social media vê "preencha hoje os números" (dias 1 a 3) e a equipe vê o andamento dos relatórios (dias 1 a 5).
+
+## Permissões por pessoa e "Ver como"
+
+Rode [`supabase/migrations/2026-11-25_permissoes.sql`](supabase/migrations/2026-11-25_permissoes.sql) uma vez.
+
+- **Dona da conta** (`profiles.owner`): vê todas as abas, é a única que muda funções e permissões (o banco recusa de qualquer outra pessoa) e tem o seletor **Ver como** no topo para abrir o painel de qualquer pessoa da equipe sem senha. O que ela faz no "Ver como" fica registrado no nome dela.
+- **Demais pessoas**: veem só as abas marcadas em **Equipe → Vê** (`profiles.sections`). Páginas fora da lista redirecionam para a primeira aba liberada.
+- As permissões controlam o painel; no banco os dados continuam acessíveis para a equipe.
