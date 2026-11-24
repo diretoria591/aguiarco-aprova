@@ -7,18 +7,20 @@ import { createClient } from '@/lib/supabase/client';
 import { TYPES } from '@/lib/constants';
 import { fmtDate, fmtDay, monthLabel } from '@/lib/format';
 import {
-  METRICS, coverOf, fmtHours, reportStats, type MetricKey, type Relatorio, type ReportPost,
+  METRICS, coverOf, fmtHours, reportStats, type MetricKey, type PostMark, type Relatorio, type ReportPost,
 } from '@/lib/relatorio';
 import { Icon } from '@/components/icon';
 import { Mono, useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
 
 type Client = { id: string; name: string; logo_url: string | null; instagram?: string; revision_limit?: number | null };
-type Texts = { summary: string; highlights: string; next_steps: string };
+type Texts = { strategy: string; summary: string; highlights: string; low_text: string; next_steps: string };
 
 const PLACEHOLDER: Record<keyof Texts, string> = {
+  strategy: 'Estratégia do mês: objetivo, linha editorial, campanhas e o que queríamos alcançar com os conteúdos.',
+  low_text: 'Conteúdos que não performaram: o que pode ter acontecido (tema, formato, horário, gancho) e o que vamos ajustar.',
   summary: 'Resumo do mês: o que foi trabalhado, temas principais, campanhas e como foi a parceria com o cliente.',
-  highlights: 'Destaques: conteúdos que mais performaram, bons retornos do público, conquistas do mês.',
+  highlights: 'Conteúdos que performaram: por que funcionaram, retorno do público, conquistas do mês.',
   next_steps: 'Próximos passos: o que vamos priorizar no mês seguinte, datas importantes, ajustes de estratégia.',
 };
 
@@ -30,8 +32,10 @@ export function ReportView({ client, month, posts, report, error }: {
   const { toast } = useUI();
   const stats = useMemo(() => reportStats(posts, client.revision_limit), [posts, client.revision_limit]);
   const [texts, setTexts] = useState<Texts>({
-    summary: report?.summary ?? '', highlights: report?.highlights ?? '', next_steps: report?.next_steps ?? '',
+    strategy: report?.strategy ?? '', summary: report?.summary ?? '', highlights: report?.highlights ?? '',
+    low_text: report?.low_text ?? '', next_steps: report?.next_steps ?? '',
   });
+  const [marks, setMarks] = useState<Record<string, PostMark>>(report?.post_marks ?? {});
   const [metrics, setMetrics] = useState<Partial<Record<MetricKey, string>>>(report?.metrics ?? {});
   const [status, setStatus] = useState(report?.status ?? 'rascunho');
   const [dirty, setDirty] = useState(false);
@@ -39,12 +43,22 @@ export function ReportView({ client, month, posts, report, error }: {
   const label = monthLabel(month);
   const shown = posts.filter((p) => p.status === 'approved');
   const filledMetrics = METRICS.filter((m) => (metrics[m.key] ?? '').trim());
+  const tops = shown.filter((p) => marks[p.id] === 'top');
+  const lows = shown.filter((p) => marks[p.id] === 'low');
+  function toggleMark(id: string, m: PostMark) {
+    setMarks((x) => {
+      const n = { ...x };
+      if (n[id] === m) delete n[id]; else n[id] = m;
+      return n;
+    });
+    setDirty(true);
+  }
 
   async function save(next?: 'rascunho' | 'pronto') {
     setBusy(true);
     const st = next ?? status;
     const row = {
-      client_id: client.id, ref_month: month, ...texts, metrics, status: st, updated_at: new Date().toISOString(),
+      client_id: client.id, ref_month: month, ...texts, metrics, post_marks: marks, status: st, updated_at: new Date().toISOString(),
       ...(next === 'pronto' ? { reviewed_by: me.name, reviewed_at: new Date().toISOString() } : {}),
     };
     const { error: err } = await createClient().from('relatorios').upsert(row, { onConflict: 'client_id,ref_month' });
@@ -113,6 +127,8 @@ export function ReportView({ client, month, posts, report, error }: {
           </div>
         )}
 
+        <TextBlock title="Estratégia do mês" value={texts.strategy} placeholder={PLACEHOLDER.strategy} onChange={setText('strategy')} />
+
         <TextBlock title="Resumo do mês" value={texts.summary} placeholder={PLACEHOLDER.summary} onChange={setText('summary')} />
 
         <section className={`rp-sec${filledMetrics.length ? '' : ' print-hide'}`}>
@@ -133,7 +149,11 @@ export function ReportView({ client, month, posts, report, error }: {
           <p className="small muted no-print" style={{ margin: '8px 0 0' }}>Copie os números do Insights do Instagram do cliente (período: {label}).</p>
         </section>
 
-        <TextBlock title="Destaques" value={texts.highlights} placeholder={PLACEHOLDER.highlights} onChange={setText('highlights')} />
+        <PostsBlock title="Conteúdos que performaram" posts={tops} value={texts.highlights} placeholder={PLACEHOLDER.highlights}
+          onChange={setText('highlights')} hint="Marque os posts com “Performou” na lista de conteúdos abaixo." />
+
+        <PostsBlock title="Conteúdos que não performaram" posts={lows} value={texts.low_text} placeholder={PLACEHOLDER.low_text}
+          onChange={setText('low_text')} hint="Marque os posts com “Não performou” na lista de conteúdos abaixo." />
 
         <section className="rp-sec">
           <h2>Conteúdos do mês</h2>
@@ -153,6 +173,10 @@ export function ReportView({ client, month, posts, report, error }: {
                     </div>
                     <b>{p.title}</b>
                     {p.caption && <p>{p.caption}</p>}
+                    <div className="rp-marks no-print">
+                      <button type="button" className={marks[p.id] === 'top' ? 'on top' : ''} onClick={() => toggleMark(p.id, 'top')}>Performou</button>
+                      <button type="button" className={marks[p.id] === 'low' ? 'on low' : ''} onClick={() => toggleMark(p.id, 'low')}>Não performou</button>
+                    </div>
                   </div>
                 );
               })}
@@ -179,6 +203,38 @@ function TextBlock({ title, value, placeholder, onChange }: {
   return (
     <section className={`rp-sec${value.trim() ? '' : ' print-hide'}`}>
       <h2>{title}</h2>
+      <textarea className="textarea no-print" rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <div className="rp-text print-only">{value}</div>
+    </section>
+  );
+}
+
+function PostsBlock({ title, posts, value, placeholder, onChange, hint }: {
+  title: string; posts: ReportPost[]; value: string; placeholder: string; onChange: (v: string) => void; hint: string;
+}) {
+  const rows = Math.max(3, value.split('\n').length + Math.ceil(value.length / 90));
+  return (
+    <section className={`rp-sec${value.trim() || posts.length ? '' : ' print-hide'}`}>
+      <h2>{title}</h2>
+      {posts.length > 0 && (
+        <div className="rp-mini">
+          {posts.map((p) => {
+            const cover = coverOf(p);
+            const t = TYPES[p.format];
+            return (
+              <div key={p.id} className="rp-mini-item">
+                <div className="rp-thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {cover ? <img src={cover} alt="" loading="eager" /> : t && <Icon name={t.icon} />}
+                </div>
+                <div className="rp-meta" suppressHydrationWarning>{t?.label ?? p.format}{p.scheduled_date ? ` · ${fmtDay(p.scheduled_date)}` : ''}</div>
+                <b>{p.title}</b>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {!posts.length && <p className="small muted no-print" style={{ margin: '0 0 8px' }}>{hint}</p>}
       <textarea className="textarea no-print" rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       <div className="rp-text print-only">{value}</div>
     </section>

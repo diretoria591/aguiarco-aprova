@@ -4,6 +4,8 @@ import { DEFAULT_REVISION_LIMIT, roundMap } from './rounds';
 import type { Comment, PostFormat, PostStatus } from './types';
 
 export type RelatorioStatus = 'rascunho' | 'pronto';
+/** Marcação da estrategista: performou bem ou não performou. */
+export type PostMark = 'top' | 'low';
 
 export interface Relatorio {
   id: string;
@@ -13,6 +15,9 @@ export interface Relatorio {
   summary: string;
   highlights: string;
   next_steps: string;
+  strategy: string;
+  low_text: string;
+  post_marks: Record<string, PostMark>;
   metrics: Partial<Record<MetricKey, string>>;
   reviewed_by: string;
   reviewed_at: string | null;

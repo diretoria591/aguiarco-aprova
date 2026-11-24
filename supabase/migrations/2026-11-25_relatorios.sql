@@ -26,3 +26,9 @@ alter table public.relatorios enable row level security;
 drop policy if exists "team full access relatorios" on public.relatorios;
 create policy "team full access relatorios" on public.relatorios
   for all to authenticated using (public.is_team()) with check (public.is_team());
+
+-- Estratégia do mês, análise dos conteúdos que não performaram e marcação por post
+-- (post_marks: { "<post_id>": "top" | "low" })
+alter table public.relatorios add column if not exists strategy text not null default '';
+alter table public.relatorios add column if not exists low_text text not null default '';
+alter table public.relatorios add column if not exists post_marks jsonb not null default '{}'::jsonb;
