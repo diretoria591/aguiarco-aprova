@@ -596,3 +596,9 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 
 .rt-send{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid var(--sand);margin-bottom:16px}
 .rt-send.hot{background:#dcebdd;border-color:#9cc7a2}
+
+/* Mockup de agendamento (Duda) */
+.selbox{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.selbox input{width:18px;height:18px;accent-color:var(--ink)}
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 28px;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(44,44,44,.08);font-size:14px}
+@media (max-width:760px){ .mockup-result{grid-template-columns:1fr !important} .selbar{padding:12px 16px} }

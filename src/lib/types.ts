@@ -57,6 +57,7 @@ export interface Post {
   approved_at?: string | null;
   scheduled_at?: string | null;
   scheduled_by?: string | null;
+  publish_at?: string | null;
   client_notified_at?: string | null;
   client_notified_by?: string | null;
   schedule_note?: string | null;
