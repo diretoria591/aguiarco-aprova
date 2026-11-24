@@ -16,6 +16,7 @@ import { DEFAULT_REVISION_LIMIT } from '@/lib/rounds';
 import { ClientForm, errMsg } from '@/components/admin/client-form';
 import { UploadForm } from '@/components/admin/upload-form';
 import { LiveRefresh } from '@/components/admin/live-refresh';
+import { OnboardingCard } from '@/components/admin/onboarding-card';
 import { useMe } from '@/components/admin/me';
 
 type Filter = 'todos' | PostStatus;
@@ -86,6 +87,8 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
           <button className="btn" onClick={() => setUpload({})}><Icon name="upload" />Enviar material</button>
         </div>
       </div>
+
+      <OnboardingCard client={client} />
 
       <div className="layout">
         <section>

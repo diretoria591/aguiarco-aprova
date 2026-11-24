@@ -88,7 +88,7 @@ function Row({ item }: { item: CobrarItem }) {
   }
 
   return (
-    <section className="card" style={{ padding: '16px 18px', display: 'grid', gap: 12 }}>
+    <section className="card numeros" style={{ padding: '16px 18px', display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <Mono name={c.name} logo={c.logo_url} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -99,7 +99,7 @@ function Row({ item }: { item: CobrarItem }) {
             {item.lastContact ? `última cobrança/aviso ${fmtAgo(item.lastContact.created_at)}` : 'sem cobrança recente'}
           </div>
         </div>
-        {item.urgent && <span className="status ajustes"><Icon name="alert" />Urgente</span>}
+        {item.urgent && <span className="status atraso">Urgente</span>}
       </div>
 
       <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
@@ -107,12 +107,12 @@ function Row({ item }: { item: CobrarItem }) {
           <li key={p.id} className="small">
             <b style={{ fontWeight: 500 }}>{p.title}</b>
             <span className="muted" suppressHydrationWarning>
-              {' · enviado '}{days(p.waitingDays)}
+              {' · enviado '}<span style={p.waitingDays >= 5 ? { color: 'var(--late)', fontWeight: 500 } : undefined}>{days(p.waitingDays)}</span>
               {' · '}{p.first_viewed_at ? 'cliente já viu' : 'cliente ainda não abriu'}
               {p.daysToPublish !== null ? ' · ' : ''}
             </span>
             {p.daysToPublish !== null && (
-              <span style={p.urgent ? { color: 'var(--fix)', fontWeight: 500 } : undefined} className={p.urgent ? undefined : 'muted'}>
+              <span style={p.urgent ? { color: 'var(--late)', fontWeight: 500 } : undefined} className={p.urgent ? undefined : 'muted'}>
                 {publishLabel(p.daysToPublish, p.scheduled_date)}
               </span>
             )}

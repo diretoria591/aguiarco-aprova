@@ -16,6 +16,14 @@ export interface Client {
   created_at: string;
   instagram?: string;
   segment?: ClientSegment;
+  /** Onboarding: novo → enviado → respondido (clientes de antes ficam como antigo). */
+  onboarding_status?: 'novo' | 'enviado' | 'respondido' | 'antigo';
+  drive_url?: string;
+  welcome_sent_at?: string | null;
+  briefing?: Record<string, string | string[]>;
+  briefing_answered_at?: string | null;
+  briefing_doc_url?: string;
+  briefing_shared_at?: string | null;
 }
 
 export interface PostMedia {
