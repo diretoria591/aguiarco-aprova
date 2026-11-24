@@ -122,7 +122,7 @@ function TaskBanner({ tasks, numbers, reports, name, section }: { tasks: ShellTa
   if (numbers || section === 'numeros') {
     if (tasks.day > 3 || tasks.numbersMissing === 0 || section === 'numeros') return null;
     return (
-      <div className="task-banner">
+      <div className={`task-banner${tasks.day >= 2 ? ' late' : ''}`}>
         <span><b>{name}, {tasks.day === 1 ? 'hoje é dia de preencher' : 'faltam preencher'} os números do Instagram de {mes}:</b>{' '}
           {tasks.numbersMissing} cliente{tasks.numbersMissing > 1 ? 's' : ''}. A Renata precisa deles para o relatório.</span>
         <Link className="btn sm" href={`/dashboard/numeros?mes=${tasks.month}`}>Preencher agora</Link>
@@ -131,7 +131,7 @@ function TaskBanner({ tasks, numbers, reports, name, section }: { tasks: ShellTa
   }
   if (!reports || tasks.day > 5 || tasks.reportsTotal === 0 || tasks.reportsReady >= tasks.reportsTotal || section === 'relatorios') return null;
   return (
-    <div className="task-banner">
+    <div className={`task-banner${tasks.day >= 4 ? ' late' : ''}`}>
       <span><b>Relatórios de {mes}: {tasks.reportsReady} de {tasks.reportsTotal} prontos</b> · prazo dia 5
         {tasks.numbersMissing ? ` · números da Duda: faltam ${tasks.numbersMissing}` : ' · números da Duda completos'}.
         {' '}Marque a reunião com cada cliente.</span>

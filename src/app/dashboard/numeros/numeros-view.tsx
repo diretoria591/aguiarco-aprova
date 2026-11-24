@@ -92,7 +92,7 @@ function Row({ row, month }: { row: NumerosRow; month: string }) {
         {row.ready ? <span className="status aprovado">Relatório pronto</span>
           : n === METRICS.length ? <span className="status aprovado"><Icon name="check" />Completo</span>
           : n ? <span className="status pendente">{n}/{METRICS.length}</span>
-          : <span className="muted small">Não preenchido</span>}
+          : <span className="status atraso">Não preenchido</span>}
         <button className="btn sm" disabled={busy || !dirty} onClick={save}>{dirty ? 'Salvar' : 'Salvo'}</button>
       </div>
       <div className="rp-metrics">
