@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { blockScheduler } from '@/lib/auth';
+import { requireSection } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth } from '@/lib/format';
 import {
@@ -17,7 +17,7 @@ const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 export default async function RelatorioPage({ params, searchParams }: {
   params: Promise<{ clientId: string }>; searchParams: Promise<{ mes?: string }>;
 }) {
-  await blockScheduler();
+  await requireSection('relatorios');
   const { clientId } = await params;
   const sp = await searchParams;
   const month = sp.mes && MONTH_RE.test(sp.mes) ? sp.mes : addMonths(currentMonth(), -1);

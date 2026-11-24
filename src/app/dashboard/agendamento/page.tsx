@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { requireSection } from '@/lib/auth';
 import type { Client, Post, Profile } from '@/lib/types';
 import { AgendaView, type AgendaPost } from './agenda-view';
 
@@ -10,6 +11,7 @@ export const dynamic = 'force-dynamic';
 const DONE_DAYS = 30;
 
 export default async function AgendamentoPage() {
+  await requireSection('agendamento');
   const supabase = await createClient();
   const since = new Date(Date.now() - DONE_DAYS * 86400e3).toISOString();
 

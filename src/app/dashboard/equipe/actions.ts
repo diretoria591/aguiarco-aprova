@@ -1,25 +1,22 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireOwner } from '@/lib/auth';
 
 type Result = { ok: true } | { ok: false; error: string };
 
 const NO_KEY =
   'Para adicionar ou remover pessoas pelo painel, configure SUPABASE_SERVICE_ROLE_KEY nas variáveis do servidor (ou use Authentication → Users no Supabase).';
 
+/** Só a dona da conta gerencia a equipe. */
 async function requireTeam() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-  // quem só agenda não gerencia a equipe
-  if (!data || (data as { role?: string }).role === 'scheduler') return null;
-  return user;
+  const v = await requireOwner();
+  return v ? { id: v.real.id } : null;
 }
 
 export async function addMember(input: { name: string; email: string; password: string }): Promise<Result> {
-  if (!(await requireTeam())) return { ok: false, error: 'Sessão expirada. Entre novamente.' };
+  if (!(await requireTeam())) return { ok: false, error: 'Só a dona da conta gerencia a equipe.' };
   const name = String(input.name || '').trim();
   const email = String(input.email || '').trim().toLowerCase();
   const password = String(input.password || '');
@@ -35,7 +32,7 @@ export async function addMember(input: { name: string; email: string; password: 
 
 export async function removeMember(id: string): Promise<Result> {
   const me = await requireTeam();
-  if (!me) return { ok: false, error: 'Sessão expirada. Entre novamente.' };
+  if (!me) return { ok: false, error: 'Só a dona da conta gerencia a equipe.' };
   if (me.id === id) return { ok: false, error: 'Você não pode remover o próprio acesso.' };
   const admin = createAdminClient();
   if (!admin) return { ok: false, error: NO_KEY };

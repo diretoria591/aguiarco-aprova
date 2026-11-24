@@ -3,7 +3,15 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { TeamRole } from '@/lib/types';
 
-export type Me = { id: string; name: string; email: string; role: TeamRole };
+/** id/name/email: quem está logado (as ações ficam no nome dessa pessoa). role: de quem é a visão. */
+export type Me = {
+  id: string; name: string; email: string; role: TeamRole;
+  /** Dona da conta (vê tudo, usa "Ver como", muda permissões). */
+  owner?: boolean;
+  /** Abas que a visão atual libera. */
+  sections?: string[];
+  viewingAs?: { id: string; name: string };
+};
 const MeCtx = createContext<Me | null>(null);
 
 export function MeProvider({ me, children }: { me: Me; children: ReactNode }) {

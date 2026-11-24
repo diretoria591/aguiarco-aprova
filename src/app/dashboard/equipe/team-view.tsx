@@ -11,6 +11,7 @@ import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
 import { addMember, removeMember } from './actions';
+import { SECTIONS, allowedSections } from '@/lib/sections';
 
 export function TeamView({ team, canManage }: { team: Profile[]; canManage: boolean }) {
   const me = useMe();
@@ -19,7 +20,15 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
   const [addOpen, setAddOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
 
-  const isAdmin = me.role === 'admin';
+  const isAdmin = !!me.owner;
+
+  async function toggleSection(u: Profile, key: string) {
+    const cur: string[] = allowedSections({ owner: u.owner, sections: u.sections, role: u.role ?? 'team' });
+    const next = cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key];
+    const { error } = await createClient().from('profiles').update({ sections: next }).eq('id', u.id);
+    if (error) return toast('Não foi possível mudar as permissões.', 'err');
+    router.refresh();
+  }
   async function setRole(u: Profile, role: TeamRole) {
     if ((u.role ?? 'team') === role) return;
     const { error } = await createClient().from('profiles').update({ role }).eq('id', u.id);
@@ -52,7 +61,8 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
                 <div style={{ fontWeight: 500 }}>{u.name}{u.id === me.id && <> <span className="muted small">(você)</span></>}</div>
                 <div className="small muted">{u.email}</div>
               </div>
-              {isAdmin && u.id !== me.id ? (
+              {u.owner ? <span className="role-tag">Dona da conta · vê tudo</span>
+                : isAdmin && u.id !== me.id ? (
                 <div className="rolepick" role="group" aria-label={`Função de ${u.name}`}>
                   {(Object.keys(ROLE_LABEL) as TeamRole[]).map((r) => (
                     <button key={r} className={(u.role ?? 'team') === r ? 'on' : ''} onClick={() => setRole(u, r)}>{ROLE_LABEL[r]}</button>
@@ -64,6 +74,15 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
               {u.id === me.id
                 ? <button className="btn sm line" onClick={() => setPwOpen(true)}><Icon name="key" />Trocar senha</button>
                 : <button className="btn sm danger" onClick={() => del(u)}>Remover</button>}
+              {isAdmin && !u.owner && (
+                <div className="perm-row" role="group" aria-label={`O que ${u.name} vê`}>
+                  <span className="small muted">Vê:</span>
+                  {SECTIONS.filter((x) => x.key !== 'equipe').map((x) => {
+                    const on = allowedSections({ owner: u.owner, sections: u.sections, role: u.role ?? 'team' }).includes(x.key);
+                    return <button key={x.key} className={on ? 'on' : ''} onClick={() => toggleSection(u, x.key)} aria-pressed={on}>{x.label}</button>;
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </section>
@@ -71,10 +90,10 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
           <div className="card">
             <h3>Como funciona</h3>
             <p className="small muted" style={{ margin: 0 }}>
-              Todas as pessoas da equipe veem todos os clientes, enviam materiais e respondem comentários. Clientes não precisam de senha: cada um acessa pelo próprio link.
+              Cada pessoa vê só as abas marcadas em “Vê”. A dona da conta vê tudo, é a única que muda permissões e pode usar o “Ver como” (no topo) para ver o painel de qualquer pessoa sem precisar de senha. Clientes não precisam de senha: cada um acessa pelo próprio link.
             </p>
             <p className="small muted" style={{ margin: '10px 0 0' }}>
-              <b style={{ color: 'var(--ink)', fontWeight: 500 }}>Agendamento</b>: vê só a aba Agendamento (marca como agendado e avisa o cliente). Só o admin muda as funções.
+              <b style={{ color: 'var(--ink)', fontWeight: 500 }}>Agendamento</b>: marca como agendado e avisa o cliente. Só a dona da conta muda funções e permissões.
             </p>
             {!canManage && (
               <p className="small muted" style={{ margin: '10px 0 0' }}>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { blockScheduler } from '@/lib/auth';
+import { requireSection } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth, fmtDate, monthLabel } from '@/lib/format';
 import { monthRange, reportMonth } from '@/lib/relatorio';
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export default async function RelatoriosPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  await blockScheduler();
+  await requireSection('relatorios');
   const sp = await searchParams;
   const now = currentMonth();
   // padrão: mês anterior, que é o da reunião de desempenho

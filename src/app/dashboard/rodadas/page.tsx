@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { blockScheduler } from '@/lib/auth';
+import { requireSection } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth, fmtDate, monthLabel } from '@/lib/format';
 import { loadExtras } from '@/lib/rodadas-extras';
@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Rodadas extras' };
 export const dynamic = 'force-dynamic';
 
 export default async function RodadasPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  await blockScheduler();
+  await requireSection('rodadas');
   const sp = await searchParams;
   const now = currentMonth();
   const month = sp.mes && /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.mes) ? sp.mes : now;
