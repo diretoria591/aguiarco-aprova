@@ -21,7 +21,7 @@ export default async function RelatoriosPage({ searchParams }: { searchParams: P
   const supabase = await createClient();
   const [from, to] = monthRange(month);
   const [clientsRes, postsRes, repRes, extRes] = await Promise.all([
-    supabase.from('clients').select('id,name,logo_url').order('name'),
+    supabase.from('clients').select('id,name,logo_url').neq('client_type', 'pontual').order('name'),
     supabase.from('posts').select('client_id,status,scheduled_date,sent_at'),
     supabase.from('relatorios').select('client_id,status,reviewed_by,reviewed_at,updated_at').eq('ref_month', month),
     supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),

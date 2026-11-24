@@ -17,7 +17,9 @@ export interface Client {
   instagram?: string;
   segment?: ClientSegment;
   /** Onboarding: novo → enviado → respondido (clientes de antes ficam como antigo). */
-  onboarding_status?: 'novo' | 'enviado' | 'respondido' | 'antigo';
+  onboarding_status?: 'novo' | 'enviado' | 'respondido' | 'antigo' | 'pontual';
+  /** recorrente = mensal (onboarding, números, relatórios); pontual = avulso, sem automações. */
+  client_type?: 'recorrente' | 'pontual';
   drive_url?: string;
   welcome_sent_at?: string | null;
   briefing?: Record<string, string | string[]>;

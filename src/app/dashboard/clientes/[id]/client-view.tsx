@@ -73,7 +73,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
       <div className="chead">
         <Mono name={client.name} logo={client.logo_url} />
         <div>
-          <h1><b>{client.name}</b></h1>
+          <h1><b>{client.name}</b>{client.client_type === 'pontual' && <span className="role-tag" style={{ verticalAlign: 'middle' }}>Pontual</span>}</h1>
           <div className="sub">
             {client.contact_name && <span>{client.contact_name}</span>}
             <span suppressHydrationWarning>

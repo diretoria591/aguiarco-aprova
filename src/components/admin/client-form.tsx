@@ -30,6 +30,8 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<Client | null>(null);
   const [name, setName] = useState(client?.name ?? '');
+  // novo cliente: escolha obrigatória; quem já existe é recorrente até alguém mudar
+  const [clientType, setClientType] = useState<'' | 'recorrente' | 'pontual'>(client ? (client.client_type ?? 'recorrente') : '');
 
   function pickLogo(f: File | undefined) {
     if (!f) return;
@@ -50,8 +52,10 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
       instagram: normalizeIg(f.instagram || ''),
       segment,
       revision_limit: Math.min(20, Math.max(0, Math.round(Number(f.revision_limit)) || 0)),
+      ...(clientType ? { client_type: clientType } : {}),
     };
     if (!fields.name) return toast('Dê um nome para o cliente.', 'err');
+    if (!clientType) return toast('Escolha se o cliente é recorrente ou pontual.', 'err');
     setBusy(true);
     const supabase = createClient();
     try {
@@ -201,6 +205,20 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
         <div className="field">
           <label>Nome do cliente / marca</label>
           <input className="input" name="name" required defaultValue={client?.name ?? ''} placeholder="Ex.: Operlead" onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Tipo de cliente</label>
+          <div className="chips">
+            <button type="button" className={`chip-opt ${clientType === 'recorrente' ? 'on' : ''}`} onClick={() => setClientType('recorrente')}>Recorrente (mensal)</button>
+            <button type="button" className={`chip-opt ${clientType === 'pontual' ? 'on' : ''}`} onClick={() => setClientType('pontual')}>Pontual (avulso)</button>
+          </div>
+          <span className="hint">
+            {clientType === 'pontual'
+              ? 'Pontual: só o link de aprovação. Sem boas-vindas, briefing, pasta no Drive, números ou relatório mensal.'
+              : clientType === 'recorrente'
+                ? 'Recorrente: recebe boas-vindas e briefing, ganha pasta no Drive e entra nos números e relatórios do mês.'
+                : 'Recorrente = cliente mensal (com onboarding e relatórios). Pontual = vídeo ou posts avulsos, sem automações.'}
+          </span>
         </div>
         <div className="field">
           <label>Pessoa de contato</label>
