@@ -8,6 +8,7 @@ import { Wordmark } from '@/components/ui';
 import { loadCobrar } from '@/lib/cobrar-server';
 import { loadMonthTasks } from '@/lib/month-tasks';
 import { currentViewer } from '@/lib/auth';
+import { loadPendingPautas } from '@/lib/pautas-pending';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -46,14 +47,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const queueCount = count ?? 0;
   const role = view.role;
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
-  const [cobrarCount, tasks] = await Promise.all([
+  const [cobrarCount, tasks, pautas] = await Promise.all([
     view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
     loadMonthTasks(supabase),
+    // pautas de sábado: lembrete na segunda para quem cuida da estratégia (aba Relatórios)
+    view.sections.includes('relatorios') ? loadPendingPautas(supabase) : Promise.resolve([]),
   ]);
 
   return (
     <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
-      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks}
+      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas}
         team={team?.map((t) => ({ id: t.id, name: t.name || 'Sem nome', role: t.role || 'team' })) ?? null}>{children}</AdminShell>
     </MeProvider>
   );
