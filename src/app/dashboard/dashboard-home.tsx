@@ -53,7 +53,7 @@ export function DashboardHome({ clients, recent, error }: { clients: ClientCard[
                   <Mono name={c.name} logo={c.logo_url} />
                 </div>
                 <div className="cbody">
-                  <h3>{c.name}</h3>
+                  <h3>{c.name}{c.client_type === 'pontual' && <span className="role-tag">Pontual</span>}</h3>
                   <div className="counts">
                     {c.counts.pendente > 0 && <span className="status pendente">{c.counts.pendente} aguardando</span>}
                     {c.counts.ajustes > 0 && <span className="status ajustes">{c.counts.ajustes} em ajuste</span>}

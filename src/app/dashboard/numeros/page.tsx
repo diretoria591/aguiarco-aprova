@@ -21,7 +21,7 @@ export default async function NumerosPage({ searchParams }: { searchParams: Prom
 
   const supabase = await createClient();
   const [clientsRes, postsRes, extRes, repRes] = await Promise.all([
-    supabase.from('clients').select('id,name,logo_url,instagram').order('name'),
+    supabase.from('clients').select('id,name,logo_url,instagram').neq('client_type', 'pontual').order('name'),
     supabase.from('posts').select('client_id,status,scheduled_date,sent_at'),
     supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),
     supabase.from('relatorios').select('client_id,ref_month,metrics,metrics_by,metrics_at,status').in('ref_month', [month, prev]),

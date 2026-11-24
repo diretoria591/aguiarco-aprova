@@ -69,3 +69,32 @@ $$;
 
 grant execute on function public.briefing_get(text)           to anon, authenticated;
 grant execute on function public.briefing_submit(text, jsonb) to anon, authenticated;
+
+-- Tipo de cliente: recorrente (mensal, com onboarding, números e relatórios) ou pontual (avulso, sem automações)
+alter table public.clients add column if not exists client_type text not null default 'recorrente';
+alter table public.clients drop constraint if exists clients_client_type_check;
+alter table public.clients add constraint clients_client_type_check check (client_type in ('recorrente', 'pontual'));
+
+alter table public.clients drop constraint if exists clients_onboarding_status_check;
+alter table public.clients add constraint clients_onboarding_status_check
+  check (onboarding_status in ('novo', 'enviado', 'respondido', 'antigo', 'pontual'));
+
+-- Pontual não entra no onboarding; se virar recorrente depois, entra.
+create or replace function public.client_type_onboarding()
+returns trigger language plpgsql set search_path = public
+as $$
+begin
+  if new.client_type = 'pontual' and new.onboarding_status = 'novo' then
+    new.onboarding_status := 'pontual';
+  elsif tg_op = 'UPDATE' and new.client_type = 'recorrente' and old.client_type = 'pontual'
+        and new.onboarding_status = 'pontual' then
+    new.onboarding_status := 'novo';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists clients_type_onboarding on public.clients;
+create trigger clients_type_onboarding
+  before insert or update of client_type on public.clients
+  for each row execute function public.client_type_onboarding();

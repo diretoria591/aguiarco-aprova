@@ -32,6 +32,9 @@ export function OnboardingCard({ client }: { client: Client }) {
     window.open(`https://wa.me/${n}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
   }
 
+  // pontual (avulso): sem onboarding
+  if (client.client_type === 'pontual' || status === 'pontual') return null;
+
   // cliente antigo sem briefing: só oferece o link, sem ocupar espaço
   if (status === 'antigo' && !answered) {
     return (

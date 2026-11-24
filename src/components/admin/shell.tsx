@@ -17,8 +17,10 @@ const ROLE_LABEL: Record<string, string> = { admin: 'administração', scheduler
 const VIEW_AS_COOKIE = 'aprova_ver_como';
 const links0 = SECTIONS.map((x) => ({ key: x.key as string, href: x.href as string, label: x.label as string }));
 
-export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null }: {
-  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null;
+export type ShellPauta = { id: string; client_id: string; name: string; ref_month: string; doc_url: string; sent_at: string };
+
+export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [] }: {
+  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[];
 }) {
   const me = useMe();
   const path = usePathname();
@@ -108,7 +110,8 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
             <button className="btn sm line" onClick={() => viewAs('')}>Voltar para a minha visão</button>
           </div>
         )}
-        <TaskBanner tasks={tasks} numbers={can('numeros') && !can('relatorios')} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
+        <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
+        <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
       </div>
     </div>
@@ -119,8 +122,8 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
 function TaskBanner({ tasks, numbers, reports, name, section }: { tasks: ShellTasks; numbers: boolean; reports: boolean; name: string; section: string }) {
   if (!tasks) return null;
   const mes = monthName(tasks.month);
-  if (numbers || section === 'numeros') {
-    if (tasks.day > 3 || tasks.numbersMissing === 0 || section === 'numeros') return null;
+  if ((numbers && tasks.day <= 3 && tasks.numbersMissing > 0) || section === 'numeros') {
+    if (section === 'numeros') return null;
     return (
       <div className={`task-banner${tasks.day >= 2 ? ' late' : ''}`}>
         <span><b>{name}, {tasks.day === 1 ? 'hoje é dia de preencher' : 'faltam preencher'} os números do Instagram de {mes}:</b>{' '}
@@ -136,6 +139,37 @@ function TaskBanner({ tasks, numbers, reports, name, section }: { tasks: ShellTa
         {tasks.numbersMissing ? ` · números da Duda: faltam ${tasks.numbersMissing}` : ' · números da Duda completos'}.
         {' '}Marque a reunião com cada cliente.</span>
       <Link className="btn sm" href={`/dashboard/relatorios?mes=${tasks.month}`}>Abrir relatórios</Link>
+    </div>
+  );
+}
+
+/** Segunda a sexta: pautas que chegaram no sábado e ainda não foram revisadas. */
+function PautasBanner({ pautas, name }: { pautas: ShellPauta[]; name: string }) {
+  const me = useMe();
+  const [busy, setBusy] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  if (!pautas.length || hidden) return null;
+  const mes = monthName(pautas[0].ref_month);
+  async function reviewed() {
+    setBusy(true);
+    const { error } = await createClient().from('pautas')
+      .update({ reviewed_at: new Date().toISOString(), reviewed_by: me.name })
+      .in('id', pautas.map((p) => p.id));
+    setBusy(false);
+    if (!error) setHidden(true);
+  }
+  return (
+    <div className="task-banner pautas-banner">
+      <span>
+        <b>{name}, chegaram no sábado as pautas de {mes}:</b>{' '}
+        {pautas.map((p, i) => (
+          <span key={p.id}>{i > 0 && ', '}{p.doc_url
+            ? <a href={p.doc_url} target="_blank" rel="noopener noreferrer">{p.name}</a>
+            : p.name}</span>
+        ))}
+        . Revise e transforme em roteiros e demandas.
+      </span>
+      <button className="btn sm" disabled={busy} onClick={reviewed}><Icon name="check" />Marcar como revisadas</button>
     </div>
   );
 }

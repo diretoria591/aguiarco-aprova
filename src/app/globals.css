@@ -743,3 +743,6 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .bf-nav .btn:last-child{flex:1}
 .bf-progress{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-bottom:12px}
 .bf-progress i{display:block;height:100%;background:var(--ok);border-radius:999px;transition:width .3s}
+
+.pautas-banner{border-left-color:var(--ok)}
+.pautas-banner a{color:var(--ink);font-weight:600}

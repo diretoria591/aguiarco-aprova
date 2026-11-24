@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { removeFiles, safePath, uploadFile } from '@/lib/upload';
@@ -30,6 +30,14 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<Client | null>(null);
   const [name, setName] = useState(client?.name ?? '');
+  // novo cliente: escolha obrigatória; quem já existe é recorrente até alguém mudar
+  const [clientType, setClientType] = useState<'' | 'recorrente' | 'pontual'>(client ? (client.client_type ?? 'recorrente') : '');
+  const [strategist, setStrategist] = useState<string>(client?.strategist_id ?? '');
+  const [team, setTeam] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    createClient().from('profiles').select('id,name').order('name')
+      .then(({ data }) => setTeam(((data ?? []) as { id: string; name: string }[]).filter((p) => p.name)));
+  }, []);
 
   function pickLogo(f: File | undefined) {
     if (!f) return;
@@ -50,8 +58,12 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
       instagram: normalizeIg(f.instagram || ''),
       segment,
       revision_limit: Math.min(20, Math.max(0, Math.round(Number(f.revision_limit)) || 0)),
+      ...(clientType ? { client_type: clientType } : {}),
+      strategist_id: clientType === 'recorrente' ? (strategist || null) : (client?.strategist_id ?? null),
     };
     if (!fields.name) return toast('Dê um nome para o cliente.', 'err');
+    if (!clientType) return toast('Escolha se o cliente é recorrente ou pontual.', 'err');
+    if (clientType === 'recorrente' && !strategist) return toast('Escolha a estrategista responsável pelo cliente.', 'err');
     setBusy(true);
     const supabase = createClient();
     try {
@@ -202,6 +214,30 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
           <label>Nome do cliente / marca</label>
           <input className="input" name="name" required defaultValue={client?.name ?? ''} placeholder="Ex.: Operlead" onChange={(e) => setName(e.target.value)} />
         </div>
+        <div className="field">
+          <label>Tipo de cliente</label>
+          <div className="chips">
+            <button type="button" className={`chip-opt ${clientType === 'recorrente' ? 'on' : ''}`} onClick={() => setClientType('recorrente')}>Recorrente (mensal)</button>
+            <button type="button" className={`chip-opt ${clientType === 'pontual' ? 'on' : ''}`} onClick={() => setClientType('pontual')}>Pontual (avulso)</button>
+          </div>
+          <span className="hint">
+            {clientType === 'pontual'
+              ? 'Pontual: só o link de aprovação. Sem boas-vindas, briefing, pasta no Drive, números ou relatório mensal.'
+              : clientType === 'recorrente'
+                ? 'Recorrente: recebe boas-vindas e briefing, ganha pasta no Drive e entra nos números e relatórios do mês.'
+                : 'Recorrente = cliente mensal (com onboarding e relatórios). Pontual = vídeo ou posts avulsos, sem automações.'}
+          </span>
+        </div>
+        {clientType === 'recorrente' && (
+          <div className="field">
+            <label htmlFor="cf-strat">Estrategista responsável</label>
+            <select id="cf-strat" className="input" value={strategist} onChange={(e) => setStrategist(e.target.value)}>
+              <option value="">Escolha quem cuida da estratégia…</option>
+              {team.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <span className="hint">Ela recebe as pautas, os relatórios e os lembretes deste cliente.</span>
+          </div>
+        )}
         <div className="field">
           <label>Pessoa de contato</label>
           <input className="input" name="contact_name" defaultValue={client?.contact_name ?? ''} placeholder="Quem aprova os conteúdos" />
