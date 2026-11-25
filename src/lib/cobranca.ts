@@ -4,7 +4,7 @@ export type BillingRegion = 'brasil' | 'europa';
 export type Currency = 'BRL' | 'EUR';
 
 /** Valor padrão de uma rodada extra; cada cliente pode ter um valor próprio no cadastro de cobrança. */
-export const EXTRA_ROUND_PRICE: Record<BillingRegion, number> = { brasil: 30, europa: 1.5 };
+export const EXTRA_ROUND_PRICE: Record<BillingRegion, number> = { brasil: 30, europa: 5 };
 export const REGION_CURRENCY: Record<BillingRegion, Currency> = { brasil: 'BRL', europa: 'EUR' };
 export const REGION_LABEL: Record<BillingRegion, string> = { brasil: 'Brasil · Asaas', europa: 'Europa · Wise' };
 
