@@ -55,7 +55,7 @@ def main():
 
     from faster_whisper import WhisperModel
     m = WhisperModel(a.model, device="cpu", compute_type="int8")
-    segs, _ = m.transcribe(x, language="pt", condition_on_previous_text=False, beam_size=5)
+    segs, _ = m.transcribe(x, language=os.environ.get("FALA_LINGUA", "pt"), condition_on_previous_text=False, beam_size=5)
     with open(os.path.join(a.workdir, "full.txt"), "w") as f:
         for s in segs:
             f.write(f"[{s.start:7.2f}-{s.end:7.2f}] {s.text.strip()}\n")
@@ -64,7 +64,7 @@ def main():
     lines = []
     for k, (s, e) in enumerate(regs):
         clip = np.concatenate([np.zeros(8000, np.float32), x[int(max(0, s - 0.05) * 16000): int((e + 0.05) * 16000)], np.zeros(8000, np.float32)])
-        out, _ = m.transcribe(clip, language="pt", condition_on_previous_text=False, beam_size=5)
+        out, _ = m.transcribe(clip, language=os.environ.get("FALA_LINGUA", "pt"), condition_on_previous_text=False, beam_size=5)
         text = " ".join(o.text.strip() for o in out)
         gap = s - regs[k - 1][1] if k else 0.0
         peak = db[int(s * 100): int(e * 100)].max()

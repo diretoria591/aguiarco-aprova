@@ -26,5 +26,5 @@ m = WhisperModel("large-v3", device="cpu", compute_type="int8")
 for spec in sys.argv[2:]:
     parts = [tuple(map(float, p.split(":"))) for p in spec.split(",")]
     clip = np.concatenate([x[int(s * 16000): int(e * 16000)] for s, e in parts])
-    segs, _ = m.transcribe(clip, language="pt", condition_on_previous_text=False)
+    segs, _ = m.transcribe(clip, language=os.environ.get("FALA_LINGUA", "pt"), condition_on_previous_text=False)
     print(spec, "=>", " ".join(s.text.strip() for s in segs))
