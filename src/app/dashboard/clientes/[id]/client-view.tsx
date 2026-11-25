@@ -18,6 +18,7 @@ import { UploadForm } from '@/components/admin/upload-form';
 import { LiveRefresh } from '@/components/admin/live-refresh';
 import { OnboardingCard } from '@/components/admin/onboarding-card';
 import { useMe } from '@/components/admin/me';
+import { isWhatsappNote, noteBody } from '@/lib/whatsapp-note';
 
 type Filter = 'todos' | PostStatus;
 
@@ -277,6 +278,24 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
   const [adjBusy, setAdjBusy] = useState(false);
   const lastAsk = [...m.comments].reverse().find((c) => c.author_role === 'client' && c.kind === 'adjustment');
 
+  // editar a observação para quem agenda depois de aprovado (o cabeçalho do WhatsApp é mantido)
+  const curNote = (m.schedule_note ?? '').trim();
+  const curWa = isWhatsappNote(curNote);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [noteBusy, setNoteBusy] = useState(false);
+  function openNote() { setNoteText(noteBody(curNote)); setNoteOpen(true); }
+  async function saveNote() {
+    if (curWa && !noteText.trim()) return toast('A observação do WhatsApp não pode ficar vazia.', 'err');
+    setNoteBusy(true);
+    const { error } = await createClient().rpc('team_update_schedule_note', { p_post_id: m.id, p_note: noteText.trim() });
+    setNoteBusy(false);
+    if (error) return toast(errMsg(error), 'err');
+    toast('Observação atualizada');
+    setNoteOpen(false);
+    router.refresh();
+  }
+
   // cliente combinou pelo WhatsApp (sem usar o link): aprova e manda para a fila com observação em vermelho
   const [waOpen, setWaOpen] = useState(false);
   const [waNote, setWaNote] = useState('');
@@ -379,12 +398,45 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
                   <Icon name="chat" />Cliente aprovou no WhatsApp
                 </button>
               )}
+              {m.status === 'approved' && (
+                <button className="btn line" onClick={openNote}><Icon name="edit" />{curNote ? 'Editar observação para a Duda' : 'Adicionar observação para a Duda'}</button>
+              )}
               <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
               <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
             </div>
           </div>
         </div>
       </Modal>
+      {noteOpen && (
+        <Modal
+          title={<>Observação para a <b>Duda</b></>}
+          onClose={() => setNoteOpen(false)}
+          foot={
+            <>
+              <button className="btn line" onClick={() => setNoteOpen(false)}>Cancelar</button>
+              <button className="btn" onClick={saveNote} disabled={noteBusy || (curWa && !noteText.trim())}><Icon name="check" />Salvar observação</button>
+            </>
+          }
+        >
+          {m.scheduled_at ? (
+            <div className="note red" style={{ marginBottom: 14 }}>
+              <span className="h"><Icon name="alert" />A Duda já marcou este post como agendado</span>
+              Depois de salvar, avise ela para conferir a mudança.
+            </div>
+          ) : (
+            <p className="muted" style={{ margin: '0 0 14px' }}>
+              A mudança aparece na hora na fila de agendamento, marcada como “Atualizada”.
+              {curWa ? ' Continua em vermelho, como combinado pelo WhatsApp.' : ''}
+            </p>
+          )}
+          <div className="field">
+            <label htmlFor="note-edit">O que a Duda precisa fazer ao agendar</label>
+            <textarea id="note-edit" className="textarea" rows={6} value={noteText} onChange={(e) => setNoteText(e.target.value)} autoFocus
+              placeholder="Ex.: usar a versão instrumental e marcar a maquiadora Amanda." />
+            {!curWa && <span className="hint">Deixe vazio para tirar a observação.</span>}
+          </div>
+        </Modal>
+      )}
       {waOpen && (
         <Modal
           title={<>Cliente aprovou no <b>WhatsApp</b></>}
