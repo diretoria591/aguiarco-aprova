@@ -4,6 +4,7 @@ import { TYPES } from './constants';
 import { fmtDay } from './format';
 import { materialsOf } from './media';
 import type { Client, Post } from './types';
+import { isWhatsappNote } from './whatsapp-note';
 
 type OutboxRow = { id: string; post_id: string; client_id: string; channel: 'email' | 'whatsapp'; attempts: number };
 type Result = { processed: number; sent: number; failed: number };
@@ -101,6 +102,7 @@ export function approvalEmail(
   const due = post.scheduled_date ? fmtDay(post.scheduled_date) : null;
   const beauty = client?.segment === 'beleza';
   const note = (post.schedule_note ?? '').trim();
+  const wa = isWhatsappNote(note);
 
   const btn = (href: string, label: string, bg: string) =>
     `<a href="${esc(href)}" style="display:block;background:${bg};color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 18px;border-radius:999px;text-align:center;margin:0 0 8px">${esc(label)}</a>`;
@@ -109,7 +111,9 @@ export function approvalEmail(
     return m.downloadUrl ? btn(m.downloadUrl, m.downloadLabel, bg) : btn(m.openUrl!, `Abrir ${m.label.toLowerCase()}`, bg);
   }).join('');
 
-  const subject = `${cname} aprovou “${post.title}”, pronto para agendar`;
+  const subject = wa
+    ? `${cname} aprovou “${post.title}” pelo WhatsApp: leia a observação antes de agendar`
+    : `${cname} aprovou “${post.title}”, pronto para agendar`;
   const html = `<!doctype html><html><body style="margin:0;background:#F7F6F4;font-family:Poppins,Arial,sans-serif;color:#2C2C2C">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F6F4;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #E8E4E0;border-radius:14px;overflow:hidden">
@@ -119,7 +123,9 @@ export function approvalEmail(
 <p style="margin:0 0 4px;font-size:12px;color:#8C8781;text-transform:uppercase;letter-spacing:1px">${esc(fmt)}</p>
 <p style="margin:0 0 6px;font-size:17px;font-weight:600">${esc(post.title)}</p>
 <p style="margin:0 0 16px;font-size:13px;color:#8C8781">${due ? `Publicação prevista: <b style="color:#2C2C2C">${esc(due)}</b> · ` : ''}Aprovado por ${esc(post.decided_by ?? 'cliente')}</p>
-${note ? `<div style="background:#F7E6DC;color:#6B3A23;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px;white-space:pre-wrap"><b>Antes de agendar, leia:</b>\n${esc(note)}</div>` : ''}
+${note ? (wa
+  ? `<div style="background:#FDE3E1;color:#8E1B1B;border:2px solid #C62828;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:14px;white-space:pre-wrap"><b style="color:#C62828">⚠ ATENÇÃO: combinado com o cliente pelo WhatsApp. Agende exatamente assim:</b>\n${esc(note)}</div>`
+  : `<div style="background:#F7E6DC;color:#6B3A23;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px;white-space:pre-wrap"><b>Antes de agendar, leia:</b>\n${esc(note)}</div>`) : ''}
 ${beauty ? `<div style="background:#F3EAE3;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px"><b style="color:#7A5A47">Marcar na publicação:</b> ${esc(client?.instagram || '@ do cliente')} e ${esc(post.featured_professional || 'a profissional que aparece (confira no vídeo)')}</div>` : ''}
 ${matLinks ? `<p style="margin:0 0 8px;font-size:12px;color:#555250;font-weight:600;letter-spacing:1px;text-transform:uppercase">Materiais</p>${matLinks}` : ''}
 <p style="margin:16px 0 0"><a href="${esc(queue)}" style="color:#7A5A47;font-weight:600">Abrir a fila de agendamento →</a></p>
@@ -130,7 +136,7 @@ ${matLinks ? `<p style="margin:0 0 8px;font-size:12px;color:#555250;font-weight:
   const text = [
     `${cname} aprovou “${post.title}” (${fmt}). Já está na fila de agendamento.`,
     due ? `Publicação prevista: ${due}` : '',
-    note ? `\nANTES DE AGENDAR, LEIA:\n${note}` : '',
+    note ? `\n${wa ? 'ATENÇÃO: COMBINADO COM O CLIENTE PELO WHATSAPP. AGENDE EXATAMENTE ASSIM:' : 'ANTES DE AGENDAR, LEIA:'}\n${note}` : '',
     beauty ? `\nMarcar na publicação: ${client?.instagram || '@ do cliente'} e ${post.featured_professional || 'a profissional que aparece'}` : '',
     ...mats.map((m) => `${m.downloadLabel}: ${m.downloadUrl ?? m.openUrl ?? ''}`),
     `\nFila de agendamento: ${queue}`,
