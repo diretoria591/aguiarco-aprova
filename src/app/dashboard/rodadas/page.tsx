@@ -1,21 +1,31 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { requireSection } from '@/lib/auth';
+import type { BillingClient, ExtraCharge } from '@/lib/cobranca';
 import { createClient } from '@/lib/supabase/server';
-import { addMonths, currentMonth, fmtDate, monthLabel } from '@/lib/format';
+import { addMonths, currentMonth, monthLabel } from '@/lib/format';
 import { loadExtras } from '@/lib/rodadas-extras';
+import { BillingSetup, ClientExtras } from './cobranca';
 
 export const metadata: Metadata = { title: 'Rodadas extras' };
 export const dynamic = 'force-dynamic';
 
 export default async function RodadasPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  await requireSection('rodadas');
+  const viewer = await requireSection('rodadas');
+  const owner = viewer.real.owner;
   const sp = await searchParams;
   const now = currentMonth();
   const month = sp.mes && /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.mes) ? sp.mes : now;
 
   const supabase = await createClient();
-  const { groups, total, error } = await loadExtras(supabase, month);
+  const [{ groups, total, error }, clientsRes, chargesRes] = await Promise.all([
+    loadExtras(supabase, month),
+    supabase.from('clients').select('id,name,client_type,billing_region,extra_round_price,asaas_customer_id').order('name'),
+    supabase.from('extra_charges').select('*').eq('ref_month', month),
+  ]);
+  const clients = (clientsRes.data ?? []) as (BillingClient & { client_type?: string })[];
+  const byId = new Map(clients.map((c) => [c.id, c]));
+  const charges = new Map(((chargesRes.data ?? []) as ExtraCharge[]).map((c) => [c.client_id, c]));
 
   return (
     <>
@@ -41,24 +51,12 @@ export default async function RodadasPage({ searchParams }: { searchParams: Prom
               <b>{total}</b> rodada{total > 1 ? 's' : ''} extra{total > 1 ? 's' : ''} em {groups.length} cliente{groups.length > 1 ? 's' : ''}.
             </p>
             {groups.map((g) => (
-              <section className="card" key={g.name} style={{ padding: '16px 18px', display: 'grid', gap: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <b>{g.name}</b>
-                  <span className="muted small">{g.items.length} extra{g.items.length > 1 ? 's' : ''}</span>
-                </div>
-                {g.items.map((it) => (
-                  <div key={it.id} style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
-                    <div style={{ fontWeight: 500 }}>{it.title}</div>
-                    <div className="small muted" suppressHydrationWarning>
-                      {it.n}ª rodada (limite {it.limit}) · {it.by ? `${it.by} · ` : ''}{fmtDate(it.at)}
-                    </div>
-                    <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>{it.content}</div>
-                  </div>
-                ))}
-              </section>
+              <ClientExtras key={g.id} client={byId.get(g.id) ?? { id: g.id, name: g.name }} items={g.items}
+                charge={charges.get(g.id) ?? null} month={month} owner={owner} />
             ))}
           </>
         )}
+        {owner && !clientsRes.error && <BillingSetup clients={clients.filter((c) => c.client_type !== 'pontual')} />}
       </div>
     </>
   );
