@@ -11,3 +11,8 @@ alter table public.relatorios add column if not exists ideas_sent_marks text not
 -- Quem já vê Relatórios passa a ver o Banco de ideias
 update public.profiles set sections = array_append(sections, 'ideias')
  where sections is not null and 'relatorios' = any(sections) and not ('ideias' = any(sections));
+
+-- Área nova: marca pessoal e educação (mentoras, comunicação, empreendedorismo)
+alter table public.clients drop constraint if exists clients_segment_check;
+alter table public.clients add constraint clients_segment_check
+  check (segment in ('', 'saude', 'gastronomia', 'beleza', 'empresas', 'marca_pessoal', 'outra'));

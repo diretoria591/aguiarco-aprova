@@ -33,7 +33,7 @@ alter table public.clients add column if not exists instagram text not null defa
 alter table public.clients add column if not exists segment   text not null default '';
 alter table public.clients drop constraint if exists clients_segment_check;
 alter table public.clients add constraint clients_segment_check
-  check (segment in ('', 'saude', 'gastronomia', 'beleza', 'empresas', 'outra'));
+  check (segment in ('', 'saude', 'gastronomia', 'beleza', 'empresas', 'marca_pessoal', 'outra'));
 
 create index if not exists posts_schedule_queue_idx
   on public.posts (approved_at)
