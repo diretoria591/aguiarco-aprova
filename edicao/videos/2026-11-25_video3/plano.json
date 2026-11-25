@@ -1,0 +1,580 @@
+{
+ "rosto_y": 0.69,
+ "legenda_y": 1600,
+ "legenda_y_com_foto": 1600,
+ "legendas": [
+  {
+   "id": "l001",
+   "a": 0,
+   "b": 0.57,
+   "pt": "Você sabia",
+   "en": "Did you know"
+  },
+  {
+   "id": "l002",
+   "a": 0.57,
+   "b": 2.21,
+   "pt": "que o fim do ano",
+   "en": "the end of the year"
+  },
+  {
+   "id": "l003",
+   "a": 2.21,
+   "b": 3.35,
+   "pt": "está chegando?",
+   "en": "is coming, right?"
+  },
+  {
+   "id": "l004",
+   "a": 3.35,
+   "b": 5.55,
+   "pt": "Deixa eu te lembrar",
+   "en": "Let me remind you"
+  },
+  {
+   "id": "l005",
+   "a": 5.55,
+   "b": 7.63,
+   "pt": "de não se punir",
+   "en": "not to punish yourself"
+  },
+  {
+   "id": "l006",
+   "a": 7.63,
+   "b": 10.21,
+   "pt": "Você talvez tente",
+   "en": "You probably try"
+  },
+  {
+   "id": "l007",
+   "a": 10.21,
+   "b": 11.79,
+   "pt": "não comer",
+   "en": "not to eat"
+  },
+  {
+   "id": "l008",
+   "a": 11.79,
+   "b": 14.53,
+   "pt": "e quando chegam as festas",
+   "en": "and when the holidays come"
+  },
+  {
+   "id": "l009",
+   "a": 14.53,
+   "b": 16.43,
+   "pt": "você come demais",
+   "en": "you eat a lot"
+  },
+  {
+   "id": "l010",
+   "a": 16.43,
+   "b": 19.01,
+   "pt": "e tenta aproveitar",
+   "en": "and try to enjoy the meals"
+  },
+  {
+   "id": "l011",
+   "a": 19.01,
+   "b": 19.79,
+   "pt": "Tudo bem",
+   "en": "It's okay"
+  },
+  {
+   "id": "l012",
+   "a": 19.79,
+   "b": 23.67,
+   "pt": "mas dá para ter estratégia",
+   "en": "but you can be more strategic"
+  },
+  {
+   "id": "l013",
+   "a": 23.67,
+   "b": 26.65,
+   "pt": "E o que isso significa?",
+   "en": "So what does this mean?"
+  },
+  {
+   "id": "l014",
+   "a": 26.65,
+   "b": 28.33,
+   "pt": "Você pode dividir",
+   "en": "You can split"
+  },
+  {
+   "id": "l015",
+   "a": 28.33,
+   "b": 29.69,
+   "pt": "as refeições",
+   "en": "your meals"
+  },
+  {
+   "id": "l016",
+   "a": 29.69,
+   "b": 31.67,
+   "pt": "comer mais proteína",
+   "en": "have more protein"
+  },
+  {
+   "id": "l017",
+   "a": 31.67,
+   "b": 33.57,
+   "pt": "menos carboidrato",
+   "en": "less carbs"
+  },
+  {
+   "id": "l018",
+   "a": 33.57,
+   "b": 37.29,
+   "pt": "porque com mais proteína",
+   "en": "because with more protein"
+  },
+  {
+   "id": "l019",
+   "a": 37.29,
+   "b": 39.09,
+   "pt": "você fica mais saciada",
+   "en": "you feel more satisfied"
+  },
+  {
+   "id": "l020",
+   "a": 39.09,
+   "b": 40.27,
+   "pt": "Seu corpo",
+   "en": "Your body"
+  },
+  {
+   "id": "l021",
+   "a": 40.27,
+   "b": 41.67,
+   "pt": "não precisa de castigo",
+   "en": "doesn't need punishing"
+  },
+  {
+   "id": "l022",
+   "a": 41.67,
+   "b": 43.11,
+   "pt": "Uma refeição diferente",
+   "en": "One different meal"
+  },
+  {
+   "id": "l023",
+   "a": 43.11,
+   "b": 44.71,
+   "pt": "não estraga a sua saúde",
+   "en": "won't ruin your health"
+  },
+  {
+   "id": "l024",
+   "a": 44.71,
+   "b": 48.01,
+   "pt": "Não esqueça de beber água",
+   "en": "Don't forget to drink water"
+  },
+  {
+   "id": "l025",
+   "a": 48.01,
+   "b": 50.23,
+   "pt": "isso também te ajuda",
+   "en": "it also helps you"
+  },
+  {
+   "id": "l026",
+   "a": 50.23,
+   "b": 52.97,
+   "pt": "a ter mais consciência",
+   "en": "to be more mindful"
+  },
+  {
+   "id": "l027",
+   "a": 52.97,
+   "b": 54.61,
+   "pt": "e não exagerar",
+   "en": "and not overeat"
+  },
+  {
+   "id": "l028",
+   "a": 54.61,
+   "b": 57.11,
+   "pt": "Tente comer menos açúcar",
+   "en": "Try to eat less sugar"
+  },
+  {
+   "id": "l029",
+   "a": 57.11,
+   "b": 59.39,
+   "pt": "mais proteína",
+   "en": "more protein"
+  },
+  {
+   "id": "l030",
+   "a": 59.39,
+   "b": 61.97,
+   "pt": "nutrientes, fibras",
+   "en": "nutrients, fiber"
+  },
+  {
+   "id": "l031",
+   "a": 61.97,
+   "b": 63.77,
+   "pt": "você preserva",
+   "en": "you'll preserve"
+  },
+  {
+   "id": "l032",
+   "a": 63.77,
+   "b": 65.05,
+   "pt": "seus músculos",
+   "en": "your muscle"
+  },
+  {
+   "id": "l033",
+   "a": 65.05,
+   "b": 67.19,
+   "pt": "e a saúde metabólica",
+   "en": "and metabolic health"
+  },
+  {
+   "id": "l034",
+   "a": 67.19,
+   "b": 68.47,
+   "pt": "Você não precisa escolher",
+   "en": "You don't need to choose"
+  },
+  {
+   "id": "l035",
+   "a": 68.47,
+   "b": 70.05,
+   "pt": "entre aproveitar a vida",
+   "en": "between enjoying life"
+  },
+  {
+   "id": "l036",
+   "a": 70.05,
+   "b": 72.23,
+   "pt": "e cuidar da saúde",
+   "en": "and caring for your health"
+  },
+  {
+   "id": "l037",
+   "a": 72.23,
+   "b": 73.93,
+   "pt": "Você pode aprender",
+   "en": "You can learn"
+  },
+  {
+   "id": "l038",
+   "a": 73.93,
+   "b": 75.17,
+   "pt": "a nutrir seu corpo",
+   "en": "to nourish your body"
+  },
+  {
+   "id": "l039",
+   "a": 75.17,
+   "b": 76.77,
+   "pt": "conforme suas necessidades",
+   "en": "according to your needs"
+  },
+  {
+   "id": "l040",
+   "a": 76.77,
+   "b": 78.25,
+   "pt": "na sua fase da vida",
+   "en": "at your stage of life"
+  },
+  {
+   "id": "l041",
+   "a": 78.25,
+   "b": 79.65,
+   "pt": "Eu estou aqui",
+   "en": "I'm here"
+  },
+  {
+   "id": "l042",
+   "a": 79.65,
+   "b": 82.91,
+   "pt": "preparando consultas",
+   "en": "preparing many consultations"
+  },
+  {
+   "id": "l043",
+   "a": 82.91,
+   "b": 83.97,
+   "pt": "para minhas clientes",
+   "en": "to help my clients"
+  },
+  {
+   "id": "l044",
+   "a": 83.97,
+   "b": 84.71,
+   "pt": "planejarem",
+   "en": "plan"
+  },
+  {
+   "id": "l045",
+   "a": 84.71,
+   "b": 88.19,
+   "pt": "as ceias de fim de ano",
+   "en": "their holiday dinners"
+  },
+  {
+   "id": "l046",
+   "a": 88.19,
+   "b": 90.19,
+   "pt": "e aproveitarem a vida",
+   "en": "and enjoy life"
+  },
+  {
+   "id": "l047",
+   "a": 90.19,
+   "b": 92.07,
+   "pt": "Eu sou Teresa Mello",
+   "en": "I'm Teresa Mello"
+  },
+  {
+   "id": "l048",
+   "a": 92.07,
+   "b": 93.11,
+   "pt": "sou farmacêutica",
+   "en": "I'm a pharmacist"
+  },
+  {
+   "id": "l049",
+   "a": 93.11,
+   "b": 93.85,
+   "pt": "especialista",
+   "en": "an expert"
+  },
+  {
+   "id": "l050",
+   "a": 93.85,
+   "b": 95.55,
+   "pt": "em medicina integrativa",
+   "en": "in integrative medicine"
+  },
+  {
+   "id": "l051",
+   "a": 95.55,
+   "b": 97.95,
+   "pt": "Me mande uma mensagem",
+   "en": "Please send me a message"
+  },
+  {
+   "id": "l052",
+   "a": 97.95,
+   "b": 101.03,
+   "pt": "vou adorar te ajudar",
+   "en": "I'll be happy to help you"
+  },
+  {
+   "id": "l053",
+   "a": 101.03,
+   "b": 102.2,
+   "pt": "Obrigada!",
+   "en": "Thank you!"
+  }
+ ],
+ "fotos": [
+  {
+   "id": "f01",
+   "a": 5.55,
+   "b": 11.79,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f01.jpg",
+   "foco_y": 0.45,
+   "frase": "não comer / se punir (mulher afastando o prato)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f02",
+   "a": 11.79,
+   "b": 19.22,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f02.jpg",
+   "foco_y": 0.5,
+   "frase": "festas: come demais (mesa de Natal vista de cima)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f03",
+   "a": 26.65,
+   "b": 33.57,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f03.jpg",
+   "foco_y": 0.5,
+   "frase": "dividir refeições, mais proteína (marmitas)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f04",
+   "a": 33.57,
+   "b": 39.1,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f04.jpg",
+   "foco_y": 0.4,
+   "frase": "mais saciada (mulher comendo salada)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f05",
+   "a": 48.01,
+   "b": 54.61,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f05.jpg",
+   "foco_y": 0.5,
+   "frase": "água: mais consciência (mão servindo água)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f06",
+   "a": 54.61,
+   "b": 61.97,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f06.jpg",
+   "foco_y": 0.5,
+   "frase": "menos açúcar, nutrientes, fibras (bowl colorido)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f07",
+   "a": 61.97,
+   "b": 67.2,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f07.jpg",
+   "foco_y": 0.4,
+   "frase": "preservar músculos (mulher com halteres)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f08",
+   "a": 69.0,
+   "b": 75.52,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f08.jpg",
+   "foco_y": 0.45,
+   "frase": "aproveitar a vida e cuidar da saúde (brinde em família)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f09",
+   "a": 79.65,
+   "b": 87.65,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video3/fotos/f09.jpg",
+   "foco_y": 0.5,
+   "frase": "consultas para planejar as ceias (mãos escrevendo plano)",
+   "fonte": "IA do Canva"
+  }
+ ],
+ "destaques": [
+  {
+   "id": "d01",
+   "a": 39.14,
+   "b": 42.12,
+   "texto": "SEM CASTIGO"
+  },
+  {
+   "id": "d02",
+   "a": 44.76,
+   "b": 47.96,
+   "texto": "BEBA ÁGUA"
+  },
+  {
+   "id": "d03",
+   "a": 67.24,
+   "b": 68.95,
+   "texto": "VOCÊ NÃO PRECISA ESCOLHER"
+  },
+  {
+   "id": "d04",
+   "a": 95.6,
+   "b": 101.32,
+   "texto": "@teresa_mello_pharmacist"
+  }
+ ],
+ "sons": [
+  {
+   "id": "sfx01",
+   "t": 4.914,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f01"
+  },
+  {
+   "id": "sfx02",
+   "t": 11.769,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
+   "db": -22,
+   "evento": "f02"
+  },
+  {
+   "id": "sfx03",
+   "t": 25.942,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -20,
+   "evento": "f03"
+  },
+  {
+   "id": "sfx04",
+   "t": 33.549,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
+   "db": -22,
+   "evento": "f04"
+  },
+  {
+   "id": "sfx10",
+   "t": 39.123,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d01"
+  },
+  {
+   "id": "sfx11",
+   "t": 44.527,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
+   "db": -17,
+   "evento": "d02"
+  },
+  {
+   "id": "sfx05",
+   "t": 47.374,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f05"
+  },
+  {
+   "id": "sfx06",
+   "t": 54.589,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
+   "db": -22,
+   "evento": "f06"
+  },
+  {
+   "id": "sfx07",
+   "t": 61.949,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
+   "db": -22,
+   "evento": "f07"
+  },
+  {
+   "id": "sfx12",
+   "t": 67.219,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
+   "db": -17,
+   "evento": "d03"
+  },
+  {
+   "id": "sfx08",
+   "t": 67.925,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -20,
+   "evento": "f08"
+  },
+  {
+   "id": "sfx09",
+   "t": 79.014,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f09"
+  },
+  {
+   "id": "sfx13",
+   "t": 95.583,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d04"
+  }
+ ]
+}

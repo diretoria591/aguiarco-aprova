@@ -1,0 +1,9 @@
+{"start": 0.85, "end": 124.45,
+ "cuts": [[44.95, 55.65, "you you feel more... (pausa longa) -> you will feel more satisfied"],
+          [82.45, 82.62, "and you you -> and you"],
+          [119.25, 119.86, "give me a... a message -> fica a última"]],
+ "zooms": [[1.0, 4.5, "Do you know that the end of the year is approaching"],
+           [57.9, 60.1, "Your body doesn't need to be punished"],
+           [87.5, 92.5, "You don't need to choose between enjoying life and looking after your health"],
+           [112.4, 115.6, "I'm Teresa Mello, I'm a pharmacist"]],
+ "zoom_amount": 0.05, "anchor": [0.5, 0.6]}
