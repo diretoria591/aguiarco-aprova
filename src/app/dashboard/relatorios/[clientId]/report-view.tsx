@@ -68,7 +68,25 @@ export function ReportView({ client, month, posts, report, error }: {
     setDirty(false);
     toast(next === 'pronto' ? 'Relatório marcado como pronto' : next === 'rascunho' ? 'Voltou para rascunho' : 'Relatório salvo');
     router.refresh();
+    // pronto (ou salvo já pronto com posts novos marcados): o servidor só envia se o conjunto mudou
+    if (st === 'pronto') void sendIdeas(next === 'pronto');
     return true;
+  }
+
+  /** Relatório pronto: os posts "Performou" vão por e-mail para a estrategista e entram no banco de ideias. */
+  async function sendIdeas(hint: boolean) {
+    try {
+      const r = await fetch('/api/relatorios/ideias', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id, month }),
+      });
+      const j = await r.json().catch(() => ({})) as { sent?: boolean; reason?: string; to?: string; error?: string };
+      if (!r.ok) toast(`O e-mail de ideias não saiu: ${j.error ?? r.status}`, 'err');
+      else if (j.sent) toast(`Conteúdos que performaram enviados para ${j.to || 'a estrategista'}`);
+      else if (hint && j.reason === 'sem_top') toast('Dica: marque os posts com “Performou” para eles irem ao banco de ideias e ao e-mail da estrategista.');
+    } catch {
+      toast('O e-mail de ideias não saiu: sem conexão.', 'err');
+    }
   }
 
   async function pdf() {

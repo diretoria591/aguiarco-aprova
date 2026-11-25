@@ -9,6 +9,7 @@ export const SECTIONS = [
   { key: 'entregas', label: 'Entregas', href: '/dashboard/entregas' },
   { key: 'numeros', label: 'Números', href: '/dashboard/numeros' },
   { key: 'relatorios', label: 'Relatórios', href: '/dashboard/relatorios' },
+  { key: 'ideias', label: 'Banco de ideias', href: '/dashboard/ideias' },
   { key: 'lembretes', label: 'Lembretes', href: '/dashboard/lembretes' },
   { key: 'rodadas', label: 'Rodadas extras', href: '/dashboard/rodadas' },
   { key: 'equipe', label: 'Equipe', href: '/dashboard/equipe' },
@@ -19,8 +20,8 @@ export const ALL_SECTIONS = SECTIONS.map((s) => s.key) as SectionKey[];
 /** Abas de quem ainda não tem permissões marcadas, pela função. */
 export function defaultSections(role: TeamRole): SectionKey[] {
   if (role === 'scheduler') return ['agendamento', 'roteiros', 'numeros'];
-  if (role === 'admin') return ['clientes', 'agendamento', 'roteiros', 'cobrar', 'lembretes', 'rodadas'];
-  return ['clientes', 'agendamento', 'roteiros', 'cobrar', 'lembretes'];
+  if (role === 'admin') return ['clientes', 'agendamento', 'roteiros', 'cobrar', 'lembretes', 'ideias', 'rodadas'];
+  return ['clientes', 'agendamento', 'roteiros', 'cobrar', 'lembretes', 'ideias'];
 }
 
 /** A dona vê tudo; os outros, o que foi marcado (ou o padrão da função). Equipe é só da dona. */

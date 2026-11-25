@@ -34,6 +34,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
     : path.startsWith('/dashboard/cobrar') ? 'cobrar'
     : path.startsWith('/dashboard/entregas') ? 'entregas'
     : path.startsWith('/dashboard/relatorios') ? 'relatorios'
+    : path.startsWith('/dashboard/ideias') ? 'ideias'
     : path.startsWith('/dashboard/numeros') ? 'numeros'
     : path.startsWith('/dashboard/rodadas') ? 'rodadas' : 'clientes';
   const allowed = new Set(me.sections ?? []);
