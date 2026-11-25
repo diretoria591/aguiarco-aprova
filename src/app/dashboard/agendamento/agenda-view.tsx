@@ -248,6 +248,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
   const wa = isWhatsappNote(note);
   const beauty = p.client.segment === 'beleza';
   const approvedAt = p.approved_at ?? p.decided_at;
+  const noteEdited = !!p.schedule_note_updated_at && (!approvedAt || p.schedule_note_updated_at > approvedAt);
 
   async function copyCaption() {
     const ok = await copyText(p.caption);
@@ -288,7 +289,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
         </div>
 
         {note && st !== 'done' && (
-          <div className={`note${wa ? ' red' : ''}`}><span className="h"><Icon name="alert" />{wa ? 'Atenção: combinado pelo WhatsApp. Agende exatamente assim' : 'Antes de agendar, leia'}</span><Linkified text={note} /></div>
+          <div className={`note${wa ? ' red' : ''}`}><span className="h"><Icon name="alert" />{wa ? 'Atenção: combinado pelo WhatsApp. Agende exatamente assim' : 'Antes de agendar, leia'}</span>{noteEdited && <small style={{ fontWeight: 600 }} suppressHydrationWarning>Atualizada{p.schedule_note_updated_by ? ` por ${p.schedule_note_updated_by}` : ''} · {fmtAgo(p.schedule_note_updated_at)}</small>}<Linkified text={note} /></div>
         )}
 
         {beauty && st !== 'done' && (

@@ -84,6 +84,8 @@ export interface Post {
   client_notified_at?: string | null;
   client_notified_by?: string | null;
   schedule_note?: string | null;
+  schedule_note_updated_at?: string | null;
+  schedule_note_updated_by?: string | null;
   featured_professional?: string;
   post_media: PostMedia[];
   comments: Comment[];
