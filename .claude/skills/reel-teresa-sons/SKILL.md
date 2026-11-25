@@ -13,12 +13,12 @@ Decide onde entra cada som e qual. Sem música.
 
 ## Ofício (tendência, não regra)
 - **O som segue o que se vê.** Entra foto: whoosh curto, com o pico no frame em que a foto aparece (como a foto entra em corte seco, o whoosh começa ~0,15 s antes). Entra destaque: pop curto, começando no frame dele. Saída de foto: em geral sem som.
-- **Bem presente** (pedido em 25/11: "tô sentindo pouco efeito sonoro"): toda foto que entra tem whoosh; quando a foto sai e volta para ela, outro whoosh mais baixo; troca direta de uma foto para outra também leva whoosh. Todo destaque leva pop + um whoosh curto por baixo (camada de apoio). Nada nos cortes comuns (jump cuts são para ser invisíveis).
+- **Bem presente** (pedido em 25/11: "tô sentindo pouco efeito sonoro"): **toda foto que aparece entra com um clique** (pedido em 25/11: "a cada momento que aparece uma foto em cima, coloca um barulhinho de clique"), alternando os cliques de `edicao/sons/clique/`; quando a foto sai e volta para ela, um whoosh baixo. Todo destaque leva pop + um whoosh curto por baixo (camada de apoio). Nada nos cortes comuns (jump cuts são para ser invisíveis).
 - **Variação:** não repetir o mesmo arquivo em ~20 s; alternar entre as variações de cada tipo.
-- **Nível** (o `compor.py` aplica `db` como ganho sobre o arquivo, que está normalizado em pico −3 dBFS): whoosh de entrada −9 dB, whoosh de saída −15 dB, pop do destaque −6 dB, whoosh de apoio do destaque −14 dB. Os níveis antigos (−20/−17) ficaram fracos demais. Abaixo da voz, mas claramente audível no celular.
+- **Nível** (o `compor.py` aplica `db` como ganho sobre o arquivo, que está normalizado em pico −3 dBFS): clique de entrada de foto −6 dB, whoosh de entrada (se usar) −9 dB, whoosh de saída −15 dB, pop do destaque −6 dB, whoosh de apoio do destaque −14 dB. Os níveis antigos (−20/−17) ficaram fracos demais. Abaixo da voz, mas claramente audível no celular.
 
 ## Biblioteca
-- `edicao/sons/<tipo>/` (whoosh, pop, clique), com `indice.json`: arquivo, duração, tempo até o pico, fonte e licença.
+- `edicao/sons/<tipo>/` (whoosh, pop, clique; os cliques são sintéticos, gerados por script, sem licença de terceiros), com `indice.json`: arquivo, duração, tempo até o pico, fonte e licença.
 - Fontes gratuitas com licença de uso livre: Mixkit (assets.mixkit.co) e Pixabay (cdn.pixabay.com). Conferir a licença na página do som.
 - Som novo: baixar, cortar o silêncio do começo, normalizar o pico em −3 dBFS, salvar em WAV 48 kHz, medir o tempo até o pico e anotar no índice. Os sons entram no git (são pequenos e reaproveitados em todo vídeo).
 

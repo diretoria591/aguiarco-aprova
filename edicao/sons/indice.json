@@ -1,5 +1,33 @@
 [
  {
+  "arquivo": "clique/c01-mouse.wav",
+  "tipo": "clique",
+  "duracao": 0.12,
+  "pico": 0.005,
+  "fonte": "Gerado por script (som sintético, sem licença de terceiros)"
+ },
+ {
+  "arquivo": "clique/c02-soft.wav",
+  "tipo": "clique",
+  "duracao": 0.12,
+  "pico": 0.005,
+  "fonte": "Gerado por script (som sintético, sem licença de terceiros)"
+ },
+ {
+  "arquivo": "clique/c03-tick.wav",
+  "tipo": "clique",
+  "duracao": 0.12,
+  "pico": 0.005,
+  "fonte": "Gerado por script (som sintético, sem licença de terceiros)"
+ },
+ {
+  "arquivo": "clique/c04-shutter.wav",
+  "tipo": "clique",
+  "duracao": 0.12,
+  "pico": 0.005,
+  "fonte": "Gerado por script (som sintético, sem licença de terceiros)"
+ },
+ {
   "arquivo": "pop/p01-dry.wav",
   "tipo": "pop",
   "duracao": 0.279,
