@@ -20,3 +20,8 @@ Medidas em vídeo 1080x1920.
 
 ## Cores da marca
 - Verde `#1E7821` (principal), branco `#FFFFFF`, cinza-claro `#E7E3E4`.
+
+## Persona das fotos (pedido em 25/11)
+- Uma persona só por vídeo, a mesma do começo ao fim. A cliente gosta de mulher de **cabelo preto**: padrão "Brazilian woman in her late 40s, straight shoulder-length black hair, light olive skin, brown eyes, warm natural look".
+- Gerar a primeira foto dela e usar como referência (`imageReferences`) em todas as outras.
+- Muitas fotos, uma emendando na outra, ocupando a faixa de cima quase o vídeo todo.

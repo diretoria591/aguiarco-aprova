@@ -8,3 +8,4 @@ Formato: `- [ ] <etapa> · <pedido, com contexto> · <dd/mm>`
 - [ ] visuais · CTA final com @teresa_mello_pharmacist em destaque quando ela pede para mandar direct · 25/11
 - [x] visuais · fotos ficam mais tempo em cima (5–8 s) e variam mais (tipos, luz, enquadramento), 7–10 por vídeo · 25/11 → reel-teresa-visuais
 - [x] sons · efeito sonoro estava fraco e pouco: mais alto (whoosh −9, pop −6), som também na saída da foto e camada de whoosh sob o destaque · 25/11 → reel-teresa-sons
+- [x] visuais · mesma persona do começo ao fim (mulher de cabelo preto) e muito mais fotos, ocupando quase todo o vídeo · 25/11 → reel-teresa-visuais e perfil identidade.md
