@@ -288,7 +288,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
         </div>
 
         {note && st !== 'done' && (
-          <div className={`note${wa ? ' red' : ''}`}><span className="h"><Icon name="alert" />{wa ? 'Atenção: combinado pelo WhatsApp. Agende exatamente assim' : 'Antes de agendar, leia'}</span>{note}</div>
+          <div className={`note${wa ? ' red' : ''}`}><span className="h"><Icon name="alert" />{wa ? 'Atenção: combinado pelo WhatsApp. Agende exatamente assim' : 'Antes de agendar, leia'}</span><Linkified text={note} /></div>
         )}
 
         {beauty && st !== 'done' && (
@@ -406,4 +406,12 @@ function MediaModal({ p, onClose }: { p: AgendaPost; onClose: () => void }) {
       </div>
     </Modal>
   );
+}
+
+/** Texto com os links clicáveis (ex.: pasta do Drive na observação para quem agenda). */
+function Linkified({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return <span>{parts.map((t, i) => (i % 2
+    ? <a key={i} href={t} target="_blank" rel="noopener noreferrer">{t}</a>
+    : t))}</span>;
 }

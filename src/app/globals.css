@@ -446,11 +446,12 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .smeta span{display:inline-flex;align-items:center;gap:5px}
 .smeta svg{width:14px;height:14px}
 .due{font-weight:600;color:var(--late)}
-.note{background:var(--fix-bg);color:#6B3A23;border-radius:var(--r-sm);padding:11px 13px;font-size:13px;display:grid;gap:4px;white-space:pre-wrap}
+.note{background:var(--fix-bg);color:#6B3A23;border-radius:var(--r-sm);padding:11px 13px;font-size:13px;display:grid;gap:4px;white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.note a{color:inherit;text-decoration:underline;word-break:break-all}
 .note .h,.tagnote .h{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--fix);white-space:normal}
 .note .h svg,.tagnote .h svg{width:15px;height:15px}
 .note.red{background:var(--late-bg);color:#8E1B1B;border:2px solid var(--late)} .note.red .h{color:var(--late)}
-.tagnote{background:var(--sand-2);border-radius:var(--r-sm);padding:11px 13px;display:grid;gap:7px;font-size:13px;color:var(--ink-2)}
+.tagnote{overflow-wrap:anywhere;min-width:0;background:var(--sand-2);border-radius:var(--r-sm);padding:11px 13px;display:grid;gap:7px;font-size:13px;color:var(--ink-2)}
 .tagnote .h{color:var(--brown)}
 .tagnote .tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tagchip{font-weight:600;font-size:13px;background:var(--surface);border:1px solid var(--sand);border-radius:999px;padding:3px 10px;color:var(--ink)}
@@ -476,7 +477,7 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .mbtns{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .btn.dl.cover{background:var(--brown)} .btn.dl.cover:hover{background:#654a3a}
 .mcap{display:grid;gap:8px;padding-top:4px}
-.scap{white-space:pre-wrap;font-size:13.5px;color:var(--ink-2);background:var(--sand-3);border-radius:var(--r-sm);padding:10px 12px;position:relative}
+.scap{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;color:var(--ink-2);background:var(--sand-3);border-radius:var(--r-sm);padding:10px 12px;position:relative}
 .scap.clamp{max-height:4.9em;overflow:hidden}
 .scap.clamp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2em;background:linear-gradient(transparent,var(--sand-3))}
 .sact{display:grid;gap:8px;justify-items:stretch;min-width:200px}
@@ -505,6 +506,17 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
   .mbtns .more{justify-content:center}
   .gprog{min-width:0;width:100%}
   .member{flex-wrap:wrap}
+}
+@media (max-width:560px){
+  /* celular: foto pequena para sobrar largura para a observação, materiais e legenda */
+  .srow{grid-template-columns:64px minmax(0,1fr);gap:12px;padding:12px}
+  .sthumb{width:64px}
+  .srow h3{font-size:16px}
+  /* foto ao lado só do título; observação, materiais e legenda ocupam a largura toda */
+  .srow .sbody{display:contents}
+  .srow > *,.srow .sbody > *{grid-column:1 / -1}
+  .srow > .sthumb{grid-column:1;grid-row:1 / span 3}
+  .srow .sbody > :nth-child(-n+3){grid-column:2}
 }
 
 /* ===== Roteiros e captações (seção adicional) ===== */
