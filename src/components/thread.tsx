@@ -58,6 +58,7 @@ const EV: Record<string, [IconName, string, (e: ActivityLog) => ReactNode]> = {
   enviado: ['upload', '', (e) => <>{e.actor} enviou <b>{e.posts?.title}</b></>],
   nova_versao: ['refresh', '', (e) => <>{e.actor} enviou nova versão de <b>{e.posts?.title}</b> ({e.meta})</>],
   resposta: ['chat', '', (e) => <>{e.actor} respondeu em <b>{e.posts?.title}</b></>],
+  aprovado_whatsapp: ['check', 'ok', (e) => <>{e.actor} marcou <b>{e.posts?.title}</b> como aprovado pelo cliente no WhatsApp</>],
   ajustado_interno: ['check', 'ok', (e) => <>{e.actor} aprovou <b>{e.posts?.title}</b> com ressalva para o agendamento</>],
   agendado: ['calendar', 'ok', (e) => <>{e.actor} agendou <b>{e.posts?.title}</b></>],
   cliente_avisado: ['bell', 'ok', (e) => <>{e.actor} avisou o cliente do agendamento de <b>{e.posts?.title}</b></>],

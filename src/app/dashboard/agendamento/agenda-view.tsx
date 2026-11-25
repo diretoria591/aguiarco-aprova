@@ -13,6 +13,7 @@ import { errMsg } from '@/components/admin/client-form';
 import { LiveRefresh } from '@/components/admin/live-refresh';
 import { useMe } from '@/components/admin/me';
 import { MockupModal } from './mockup';
+import { isWhatsappNote } from '@/lib/whatsapp-note';
 
 export type AgendaPost = Post & {
   client: Pick<Client, 'id' | 'name' | 'logo_url' | 'instagram' | 'segment'>;
@@ -244,6 +245,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
   const bulk = mats.filter((m) => m.source === 'upload' && m.downloadUrl);
   const long = p.caption.length > 120;
   const note = (p.schedule_note ?? '').trim();
+  const wa = isWhatsappNote(note);
   const beauty = p.client.segment === 'beleza';
   const approvedAt = p.approved_at ?? p.decided_at;
 
@@ -279,12 +281,14 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
         <div className="smeta" suppressHydrationWarning>
           <DueLabel ymd={p.scheduled_date} />
           {note
-            ? <span><Icon name="edit" />Aprovado com ressalva{p.decided_by ? ` por ${p.decided_by}` : ''} · {fmtAgo(approvedAt)}</span>
+            ? wa
+              ? <span style={{ color: 'var(--late)', fontWeight: 600 }}><Icon name="chat" />Cliente aprovou pelo WhatsApp · {fmtAgo(approvedAt)}</span>
+              : <span><Icon name="edit" />Aprovado com ressalva{p.decided_by ? ` por ${p.decided_by}` : ''} · {fmtAgo(approvedAt)}</span>
             : <span><Icon name="check" />Cliente aprovou{p.decided_by ? ` (${p.decided_by})` : ''} · {fmtAgo(approvedAt)}</span>}
         </div>
 
         {note && st !== 'done' && (
-          <div className="note"><span className="h"><Icon name="alert" />Antes de agendar, leia</span>{note}</div>
+          <div className={`note${wa ? ' red' : ''}`}><span className="h"><Icon name="alert" />{wa ? 'Atenção: combinado pelo WhatsApp. Agende exatamente assim' : 'Antes de agendar, leia'}</span>{note}</div>
         )}
 
         {beauty && st !== 'done' && (

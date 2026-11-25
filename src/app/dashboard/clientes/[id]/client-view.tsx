@@ -276,6 +276,22 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
   const [adjNote, setAdjNote] = useState('');
   const [adjBusy, setAdjBusy] = useState(false);
   const lastAsk = [...m.comments].reverse().find((c) => c.author_role === 'client' && c.kind === 'adjustment');
+
+  // cliente combinou pelo WhatsApp (sem usar o link): aprova e manda para a fila com observação em vermelho
+  const [waOpen, setWaOpen] = useState(false);
+  const [waNote, setWaNote] = useState('');
+  const [waBusy, setWaBusy] = useState(false);
+  async function markWhatsapp() {
+    if (!waNote.trim()) return toast('Escreva a observação para a Duda.', 'err');
+    setWaBusy(true);
+    const { error } = await createClient().rpc('team_approve_whatsapp', { p_post_id: m.id, p_note: waNote.trim() });
+    setWaBusy(false);
+    if (error) return toast(errMsg(error), 'err');
+    toast('Aprovado pelo WhatsApp e enviado para a fila de agendamento');
+    setWaOpen(false);
+    onClose();
+    router.refresh();
+  }
   async function markAdjusted() {
     setAdjBusy(true);
     const { error } = await createClient().rpc('team_approve_with_note', { p_post_id: m.id, p_extra: adjNote.trim() || null });
@@ -358,12 +374,49 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
                   <Icon name="check" />Ajustado e agendado
                 </button>
               )}
+              {(m.status === 'pending' || m.status === 'adjustment_requested') && (
+                <button className="btn ok" onClick={() => setWaOpen(true)} title="O cliente combinou pelo WhatsApp e não usou o link">
+                  <Icon name="chat" />Cliente aprovou no WhatsApp
+                </button>
+              )}
               <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
               <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
             </div>
           </div>
         </div>
       </Modal>
+      {waOpen && (
+        <Modal
+          title={<>Cliente aprovou no <b>WhatsApp</b></>}
+          onClose={() => setWaOpen(false)}
+          foot={
+            <>
+              <button className="btn line" onClick={() => setWaOpen(false)}>Cancelar</button>
+              <button className="btn" onClick={markWhatsapp} disabled={waBusy || !waNote.trim()}><Icon name="check" />Aprovar e mandar para a Duda</button>
+            </>
+          }
+        >
+          <p className="muted" style={{ margin: '0 0 14px' }}>
+            “{m.title}” passa a contar como aprovado e vai para a fila de agendamento. A observação aparece <b style={{ color: 'var(--late)' }}>em vermelho</b> para
+            a Duda, na fila e no e-mail de aviso.
+          </p>
+          {lastAsk && m.status === 'adjustment_requested' && (
+            <div className="note" style={{ marginBottom: 14 }}>
+              <span className="h"><Icon name="alert" />Último pedido do cliente no Aprova</span>{lastAsk.content}
+            </div>
+          )}
+          <div className="field">
+            <label htmlFor="wa-note">O que a Duda precisa fazer ao agendar</label>
+            <textarea id="wa-note" className="textarea" rows={5} value={waNote} onChange={(e) => setWaNote(e.target.value)} autoFocus
+              placeholder="Ex.: Duda, conversei com a cliente pelo WhatsApp. Cortar o trecho em que o cabelo aparece cortado (do segundo 3 ao 6) e publicar." />
+          </div>
+          {waNote.trim() && (
+            <div className="note red" style={{ marginTop: 4 }}>
+              <span className="h"><Icon name="alert" />Atenção: combinado pelo WhatsApp. Agende exatamente assim</span>{waNote.trim()}
+            </div>
+          )}
+        </Modal>
+      )}
       {adjOpen && (
         <Modal
           title={<>Ajustado e <b>agendado</b></>}
