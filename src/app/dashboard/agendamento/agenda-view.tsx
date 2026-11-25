@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { TYPES } from '@/lib/constants';
-import { fmtAgo, fmtDate, fmtDay, todayYMD } from '@/lib/format';
+import { fmtAgo, fmtDate, fmtDay, todayYMD, firstName } from '@/lib/format';
 import { isVideoLike, materialsOf, splitMedia, embedThumb, isEmbed, type Material } from '@/lib/media';
 import type { Client, Post } from '@/lib/types';
 import { Icon } from '@/components/icon';
@@ -183,7 +183,7 @@ export function AgendaView({ posts, error }: { posts: AgendaPost[]; error: strin
               </header>
               <div className="queue">
                 {ps.map((p) => (
-                  <Row key={p.id} p={p} busy={busy === p.id} selected={sel.includes(p.id)} onToggle={() => toggleSel(p)} onSchedule={() => schedule(p)} onNotified={() => notified(p)} onView={() => setViewing(p)} />
+                  <Row key={p.id} p={p} busy={busy === p.id} selected={sel.includes(p.id)} onToggle={() => toggleSel(p)} onSchedule={() => schedule(p)} onNotified={() => notified(p)} onView={() => setViewing(p)} who={firstName(me.name)} />
                 ))}
               </div>
             </section>
@@ -231,8 +231,8 @@ function thumbOf(p: AgendaPost) {
   return { bg, video, count: items.length, tall: video };
 }
 
-function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
-  p: AgendaPost; busy: boolean; selected: boolean; onToggle: () => void; onSchedule: () => void; onNotified: () => void; onView: () => void;
+function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView, who }: {
+  who?: string; p: AgendaPost; busy: boolean; selected: boolean; onToggle: () => void; onSchedule: () => void; onNotified: () => void; onView: () => void;
 }) {
   const { toast } = useUI();
   const [expanded, setExpanded] = useState(false);
@@ -294,18 +294,19 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView }: {
 
         {beauty && st !== 'done' && (
           <div className="tagnote">
-            <span className="h"><Icon name="at" />Marcar na publicação</span>
-            <span className="tags">
-              {p.client.instagram
-                ? <><span className="tagchip">{p.client.instagram}</span><span className="small">perfil do cliente</span></>
-                : <><span className="tagchip empty">@ do cliente?</span><span className="small">Instagram não cadastrado no cliente</span></>}
-            </span>
-            <span className="tags">
+            <span className="h"><Icon name="at" />Antes de publicar, faça as marcações</span>
+            <div className="tagline">
+              <b>1. {who ? `${who}, não` : 'Não'} esqueça de marcar na publicação a profissional que fez o procedimento.</b>
               {p.featured_professional
-                ? <><span className="tagchip">{p.featured_professional}</span><span className="small">profissional que aparece{th.video ? ' no vídeo' : ''}</span></>
-                : <><span className="tagchip empty">profissional?</span><span className="small">não informado no envio: confira quem aparece{th.video ? ' no vídeo' : ''}</span></>}
-            </span>
-            <small>Área da beleza: marcar o salão e a profissional gera mais engajamento.</small>
+                ? <span className="tags"><span className="tagchip">{p.featured_professional}</span><span className="small">marcar este perfil</span></span>
+                : <span className="small">O @ dela não foi informado no envio: confira {th.video ? 'no vídeo' : 'na foto'} quem fez o procedimento e marque.</span>}
+            </div>
+            <div className="tagline">
+              <b>2. Marque também o cliente.</b>
+              {p.client.instagram
+                ? <span className="tags"><span className="tagchip">{p.client.instagram}</span><span className="small">perfil do cliente</span></span>
+                : <span className="small">O @ do cliente não está cadastrado no Aprova. Se ele tiver Instagram, procure e marque.</span>}
+            </div>
           </div>
         )}
 
