@@ -1,6 +1,6 @@
 # Montagem do fluxo de edição
 
-Fase atual: 3 (referências) · Atualizado em 2026-11-25
+Fase atual: 3 (referências, aguardando confirmação do perfil) · Atualizado em 2026-11-25
 
 ## Ambiente
 - Sistema: Linux (sessão na nuvem do Claude Code) · Python: 3.13 · FFmpeg: 6.1 · Node.js: 22 · GPU: não
@@ -23,7 +23,7 @@ Fase atual: 3 (referências) · Atualizado em 2026-11-25
 - Nomes: skill mestra /reel-teresa-melo (pedido: "Reel - TERESA MELO"); etapas com prefixo reel-teresa-
 
 ## Perfil
-- <nome>: falta analisar a referência da legenda (precisa de prints)
+- teresa-melo: identidade.md escrito (legenda PT/EN e fotos), a partir de 2 prints. Falta confirmar com a pessoa.
 
 ## Fluxo aprovado
 <falta>
