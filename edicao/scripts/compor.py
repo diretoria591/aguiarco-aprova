@@ -8,6 +8,7 @@ PLANO.json:
 {
   "perfil": "edicao/perfis/teresa-melo/estilo.json",
   "rosto_y": 0.42,                       # altura do rosto no quadro (fração), para descer a câmera nas fotos
+  "legenda_y": 1460, "legenda_y_com_foto": 1530,   # opcional: muda a altura da legenda só neste vídeo
   "legendas": [{"id": "l001", "a": 0.0, "b": 1.2, "pt": "...", "en": "..."}],
   "fotos":    [{"id": "f01", "a": 5.0, "b": 8.0, "arquivo": "caminho.jpg", "foco_y": 0.5}],
   "destaques":[{"id": "d01", "a": 12.0, "b": 13.6, "texto": "3 SINAIS"}],
@@ -69,8 +70,10 @@ def camada_legenda(lg, centro):
     return camada
 
 
+# o plano pode mudar a altura da legenda neste vídeo (ex.: ela se enquadrou mais baixo)
+y_sem, y_com = P.get("legenda_y", L["pt_centro_y"]), P.get("legenda_y_com_foto", L["pt_centro_y_com_foto"])
 for lg in P.get("legendas", []):
-    leg_imgs[lg["id"]] = (camada_legenda(lg, L["pt_centro_y"]), camada_legenda(lg, L["pt_centro_y_com_foto"]))
+    leg_imgs[lg["id"]] = (camada_legenda(lg, y_sem), camada_legenda(lg, y_com))
 
 D = EST["destaque"]
 dest_imgs = {d["id"]: caixa_texto(d["texto"], D["tam"], D["texto_cor"], D["caixa"], D["padx"], D["pady"], D["raio"])[0]

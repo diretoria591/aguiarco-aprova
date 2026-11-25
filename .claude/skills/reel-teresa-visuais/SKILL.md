@@ -12,9 +12,10 @@ Planeja e consegue os visuais: fotos e destaques. Não renderiza.
 - **Próximo passo:** `reel-teresa-sons`.
 
 ## Ofício (tendência, não regra)
-- **Fotos ilustram o que ela está dizendo naquele instante:** a coisa concreta (um alimento, um sintoma, um gesto do dia a dia), nunca uma ideia abstrata. Uma foto por ideia, de 2 a 4 s cada, começando na palavra que a anuncia.
-- **Quantidade:** em 1–2 min, de 5 a 8 fotos. Gancho (primeiros 3 s) e CTA final ficam com ela em tela cheia: o rosto prende a atenção e o pedido final precisa dela.
-- Nunca duas fotos coladas sem pelo menos 2 s dela em tela cheia entre elas.
+- **Fotos ilustram o que ela está dizendo naquele instante:** a coisa concreta (um alimento, um sintoma, um gesto do dia a dia), nunca uma ideia abstrata. Começam na palavra que a anuncia e **ficam bastante tempo: de 5 a 8 s cada** (pedido em 25/11: "deixa mais tempo as fotos aparecendo"), indo até o fim da ideia.
+- **Variar as fotos** (pedido em 25/11): não repetir o mesmo tipo seguido. Alternar close de objeto/alimento, pessoa em situação do dia a dia, ambiente/lugar, mão fazendo algo, vista de cima. Variar também luz (dia, noite, interna, externa) e enquadramento.
+- **Quantidade:** em 1–2 min, de 7 a 10 fotos; somadas, as fotos cobrem cerca de metade do vídeo. Gancho (primeiros 3 s) e CTA final ficam com ela em tela cheia: o rosto prende a atenção e o pedido final precisa dela.
+- Entre duas fotos, pelo menos ~1,5 s dela em tela cheia, ou troca direta de uma foto para outra quando a ideia continua.
 - **Destaques:** de 3 a 5 por vídeo, nas frases de impacto (o gancho, a tese, a virada, a frase final). De 1 a 3 palavras, em MAIÚSCULAS, a palavra que a pessoa lembraria ("INFLAMAÇÃO", "3 SINAIS", "INTESTINO"). Ficam 1,2–2 s, começando na palavra.
 - Destaque e foto ao mesmo tempo: evitar. Se acontecer, o render põe o destaque na borda de baixo da foto.
 
