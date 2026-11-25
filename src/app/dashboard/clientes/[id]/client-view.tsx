@@ -27,10 +27,18 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
   const [filter, setFilter] = useState<Filter>('todos');
   const [editOpen, setEditOpen] = useState(false);
   const [upload, setUpload] = useState<{ material?: Post } | null>(null);
+  const [choose, setChoose] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [origin, setOrigin] = useState('');
   useEffect(() => setOrigin(window.location.origin), []);
+  useEffect(() => {
+    // volta do scanner com ?avisar=1: já abre o aviso ao cliente
+    if (new URLSearchParams(window.location.search).get('avisar') === '1') {
+      setNotifyOpen(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   // organização por mês (mês de publicação; sem data, vale o mês de envio)
   const nowMonth = currentMonth();
@@ -85,7 +93,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
         <div className="actions">
           <button className="btn line" title="Editar cliente" onClick={() => setEditOpen(true)}><Icon name="edit" />Editar</button>
           <button className="btn line" onClick={() => setNotifyOpen(true)}><Icon name="bell" />Avisar cliente</button>
-          <button className="btn" onClick={() => setUpload({})}><Icon name="upload" />Enviar material</button>
+          <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>
         </div>
       </div>
 
@@ -127,7 +135,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
             <div className="card empty">
               <h3>Primeiro <b>envio</b></h3>
               <p>Envie fotos, vídeos, carrosséis, artes ou textos para {client.name} aprovar.</p>
-              <button className="btn" onClick={() => setUpload({})}><Icon name="upload" />Enviar material</button>
+              <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>
             </div>
           )}
         </section>
@@ -162,6 +170,24 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
       </div>
 
       {editOpen && <ClientForm client={client} onClose={() => setEditOpen(false)} />}
+      {choose && (
+        <Modal title={<>Enviar para <b>{client.name}</b></>} onClose={() => setChoose(false)}>
+          <p className="muted" style={{ margin: '0 0 14px' }}>Como você quer cadastrar?</p>
+          <div className="send-choices">
+            <button className="send-choice" onClick={() => { setChoose(false); setUpload({}); }}>
+              <span className="tag">Um post por vez</span>
+              <span className="t">Cadastrar <b>manualmente</b></span>
+              <span className="d">Você sobe os arquivos, escreve a legenda e escolhe a data.</span>
+            </button>
+            <Link className="send-choice" href={`/dashboard/clientes/${client.id}/scanner`} onClick={() => setChoose(false)}>
+              <span className="tag">Vários posts de uma vez</span>
+              <span className="t">Cadastrar <b>pelo scanner</b></span>
+              <span className="d">Cole o link do calendário no Google Docs e o Aprova monta os posts sozinho.</span>
+              <span className="warn"><b>Exige mais atenção.</b> O scanner pode ler algo errado. Você vai conferir post por post antes de enviar.</span>
+            </Link>
+          </div>
+        </Modal>
+      )}
       {upload && (
         <UploadForm
           client={client}
