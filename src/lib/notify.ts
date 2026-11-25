@@ -126,7 +126,9 @@ export function approvalEmail(
 ${note ? (wa
   ? `<div style="background:#FDE3E1;color:#8E1B1B;border:2px solid #C62828;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:14px;white-space:pre-wrap"><b style="color:#C62828">⚠ ATENÇÃO: combinado com o cliente pelo WhatsApp. Agende exatamente assim:</b>\n${esc(note)}</div>`
   : `<div style="background:#F7E6DC;color:#6B3A23;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px;white-space:pre-wrap"><b>Antes de agendar, leia:</b>\n${esc(note)}</div>`) : ''}
-${beauty ? `<div style="background:#F3EAE3;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px"><b style="color:#7A5A47">Marcar na publicação:</b> ${esc(client?.instagram || '@ do cliente')} e ${esc(post.featured_professional || 'a profissional que aparece (confira no vídeo)')}</div>` : ''}
+${beauty ? `<div style="background:#F3EAE3;border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:13px;line-height:1.6"><b style="color:#7A5A47">Antes de publicar, faça as marcações</b><br>
+<b>1. Não esqueça de marcar na publicação a profissional que fez o procedimento:</b> ${post.featured_professional ? esc(post.featured_professional) : 'o @ dela não foi informado no envio, confira no material quem fez e marque.'}<br>
+<b>2. Marque também o cliente:</b> ${client?.instagram ? esc(client.instagram) : 'o @ do cliente não está cadastrado no Aprova. Se ele tiver Instagram, procure e marque.'}</div>` : ''}
 ${matLinks ? `<p style="margin:0 0 8px;font-size:12px;color:#555250;font-weight:600;letter-spacing:1px;text-transform:uppercase">Materiais</p>${matLinks}` : ''}
 <p style="margin:16px 0 0"><a href="${esc(queue)}" style="color:#7A5A47;font-weight:600">Abrir a fila de agendamento →</a></p>
 </td></tr></table>
@@ -137,7 +139,7 @@ ${matLinks ? `<p style="margin:0 0 8px;font-size:12px;color:#555250;font-weight:
     `${cname} aprovou “${post.title}” (${fmt}). Já está na fila de agendamento.`,
     due ? `Publicação prevista: ${due}` : '',
     note ? `\n${wa ? 'ATENÇÃO: COMBINADO COM O CLIENTE PELO WHATSAPP. AGENDE EXATAMENTE ASSIM:' : 'ANTES DE AGENDAR, LEIA:'}\n${note}` : '',
-    beauty ? `\nMarcar na publicação: ${client?.instagram || '@ do cliente'} e ${post.featured_professional || 'a profissional que aparece'}` : '',
+    beauty ? `\nANTES DE PUBLICAR, FAÇA AS MARCAÇÕES:\n1. Marque a profissional que fez o procedimento: ${post.featured_professional || 'confira no material quem fez e marque'}\n2. Marque também o cliente: ${client?.instagram || 'procure o @ do cliente no Instagram e marque'}` : '',
     ...mats.map((m) => `${m.downloadLabel}: ${m.downloadUrl ?? m.openUrl ?? ''}`),
     `\nFila de agendamento: ${queue}`,
   ].filter(Boolean).join('\n');
