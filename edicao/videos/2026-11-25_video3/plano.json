@@ -489,91 +489,154 @@
    "id": "sfx01",
    "t": 4.914,
    "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
-   "db": -20,
-   "evento": "f01"
+   "db": -9,
+   "evento": "f01 entra"
   },
   {
    "id": "sfx02",
-   "t": 11.769,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
-   "db": -22,
-   "evento": "f02"
+   "t": 11.605,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -9,
+   "evento": "f02 entra"
   },
   {
    "id": "sfx03",
-   "t": 25.942,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
-   "db": -20,
-   "evento": "f03"
+   "t": 18.145,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -15,
+   "evento": "f02 sai"
   },
   {
    "id": "sfx04",
-   "t": 33.549,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
-   "db": -22,
-   "evento": "f04"
-  },
-  {
-   "id": "sfx10",
-   "t": 39.123,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
-   "db": -17,
-   "evento": "d01"
-  },
-  {
-   "id": "sfx11",
-   "t": 44.527,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
-   "db": -17,
-   "evento": "d02"
+   "t": 25.942,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -9,
+   "evento": "f03 entra"
   },
   {
    "id": "sfx05",
-   "t": 47.374,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
-   "db": -20,
-   "evento": "f05"
+   "t": 32.495,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -9,
+   "evento": "f04 entra"
   },
   {
    "id": "sfx06",
-   "t": 54.589,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
-   "db": -22,
-   "evento": "f06"
+   "t": 38.915,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -15,
+   "evento": "f04 sai"
+  },
+  {
+   "id": "sfx16",
+   "t": 38.955,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d01 apoio"
+  },
+  {
+   "id": "sfx15",
+   "t": 39.123,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -6,
+   "evento": "d01"
+  },
+  {
+   "id": "sfx17",
+   "t": 44.527,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
+   "db": -6,
+   "evento": "d02"
+  },
+  {
+   "id": "sfx18",
+   "t": 44.575,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d02 apoio"
   },
   {
    "id": "sfx07",
-   "t": 61.949,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p04-light.wav",
-   "db": -22,
-   "evento": "f07"
-  },
-  {
-   "id": "sfx12",
-   "t": 67.219,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
-   "db": -17,
-   "evento": "d03"
+   "t": 47.374,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -9,
+   "evento": "f05 entra"
   },
   {
    "id": "sfx08",
-   "t": 67.925,
-   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
-   "db": -20,
-   "evento": "f08"
+   "t": 54.425,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -9,
+   "evento": "f06 entra"
   },
   {
    "id": "sfx09",
-   "t": 79.014,
+   "t": 61.262,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -9,
+   "evento": "f07 entra"
+  },
+  {
+   "id": "sfx10",
+   "t": 66.564,
    "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
-   "db": -20,
-   "evento": "f09"
+   "db": -15,
+   "evento": "f07 sai"
+  },
+  {
+   "id": "sfx20",
+   "t": 67.055,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d03 apoio"
+  },
+  {
+   "id": "sfx19",
+   "t": 67.219,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
+   "db": -6,
+   "evento": "d03"
+  },
+  {
+   "id": "sfx11",
+   "t": 67.925,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -9,
+   "evento": "f08 entra"
+  },
+  {
+   "id": "sfx12",
+   "t": 75.335,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -15,
+   "evento": "f08 sai"
   },
   {
    "id": "sfx13",
+   "t": 79.014,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -9,
+   "evento": "f09 entra"
+  },
+  {
+   "id": "sfx14",
+   "t": 86.942,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -15,
+   "evento": "f09 sai"
+  },
+  {
+   "id": "sfx22",
+   "t": 95.415,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d04 apoio"
+  },
+  {
+   "id": "sfx21",
    "t": 95.583,
    "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
-   "db": -17,
+   "db": -6,
    "evento": "d04"
   }
  ]
