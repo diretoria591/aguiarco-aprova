@@ -40,7 +40,7 @@ ${i.caption ? `<p style="margin:0;font-size:13px;color:#555250">${esc(clip(i.cap
 <p style="margin:0 0 16px;font-size:17px;font-weight:600">Esses conteúdos tiveram maior performance. Aposte neles na próxima remessa.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${o.tops.map((i) => card(i, false)).join('')}</table>
 ${o.why ? `<div style="background:#F3EAE3;border-radius:10px;padding:12px 14px;margin:16px 0 0;font-size:13px;white-space:pre-wrap"><b style="color:#7A5A47">Por que funcionaram (do relatório):</b>\n${esc(o.why)}</div>` : ''}
-${o.others.length ? `<p style="margin:24px 0 4px;font-size:12px;color:#555250;font-weight:600;letter-spacing:1px;text-transform:uppercase">Também funcionou em outros clientes${area ? ` de ${esc(area)}` : ''}</p>
+${o.others.length ? `<p style="margin:24px 0 4px;font-size:12px;color:#555250;font-weight:600;letter-spacing:1px;text-transform:uppercase">Também funcionou em outros clientes${area ? ` · ${esc(segmentLabel(o.segment))}` : ''}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${o.others.map((i) => card(i, true)).join('')}</table>` : ''}
 <p style="margin:20px 0 0">
 <a href="${esc(o.bankUrl)}" style="display:inline-block;background:#2C2C2C;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 18px;border-radius:999px;margin:0 8px 8px 0">Abrir o banco de ideias</a>
@@ -55,7 +55,7 @@ ${o.others.length ? `<p style="margin:24px 0 4px;font-size:12px;color:#555250;fo
     'Esses conteúdos tiveram maior performance. Aposte neles na próxima remessa:',
     ...o.tops.map((i) => `- ${i.title} (${i.formatLabel})`),
     o.why ? `\nPor que funcionaram (do relatório):\n${o.why}` : '',
-    o.others.length ? `\nTambém funcionou em outros clientes${area ? ` de ${area}` : ''}:` : '',
+    o.others.length ? `\nTambém funcionou em outros clientes${area ? ` (${segmentLabel(o.segment)})` : ''}:` : '',
     ...o.others.map((i) => `- ${i.title} (${i.formatLabel} · ${i.clientName})`),
     '', `Banco de ideias: ${o.bankUrl}`, `Relatório: ${o.reportUrl}`,
   ].filter((l, k, a) => l !== '' || a[k - 1] !== '').join('\n');
