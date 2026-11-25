@@ -8,6 +8,7 @@ import { portalLink } from '@/lib/constants';
 import type { Client, ClientSegment } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, Mono, copyText, useUI } from '@/components/ui';
+import { SEGMENTS } from '@/lib/segments';
 import { useMe } from './me';
 
 function randomToken() {
@@ -287,9 +288,6 @@ export function ClientForm({ client, onClose }: { client?: Client; onClose: () =
   );
 }
 
-const SEGMENTS: [Exclude<ClientSegment, ''>, string][] = [
-  ['saude', 'Saúde'], ['gastronomia', 'Gastronomia'], ['beleza', 'Área da beleza'], ['empresas', 'Empresas / B2B'], ['outra', 'Outra'],
-];
 
 /** "perfil", "@perfil" ou "instagram.com/perfil" → "@perfil". */
 export function normalizeIg(v: string) {
