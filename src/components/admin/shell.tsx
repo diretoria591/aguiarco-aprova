@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { firstName, greet, initials, monthName } from '@/lib/format';
@@ -16,6 +16,16 @@ export type TeamOption = { id: string; name: string; role: string };
 const ROLE_LABEL: Record<string, string> = { admin: 'administração', scheduler: 'social media', team: 'equipe' };
 const VIEW_AS_COOKIE = 'aprova_ver_como';
 const links0 = SECTIONS.map((x) => ({ key: x.key as string, href: x.href as string, label: x.label as string }));
+/** Caminho das páginas visitadas nesta aba, para a setinha de voltar saber se dá para voltar dentro do Aprova. */
+const NAV_STACK = 'aprova_nav';
+
+/** Para onde a setinha leva quando não há página anterior no Aprova (ex.: abriu um link direto). */
+function parentOf(path: string, home: string) {
+  if (path.startsWith('/dashboard/clientes')) return '/dashboard';
+  const parts = path.split('/').filter(Boolean);
+  if (parts.length > 2) return '/' + parts.slice(0, -1).join('/');
+  return home;
+}
 
 export type ShellPauta = { id: string; client_id: string; name: string; ref_month: string; doc_url: string; sent_at: string };
 
@@ -26,7 +36,9 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
 }) {
   const me = useMe();
   const path = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [depth, setDepth] = useState(0);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
     : path.startsWith('/dashboard/agendamento') ? 'agendamento'
     : path.startsWith('/dashboard/roteiros') ? 'roteiros'
@@ -47,6 +59,27 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   // fecha o menu do celular ao trocar de página
   useEffect(() => { setOpen(false); }, [path]);
 
+  // guarda o caminho percorrido na aba (voltou = tira a última; foi para outra = acrescenta)
+  useEffect(() => {
+    let stack: string[] = [];
+    try { stack = JSON.parse(sessionStorage.getItem(NAV_STACK) || '[]'); } catch { /* noop */ }
+    if (!Array.isArray(stack)) stack = [];
+    if (stack[stack.length - 1] !== path) {
+      if (stack[stack.length - 2] === path) stack.pop(); else stack.push(path);
+    }
+    stack = stack.slice(-30);
+    try { sessionStorage.setItem(NAV_STACK, JSON.stringify(stack)); } catch { /* noop */ }
+    setDepth(stack.length);
+  }, [path]);
+
+  // setinha de voltar (no celular): aparece se há para onde voltar ou se a página é interna (ex.: um cliente)
+  const topLevel = links0.some((l) => l.href === path);
+  const showBack = depth > 1 || !topLevel;
+  function goBack() {
+    if (depth > 1) router.back();
+    else router.push(parentOf(path, home));
+  }
+
   /** "Ver como" (só admin): guarda a escolha num cookie e recarrega com a visão da pessoa. */
   function viewAs(id: string) {
     document.cookie = id && id !== me.id
@@ -57,6 +90,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   }
 
   async function logout() {
+    try { sessionStorage.removeItem(NAV_STACK); } catch { /* noop */ }
     await createClient().auth.signOut().catch(() => {});
     window.location.assign('/login');
   }
@@ -70,11 +104,16 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
 
   return (
     <div className="shell">
-      <header className="topbar">
+      <header className={`topbar${showBack ? ' has-back' : ''}`}>
         <div className="in">
           <button className="icon-btn menu-btn" onClick={() => setOpen(true)} aria-label="Abrir menu" aria-expanded={open}>
             <Icon name="menu" />
           </button>
+          {showBack && (
+            <button className="icon-btn back-btn" onClick={goBack} aria-label="Voltar" title="Voltar">
+              <Icon name="left" />
+            </button>
+          )}
           <Link className="brand" href={home}>
             <span className="wm">Aguiar<b>&amp;co</b></span>
             <span className="tag">Aprova</span>

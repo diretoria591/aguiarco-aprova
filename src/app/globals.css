@@ -702,9 +702,13 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .sidenav a:hover{background:var(--surface)}
 .sidenav a.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:500}
 .shell-body{margin-left:220px}
-.menu-btn,.nav-head,.nav-overlay{display:none}
+.menu-btn,.back-btn,.nav-head,.nav-overlay{display:none}
 @media (max-width:760px){
-  .menu-btn{display:inline-grid}
+  .menu-btn,.back-btn{display:inline-grid}
+  .topbar.has-back .who .avatar{display:none}
+  .topbar .icon-btn{flex:none}
+  .topbar .who{min-width:0} .topbar .viewas{min-width:0}
+  .topbar.has-back .viewas select{max-width:84px}
   .shell-body{margin-left:0}
   .sidenav{z-index:60;width:min(280px,82vw);padding:16px 12px;background:var(--surface);box-shadow:var(--shadow-lg);border-right:0;
     transform:translateX(-105%);transition:transform .22s ease}
