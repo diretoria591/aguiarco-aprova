@@ -21,6 +21,14 @@ Planeja e consegue os visuais: fotos e destaques. Não renderiza.
 - **Destaques:** de 3 a 5 por vídeo, nas frases de impacto (o gancho, a tese, a virada, a frase final). De 1 a 3 palavras, em MAIÚSCULAS, a palavra que a pessoa lembraria ("INFLAMAÇÃO", "3 SINAIS", "INTESTINO"). Ficam 1,2–2 s, começando na palavra.
 - Destaque e foto ao mesmo tempo: evitar. Se acontecer, o render põe o destaque na borda de baixo da foto.
 
+## Vídeos na faixa de cima (pedido em 25/11)
+- Misturar fotos da persona com **vídeos curtos sem rosto** (comida, mãos, água, natureza, silhuetas, pessoas de costas), para dar movimento sem quebrar a persona.
+- Fonte: **Mixkit** (licença gratuita com uso comercial, sem crédito). A página de busca `https://mixkit.co/free-stock-video/<tema>/` precisa de um User-Agent de navegador no curl e às vezes devolve 429 (espere e tente de novo); os ids aparecem como `assets.mixkit.co/videos/<id>/<id>-360.mp4`. Baixe o 360 para olhar (folha de contato com um quadro de cada) e o `-720.mp4` para usar.
+- No `visuais.json`, o item leva `"video": "<arquivo>"` e `"inicio": <segundo do clipe>` no lugar de `arquivo`/`foco_y`. O `compor.py` corta para a faixa e repete o clipe se ele for curto. O som do clipe não entra.
+
+## Limite do Canva
+- O Canva entra em "quota cooldown" depois de ~6 gerações ou designs seguidos. Gere primeiro as fotos da persona mais importantes, peça os designs de exportação um a um e complete o resto com vídeos do Mixkit enquanto o limite volta.
+
 ## Buscar as imagens
 Ordem das fontes, para cada foto (registrar a fonte e a licença em `creditos.txt`):
 1. **Openverse** (`https://api.openverse.org/v1/images/?q=<termo em inglês>&license_type=commercial&page_size=20`): bancos com licença aberta (Wikimedia, Flickr). Só baixar de hosts liberados (upload.wikimedia.org, live.staticflickr.com). Preferir CC0 e CC BY; CC BY pede crédito na descrição do post.

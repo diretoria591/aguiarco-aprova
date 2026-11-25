@@ -10,7 +10,8 @@ PLANO.json:
   "rosto_y": 0.42,                       # altura do rosto no quadro (fração), para descer a câmera nas fotos
   "legenda_y": 1460, "legenda_y_com_foto": 1530,   # opcional: muda a altura da legenda só neste vídeo
   "legendas": [{"id": "l001", "a": 0.0, "b": 1.2, "pt": "...", "en": "..."}],
-  "fotos":    [{"id": "f01", "a": 5.0, "b": 8.0, "arquivo": "caminho.jpg", "foco_y": 0.5}],
+  "fotos":    [{"id": "f01", "a": 5.0, "b": 8.0, "arquivo": "caminho.jpg", "foco_y": 0.5},
+               {"id": "v01", "a": 9.0, "b": 13.0, "video": "clipe.mp4", "inicio": 0.0}],   # vídeo na faixa de cima (sem som)
   "destaques":[{"id": "d01", "a": 12.0, "b": 13.6, "texto": "3 SINAIS"}],
   "sons":     [{"id": "sfx01", "t": 5.0, "arquivo": "whoosh.wav", "db": -20, "alinhar": "inicio"}]
 }
@@ -81,7 +82,23 @@ dest_imgs = {d["id"]: caixa_texto(d["texto"], D["tam"], D["texto_cor"], D["caixa
 
 F = EST["foto"]
 foto_imgs = {}
+clipes = {}   # vídeos na faixa de cima: um ffmpeg por clipe, lido quadro a quadro quando o clipe está na tela
+
+
+def quadro_clipe(ft):
+    fh = F["altura"]
+    c = clipes.get(ft["id"])
+    if c is None:
+        vf = f"fps={fps},scale={W}:{fh}:force_original_aspect_ratio=increase,crop={W}:{fh}"
+        c = subprocess.Popen(["ffmpeg", "-v", "error", "-stream_loop", "-1", "-ss", str(ft.get("inicio", 0)), "-i", ft["video"],
+                              "-an", "-vf", vf, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
+        clipes[ft["id"]] = c
+    return np.frombuffer(c.stdout.read(W * fh * 3), np.uint8).reshape(fh, W, 3)
+
+
 for ft in P.get("fotos", []):
+    if "video" in ft:
+        continue
     im = Image.open(ft["arquivo"]).convert("RGB")
     fh = F["altura"]
     esc = max(W / im.width, fh / im.height)
@@ -124,7 +141,7 @@ for i in range(N + 5):
     if fotos:
         novo = np.empty_like(fr)
         novo[desloc:] = fr[:H - desloc]; novo[:desloc] = fr[0]
-        novo[:fh] = foto_imgs[fotos[0]["id"]]
+        novo[:fh] = quadro_clipe(fotos[0]) if "video" in fotos[0] else foto_imgs[fotos[0]["id"]]
         fr = novo
     im = Image.fromarray(fr).convert("RGBA")
     for d in ativo(P.get("destaques", []), t):
@@ -137,6 +154,8 @@ for i in range(N + 5):
         im.alpha_composite(leg_imgs[lg["id"]][1 if fotos else 0])
     enc.stdin.write(im.convert("RGB").tobytes())
 enc.stdin.close(); enc.wait(); dec.wait()
+for c in clipes.values():
+    c.kill()
 
 # ---------- áudio: voz do corte + efeitos sonoros ----------
 sons = P.get("sons", [])

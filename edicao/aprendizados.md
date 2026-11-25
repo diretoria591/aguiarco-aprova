@@ -10,3 +10,4 @@ Formato: `- [ ] <etapa> · <pedido, com contexto> · <dd/mm>`
 - [x] sons · efeito sonoro estava fraco e pouco: mais alto (whoosh −9, pop −6), som também na saída da foto e camada de whoosh sob o destaque · 25/11 → reel-teresa-sons
 - [x] visuais · mesma persona do começo ao fim (mulher de cabelo preto) e muito mais fotos, ocupando quase todo o vídeo · 25/11 → reel-teresa-visuais e perfil identidade.md
 - [x] sons · clique em toda foto que aparece · 25/11 → reel-teresa-sons
+- [x] visuais · vídeos na faixa de cima junto com as fotos (Mixkit, sem rosto) · 25/11 → reel-teresa-visuais

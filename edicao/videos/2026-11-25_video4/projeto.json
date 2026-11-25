@@ -1,0 +1,20 @@
+{
+ "origem": "https://drive.google.com/file/d/18maFD8103pFqSQEl7BkG7RaX_bAyIqIw",
+ "perfil": "teresa-melo",
+ "criado": "2026-11-25",
+ "etapas": {
+  "preparar": "concluido",
+  "cortes": "concluido",
+  "legenda": "concluido",
+  "visuais": "concluido",
+  "sons": "concluido",
+  "render": "aguardando_aprovacao"
+ },
+ "entregas": [
+  "Teresa_Video4_final_v01.mp4"
+ ],
+ "pendencias": [],
+ "lingua": "pt",
+ "rosto_y": 0.62,
+ "corte": "corte_v01.mp4"
+}

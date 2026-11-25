@@ -1,0 +1,1020 @@
+{
+ "rosto_y": 0.62,
+ "legenda_y": 1560,
+ "legenda_y_com_foto": 1560,
+ "legendas": [
+  {
+   "id": "l001",
+   "a": 0,
+   "b": 1.29,
+   "pt": "Você já percebeu",
+   "en": "Have you noticed"
+  },
+  {
+   "id": "l002",
+   "a": 1.29,
+   "b": 1.55,
+   "pt": "que não consegue",
+   "en": "you can't"
+  },
+  {
+   "id": "l003",
+   "a": 1.55,
+   "b": 2.75,
+   "pt": "emagrecer",
+   "en": "lose weight"
+  },
+  {
+   "id": "l004",
+   "a": 2.75,
+   "b": 4.65,
+   "pt": "tão fácil como antes",
+   "en": "as easily as before"
+  },
+  {
+   "id": "l005",
+   "a": 4.65,
+   "b": 5.87,
+   "pt": "quando era mais jovem?",
+   "en": "when you were younger?"
+  },
+  {
+   "id": "l006",
+   "a": 5.87,
+   "b": 7.05,
+   "pt": "Depois dos 40",
+   "en": "After 40"
+  },
+  {
+   "id": "l007",
+   "a": 7.05,
+   "b": 7.41,
+   "pt": "especialmente",
+   "en": "especially"
+  },
+  {
+   "id": "l008",
+   "a": 7.41,
+   "b": 8.83,
+   "pt": "na perimenopausa",
+   "en": "in perimenopause"
+  },
+  {
+   "id": "l009",
+   "a": 8.83,
+   "b": 9.81,
+   "pt": "e na menopausa",
+   "en": "and menopause"
+  },
+  {
+   "id": "l010",
+   "a": 9.81,
+   "b": 11.53,
+   "pt": "as oscilações hormonais",
+   "en": "hormonal swings"
+  },
+  {
+   "id": "l011",
+   "a": 11.53,
+   "b": 14.79,
+   "pt": "influenciam seu corpo",
+   "en": "affect your body"
+  },
+  {
+   "id": "l012",
+   "a": 14.79,
+   "b": 16.37,
+   "pt": "Como seu corpo funciona?",
+   "en": "How does your body work?"
+  },
+  {
+   "id": "l013",
+   "a": 16.37,
+   "b": 17.87,
+   "pt": "A queda do estrogênio",
+   "en": "With estrogen dropping"
+  },
+  {
+   "id": "l014",
+   "a": 17.87,
+   "b": 19.01,
+   "pt": "e da progesterona",
+   "en": "and progesterone"
+  },
+  {
+   "id": "l015",
+   "a": 19.01,
+   "b": 21.45,
+   "pt": "o corpo acumula gordura",
+   "en": "your body stores fat"
+  },
+  {
+   "id": "l016",
+   "a": 21.45,
+   "b": 22.41,
+   "pt": "mais facilmente",
+   "en": "more easily"
+  },
+  {
+   "id": "l017",
+   "a": 22.41,
+   "b": 24.57,
+   "pt": "na região abdominal",
+   "en": "around the belly"
+  },
+  {
+   "id": "l018",
+   "a": 24.57,
+   "b": 25.57,
+   "pt": "Ao mesmo tempo",
+   "en": "At the same time"
+  },
+  {
+   "id": "l019",
+   "a": 25.57,
+   "b": 26.97,
+   "pt": "você perde massa muscular",
+   "en": "you lose muscle mass"
+  },
+  {
+   "id": "l020",
+   "a": 26.97,
+   "b": 29.47,
+   "pt": "Estudos acompanharam",
+   "en": "Studies followed"
+  },
+  {
+   "id": "l021",
+   "a": 29.47,
+   "b": 30.99,
+   "pt": "mulheres por anos",
+   "en": "women for years"
+  },
+  {
+   "id": "l022",
+   "a": 30.99,
+   "b": 32.43,
+   "pt": "o estudo SWAN",
+   "en": "the SWAN study"
+  },
+  {
+   "id": "l023",
+   "a": 32.43,
+   "b": 34.41,
+   "pt": "mostrou isso",
+   "en": "showed it"
+  },
+  {
+   "id": "l024",
+   "a": 34.41,
+   "b": 35.75,
+   "pt": "na menopausa",
+   "en": "in menopause"
+  },
+  {
+   "id": "l025",
+   "a": 35.75,
+   "b": 36.83,
+   "pt": "A gordura aumenta",
+   "en": "Fat goes up"
+  },
+  {
+   "id": "l026",
+   "a": 36.83,
+   "b": 37.95,
+   "pt": "a massa muscular diminui",
+   "en": "muscle goes down"
+  },
+  {
+   "id": "l027",
+   "a": 37.95,
+   "b": 40.23,
+   "pt": "e você não consegue",
+   "en": "and you can't"
+  },
+  {
+   "id": "l028",
+   "a": 40.23,
+   "b": 41.93,
+   "pt": "controlar bem",
+   "en": "manage well"
+  },
+  {
+   "id": "l029",
+   "a": 41.93,
+   "b": 43.49,
+   "pt": "o seu metabolismo",
+   "en": "your metabolism"
+  },
+  {
+   "id": "l030",
+   "a": 43.49,
+   "b": 46.95,
+   "pt": "O seu metabolismo diminui",
+   "en": "Your metabolism slows down"
+  },
+  {
+   "id": "l031",
+   "a": 46.95,
+   "b": 49.23,
+   "pt": "Então não adianta diminuir",
+   "en": "So it's no use cutting"
+  },
+  {
+   "id": "l032",
+   "a": 49.23,
+   "b": 50.77,
+   "pt": "as calorias",
+   "en": "your calories"
+  },
+  {
+   "id": "l033",
+   "a": 50.77,
+   "b": 52.19,
+   "pt": "pensar que comendo menos",
+   "en": "thinking that eating less"
+  },
+  {
+   "id": "l034",
+   "a": 52.19,
+   "b": 53.93,
+   "pt": "você vai emagrecer",
+   "en": "you'll lose weight"
+  },
+  {
+   "id": "l035",
+   "a": 53.93,
+   "b": 54.89,
+   "pt": "Não é isso",
+   "en": "That's not it"
+  },
+  {
+   "id": "l036",
+   "a": 54.89,
+   "b": 55.97,
+   "pt": "Tem estratégias",
+   "en": "There are strategies"
+  },
+  {
+   "id": "l037",
+   "a": 55.97,
+   "b": 58.45,
+   "pt": "A gente usa proteínas",
+   "en": "We use protein"
+  },
+  {
+   "id": "l038",
+   "a": 58.45,
+   "b": 60.01,
+   "pt": "diminui carboidrato",
+   "en": "cut carbs"
+  },
+  {
+   "id": "l039",
+   "a": 60.01,
+   "b": 62.49,
+   "pt": "alimentação low carb",
+   "en": "a low carb diet"
+  },
+  {
+   "id": "l040",
+   "a": 62.49,
+   "b": 65.25,
+   "pt": "A gente verifica o alimento",
+   "en": "We check your food"
+  },
+  {
+   "id": "l041",
+   "a": 65.25,
+   "b": 67.95,
+   "pt": "e como você pode melhorar",
+   "en": "and how you can improve"
+  },
+  {
+   "id": "l042",
+   "a": 67.95,
+   "b": 69.17,
+   "pt": "A gente analisa",
+   "en": "We analyze"
+  },
+  {
+   "id": "l043",
+   "a": 69.17,
+   "b": 70.61,
+   "pt": "seu plano alimentar",
+   "en": "your meal plan"
+  },
+  {
+   "id": "l044",
+   "a": 70.61,
+   "b": 73.05,
+   "pt": "aumentamos as fibras",
+   "en": "add more fiber"
+  },
+  {
+   "id": "l045",
+   "a": 73.05,
+   "b": 74.05,
+   "pt": "as proteínas",
+   "en": "more protein"
+  },
+  {
+   "id": "l046",
+   "a": 74.05,
+   "b": 76.27,
+   "pt": "diminuímos o carboidrato",
+   "en": "fewer carbs"
+  },
+  {
+   "id": "l047",
+   "a": 76.27,
+   "b": 79.59,
+   "pt": "Incluímos o sono",
+   "en": "We add sleep habits"
+  },
+  {
+   "id": "l048",
+   "a": 79.59,
+   "b": 81.49,
+   "pt": "e o exercício físico",
+   "en": "and exercise"
+  },
+  {
+   "id": "l049",
+   "a": 81.49,
+   "b": 84.25,
+   "pt": "mais carga, músculo",
+   "en": "more weight, muscle"
+  },
+  {
+   "id": "l050",
+   "a": 84.25,
+   "b": 86.83,
+   "pt": "tem que ter musculação",
+   "en": "strength training"
+  },
+  {
+   "id": "l051",
+   "a": 86.83,
+   "b": 89.35,
+   "pt": "Mais água, hidratação",
+   "en": "More water, hydration"
+  },
+  {
+   "id": "l052",
+   "a": 89.35,
+   "b": 91.59,
+   "pt": "mais qualidade de vida",
+   "en": "more quality of life"
+  },
+  {
+   "id": "l053",
+   "a": 91.59,
+   "b": 92.95,
+   "pt": "menos estresse",
+   "en": "less stress"
+  },
+  {
+   "id": "l054",
+   "a": 92.95,
+   "b": 95.29,
+   "pt": "Como a gente monitora",
+   "en": "How we monitor it"
+  },
+  {
+   "id": "l055",
+   "a": 95.29,
+   "b": 97.21,
+   "pt": "como a gente planeja",
+   "en": "how we plan it"
+  },
+  {
+   "id": "l056",
+   "a": 97.21,
+   "b": 99.13,
+   "pt": "É muito importante",
+   "en": "It's very important"
+  },
+  {
+   "id": "l057",
+   "a": 99.13,
+   "b": 100.85,
+   "pt": "ter um bom suporte",
+   "en": "to have good support"
+  },
+  {
+   "id": "l058",
+   "a": 100.85,
+   "b": 101.97,
+   "pt": "Eu sou Teresa Mello",
+   "en": "I'm Teresa Mello"
+  },
+  {
+   "id": "l059",
+   "a": 101.97,
+   "b": 102.71,
+   "pt": "farmacêutica",
+   "en": "a pharmacist"
+  },
+  {
+   "id": "l060",
+   "a": 102.71,
+   "b": 103.55,
+   "pt": "e especialista",
+   "en": "and specialist"
+  },
+  {
+   "id": "l061",
+   "a": 103.55,
+   "b": 104.67,
+   "pt": "em medicina integrativa",
+   "en": "in integrative medicine"
+  },
+  {
+   "id": "l062",
+   "a": 104.67,
+   "b": 106.09,
+   "pt": "Não deixe",
+   "en": "Don't leave"
+  },
+  {
+   "id": "l063",
+   "a": 106.09,
+   "b": 107.25,
+   "pt": "para o próximo ano",
+   "en": "for next year"
+  },
+  {
+   "id": "l064",
+   "a": 107.25,
+   "b": 109.29,
+   "pt": "o que prometeu este ano",
+   "en": "what you promised this year"
+  },
+  {
+   "id": "l065",
+   "a": 109.29,
+   "b": 110.57,
+   "pt": "cuidar do seu corpo",
+   "en": "care for your body"
+  },
+  {
+   "id": "l066",
+   "a": 110.57,
+   "b": 111.99,
+   "pt": "cuidar da sua saúde",
+   "en": "care for your health"
+  },
+  {
+   "id": "l067",
+   "a": 111.99,
+   "b": 113.81,
+   "pt": "Isso é muito importante",
+   "en": "It's very important"
+  },
+  {
+   "id": "l068",
+   "a": 113.81,
+   "b": 115.95,
+   "pt": "seu bem-estar, sua energia",
+   "en": "your wellbeing, your energy"
+  },
+  {
+   "id": "l069",
+   "a": 115.95,
+   "b": 119.29,
+   "pt": "para seus projetos",
+   "en": "to pursue your projects"
+  },
+  {
+   "id": "l070",
+   "a": 119.29,
+   "b": 120.53,
+   "pt": "para dar conta",
+   "en": "to handle"
+  },
+  {
+   "id": "l071",
+   "a": 120.53,
+   "b": 122.23,
+   "pt": "da casa, da família",
+   "en": "your home, your family"
+  },
+  {
+   "id": "l072",
+   "a": 122.23,
+   "b": 123.07,
+   "pt": "do seu trabalho",
+   "en": "your work"
+  },
+  {
+   "id": "l073",
+   "a": 123.07,
+   "b": 123.75,
+   "pt": "Agende",
+   "en": "Book now"
+  },
+  {
+   "id": "l074",
+   "a": 123.75,
+   "b": 125.75,
+   "pt": "mande uma mensagem",
+   "en": "send us a message"
+  },
+  {
+   "id": "l075",
+   "a": 125.75,
+   "b": 127.11,
+   "pt": "vamos responder",
+   "en": "we'll reply"
+  },
+  {
+   "id": "l076",
+   "a": 127.11,
+   "b": 128.35,
+   "pt": "com carinho",
+   "en": "with care"
+  },
+  {
+   "id": "l077",
+   "a": 128.35,
+   "b": 129.92,
+   "pt": "Muito obrigada!",
+   "en": "Thank you!"
+  }
+ ],
+ "fotos": [
+  {
+   "id": "m01",
+   "a": 1.29,
+   "b": 5.87,
+   "frase": "não consegue emagrecer: persona na balança",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p1.jpg",
+   "foco_y": 0.35
+  },
+  {
+   "id": "m02",
+   "a": 5.87,
+   "b": 9.81,
+   "frase": "depois dos 40: persona no espelho",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p2.jpg",
+   "foco_y": 0.35
+  },
+  {
+   "id": "m03",
+   "a": 9.81,
+   "b": 16.37,
+   "frase": "oscilações hormonais: persona incomodada",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p3.jpg",
+   "foco_y": 0.35
+  },
+  {
+   "id": "m04",
+   "a": 16.37,
+   "b": 24.57,
+   "frase": "gordura abdominal: persona com fita métrica",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p4.jpg",
+   "foco_y": 0.45
+  },
+  {
+   "id": "m05",
+   "a": 24.57,
+   "b": 26.97,
+   "frase": "perde massa muscular: persona com sacolas na escada",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p5.jpg",
+   "foco_y": 0.35
+  },
+  {
+   "id": "m06",
+   "a": 26.97,
+   "b": 35.77,
+   "frase": "estudos acompanharam mulheres: caderno e chá",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/1741.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m07",
+   "a": 38.23,
+   "b": 46.95,
+   "frase": "metabolismo diminui: pés na balança",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/24849.mp4",
+   "inicio": 0.5
+  },
+  {
+   "id": "m08",
+   "a": 46.95,
+   "b": 53.95,
+   "frase": "comer menos não adianta: salada",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/40531.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m09",
+   "a": 56.35,
+   "b": 60.01,
+   "frase": "proteínas: ovo sendo quebrado",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/46582.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m10",
+   "a": 60.01,
+   "b": 62.49,
+   "frase": "low carb: ovos cozinhando",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/17202.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m11",
+   "a": 62.49,
+   "b": 67.95,
+   "frase": "verifica o alimento: mãos com frutas",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/10434.mp4",
+   "inicio": 0.5
+  },
+  {
+   "id": "m12",
+   "a": 67.95,
+   "b": 70.61,
+   "frase": "plano alimentar: mãos no computador",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/242.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m13",
+   "a": 70.61,
+   "b": 76.27,
+   "frase": "fibras e proteínas: cortando legumes",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/40524.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m14",
+   "a": 76.27,
+   "b": 79.59,
+   "frase": "sono: tigela de frutas (sem foto de sono disponível)",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/43912.mp4",
+   "inicio": 0.0
+  },
+  {
+   "id": "m15",
+   "a": 79.59,
+   "b": 86.83,
+   "frase": "exercício, musculação: halter",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/52111.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m16",
+   "a": 86.83,
+   "b": 89.35,
+   "frase": "mais água: copo de água",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/48335.mp4",
+   "inicio": 3.0
+  },
+  {
+   "id": "m17",
+   "a": 89.35,
+   "b": 92.95,
+   "frase": "menos estresse: mãos em meditação",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/32756.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m18",
+   "a": 92.95,
+   "b": 97.21,
+   "frase": "monitora e planeja: digitando",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/1781.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m19",
+   "a": 97.21,
+   "b": 100.87,
+   "frase": "bom suporte: persona conversando",
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/fotos/p3.jpg",
+   "foco_y": 0.35
+  },
+  {
+   "id": "m20",
+   "a": 104.95,
+   "b": 109.29,
+   "frase": "promessas do ano: escrevendo no caderno ao sol",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/46559.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m21",
+   "a": 109.29,
+   "b": 111.99,
+   "frase": "cuidar do corpo: caminho no parque",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/12915.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m22",
+   "a": 111.99,
+   "b": 115.95,
+   "frase": "bem-estar, energia: yoga ao pôr do sol",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/33066.mp4",
+   "inicio": 1.0
+  },
+  {
+   "id": "m23",
+   "a": 115.95,
+   "b": 119.29,
+   "frase": "projetos: notebook",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/1781.mp4",
+   "inicio": 5.0
+  },
+  {
+   "id": "m24",
+   "a": 119.29,
+   "b": 123.09,
+   "frase": "casa e família: família caminhando (de costas)",
+   "video": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video4/clipes/33729.mp4",
+   "inicio": 0.5
+  }
+ ],
+ "destaques": [
+  {
+   "id": "d01",
+   "a": 35.8,
+   "b": 38.2,
+   "texto": "MAIS GORDURA, MENOS MÚSCULO"
+  },
+  {
+   "id": "d02",
+   "a": 53.98,
+   "b": 56.32,
+   "texto": "TEM ESTRATÉGIA"
+  },
+  {
+   "id": "d03",
+   "a": 100.9,
+   "b": 104.92,
+   "texto": "MEDICINA INTEGRATIVA"
+  },
+  {
+   "id": "d04",
+   "a": 123.12,
+   "b": 129.82,
+   "texto": "@teresa_mello_pharmacist"
+  }
+ ],
+ "sons": [
+  {
+   "id": "sfx01",
+   "t": 1.285,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m01 entra (clique)"
+  },
+  {
+   "id": "sfx02",
+   "t": 5.865,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m02 entra (clique)"
+  },
+  {
+   "id": "sfx03",
+   "t": 9.805,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m03 entra (clique)"
+  },
+  {
+   "id": "sfx04",
+   "t": 16.365,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m04 entra (clique)"
+  },
+  {
+   "id": "sfx05",
+   "t": 24.565,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m05 entra (clique)"
+  },
+  {
+   "id": "sfx06",
+   "t": 26.965,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m06 entra (clique)"
+  },
+  {
+   "id": "sfx07",
+   "t": 35.585,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -15,
+   "evento": "m06 sai"
+  },
+  {
+   "id": "sfx30",
+   "t": 35.615,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d01 apoio"
+  },
+  {
+   "id": "sfx29",
+   "t": 35.783,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -6,
+   "evento": "d01"
+  },
+  {
+   "id": "sfx08",
+   "t": 38.225,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m07 entra (clique)"
+  },
+  {
+   "id": "sfx09",
+   "t": 46.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m08 entra (clique)"
+  },
+  {
+   "id": "sfx10",
+   "t": 52.875,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -15,
+   "evento": "m08 sai"
+  },
+  {
+   "id": "sfx31",
+   "t": 53.747,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
+   "db": -6,
+   "evento": "d02"
+  },
+  {
+   "id": "sfx32",
+   "t": 53.795,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d02 apoio"
+  },
+  {
+   "id": "sfx11",
+   "t": 56.345,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m09 entra (clique)"
+  },
+  {
+   "id": "sfx12",
+   "t": 60.005,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m10 entra (clique)"
+  },
+  {
+   "id": "sfx13",
+   "t": 62.485,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m11 entra (clique)"
+  },
+  {
+   "id": "sfx14",
+   "t": 67.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m12 entra (clique)"
+  },
+  {
+   "id": "sfx15",
+   "t": 70.605,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m13 entra (clique)"
+  },
+  {
+   "id": "sfx16",
+   "t": 76.265,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m14 entra (clique)"
+  },
+  {
+   "id": "sfx17",
+   "t": 79.585,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m15 entra (clique)"
+  },
+  {
+   "id": "sfx18",
+   "t": 86.825,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m16 entra (clique)"
+  },
+  {
+   "id": "sfx19",
+   "t": 89.345,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m17 entra (clique)"
+  },
+  {
+   "id": "sfx20",
+   "t": 92.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m18 entra (clique)"
+  },
+  {
+   "id": "sfx21",
+   "t": 97.205,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m19 entra (clique)"
+  },
+  {
+   "id": "sfx22",
+   "t": 100.162,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -15,
+   "evento": "m19 sai"
+  },
+  {
+   "id": "sfx34",
+   "t": 100.715,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d03 apoio"
+  },
+  {
+   "id": "sfx33",
+   "t": 100.879,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
+   "db": -6,
+   "evento": "d03"
+  },
+  {
+   "id": "sfx23",
+   "t": 104.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m20 entra (clique)"
+  },
+  {
+   "id": "sfx24",
+   "t": 109.285,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c01-mouse.wav",
+   "db": -6,
+   "evento": "m21 entra (clique)"
+  },
+  {
+   "id": "sfx25",
+   "t": 111.985,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c02-soft.wav",
+   "db": -6,
+   "evento": "m22 entra (clique)"
+  },
+  {
+   "id": "sfx26",
+   "t": 115.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c03-tick.wav",
+   "db": -6,
+   "evento": "m23 entra (clique)"
+  },
+  {
+   "id": "sfx27",
+   "t": 119.285,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/clique/c04-shutter.wav",
+   "db": -6,
+   "evento": "m24 entra (clique)"
+  },
+  {
+   "id": "sfx28",
+   "t": 122.015,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w04-cine.wav",
+   "db": -15,
+   "evento": "m24 sai"
+  },
+  {
+   "id": "sfx36",
+   "t": 122.935,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -14,
+   "evento": "d04 apoio"
+  },
+  {
+   "id": "sfx35",
+   "t": 123.103,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -6,
+   "evento": "d04"
+  }
+ ]
+}
