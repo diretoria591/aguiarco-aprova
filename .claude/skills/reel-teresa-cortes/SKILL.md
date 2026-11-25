@@ -17,6 +17,13 @@ Entrega o vídeo cortado (`corte_vNN.mp4`), ainda sem legenda, fotos ou sons. As
 - **Zoom e destaque não coincidem:** escolha as ênfases do zoom pensando que as palavras-chave em destaque (etapa visuais) também caem em frases de impacto. Zoom em 3–4 momentos; os destaques podem cair nos mesmos momentos, porque um reforça o outro.
 - Saída: `python3 -I edicao/scripts/render.py <pasta>/video.mp4 <pasta>/work <pasta>/edit.json <pasta>/corte_v01.mp4`.
 
+## Travadas (pedido em 25/11: "ela fica travando... tem que cortar pra deixar mais fluido")
+O Whisper não escreve muletas e travadas ("é...", "ã", "me... metabolismo", sílaba arrastada), então elas passam despercebidas na transcrição. Depois do primeiro render:
+1. `python3 -I edicao/scripts/muletas.py <pasta>/work` lista trechos com voz e sem palavra, e palavras curtas alongadas, já com o tempo no original.
+2. Olhe também, em `work/palavras.json`, palavras seguidas de um buraco grande antes da próxima (ex.: "seu" e "metabolismo" 1,4 s depois): costuma ser uma travada dentro do trecho. Veja o envelope (`probe.py --db`) para achar os pedaços de voz no meio.
+3. Teste cada corte com `probe.py` (com e sem o corte): só entra se o texto continuar idêntico. Se mudar uma palavra, não corta.
+4. Junte todos no `edit.json` e renderize de novo. Se legenda, fotos e sons já existirem, remapeie os tempos pela palavra (mesmo índice de palavra no `palavras.json` antigo e no novo).
+
 ## Conferir (obrigatório, porque a pessoa só vê o final)
 `verify.py` e leitura da transcrição final inteira: nenhuma frase repetida, nenhuma palavra comida, nenhuma frase sem sentido. A primeira versão quase sempre tem 2 ou 3 ajustes: corrija e renderize de novo antes de seguir.
 Anote no estado as aparas duvidosas (ex.: "Bom..." solto, um CTA que parecia regravação) com `--set duvidas_cortes "[...]"`, para contar no resumo final.

@@ -1,8 +1,78 @@
-{"start": 0.75, "end": 144.85,
- "cuts": [[69.75, 72.5, "ruído + 'Opa!' entre 'a gente verifica' e 'o alimento'"],
-          [111.93, 112.33, "isso é muito... é importante -> isso é muito importante"]],
- "zooms": [[0.9, 3.8, "você já percebeu que não consegue emagrecer"],
-           [23.0, 26.4, "acumular gordura nas regiões abdominais"],
-           [51.2, 55.15, "não adianta você diminuir a ingestão calórica"],
-           [119.1, 123.7, "não deixe para o próximo ano o que você prometeu"]],
- "zoom_amount": 0.05, "anchor": [0.5, 0.55]}
+{
+ "start": 0.75,
+ "end": 144.85,
+ "cuts": [
+  [
+   8.0,
+   8.15,
+   "travada"
+  ],
+  [
+   17.65,
+   17.93,
+   "travada antes de 'A queda'"
+  ],
+  [
+   29.96,
+   30.08,
+   "travada"
+  ],
+  [
+   48.2,
+   48.97,
+   "o seu... (trava) metabolismo"
+  ],
+  [
+   69.75,
+   72.5,
+   "ruído + 'Opa!' entre 'a gente verifica' e 'o alimento'"
+  ],
+  [
+   93.65,
+   93.81,
+   "travada"
+  ],
+  [
+   111.93,
+   112.33,
+   "isso é muito... é importante -> isso é muito importante"
+  ],
+  [
+   128.89,
+   129.03,
+   "travada"
+  ],
+  [
+   137.01,
+   137.15,
+   "travada"
+  ]
+ ],
+ "zooms": [
+  [
+   0.9,
+   3.8,
+   "você já percebeu que não consegue emagrecer"
+  ],
+  [
+   23.0,
+   26.4,
+   "acumular gordura nas regiões abdominais"
+  ],
+  [
+   51.2,
+   55.15,
+   "não adianta você diminuir a ingestão calórica"
+  ],
+  [
+   119.1,
+   123.7,
+   "não deixe para o próximo ano o que você prometeu"
+  ]
+ ],
+ "zoom_amount": 0.05,
+ "anchor": [
+  0.5,
+  0.55
+ ]
+}

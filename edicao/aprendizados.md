@@ -11,3 +11,4 @@ Formato: `- [ ] <etapa> · <pedido, com contexto> · <dd/mm>`
 - [x] visuais · mesma persona do começo ao fim (mulher de cabelo preto) e muito mais fotos, ocupando quase todo o vídeo · 25/11 → reel-teresa-visuais e perfil identidade.md
 - [x] sons · clique em toda foto que aparece · 25/11 → reel-teresa-sons
 - [x] visuais · vídeos na faixa de cima junto com as fotos (Mixkit, sem rosto) · 25/11 → reel-teresa-visuais
+- [x] cortes · tirar as travadas dela ("é...", sílaba arrastada, "seu... metabolismo") para a fala ficar fluida · 25/11 → reel-teresa-cortes (muletas.py)
