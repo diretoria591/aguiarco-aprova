@@ -11,7 +11,7 @@ Medidas em vídeo 1080x1920.
 - Poucas palavras por vez: 3 a 5 por trecho, trocando junto com a fala. Tudo em minúsculas na ref01 e com maiúscula inicial na ref02; usar maiúscula só no começo da frase.
 - **Nunca deixar a linha passar da largura da tela.** Na ref02 "Você sabia que o seu corpo" vaza para fora: limite de ~900 px de largura; se não couber, menos palavras por trecho.
 - Fonte: sem serifa, arredondada e pesada. Usar Nunito Black ou Montserrat ExtraBold (gratuitas) até a pessoa informar a original.
-- Posição: na referência fica bem baixa (~77% e ~83% da altura), em cima do nome e da descrição do Instagram. Usar mais alto, na área segura: centro do português ~66% (y≈1270), inglês logo abaixo, com 16 px de espaço entre as caixas.
+- Posição: na referência fica bem baixa (~77% e ~83% da altura), em cima do nome e da descrição do Instagram. Usar na altura do peito, **nunca no pescoço** (pedido da Teresa em 25/11): centro do português em y≈1460 (y≈1530 com foto em cima), inglês logo abaixo, com 16 px de espaço entre as caixas. Abaixo de ~1720 o nome e a descrição do Instagram cobrem.
 
 ## Fotos
 - A foto ocupa a faixa de cima, largura inteira, ~37% da altura (0 a ~710 px), cortada para preencher, sem borda. Ela continua embaixo, enquadrada para o rosto ficar na faixa de baixo. (ref02)
