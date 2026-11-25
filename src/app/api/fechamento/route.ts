@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { addMonths, currentMonth } from '@/lib/format';
 import { buildFechamento, sendFechamento } from '@/lib/fechamento';
+import { asaas } from '@/lib/asaas';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,8 @@ export async function GET(req: NextRequest) {
   const mes = req.nextUrl.searchParams.get('mes');
   const month = mes && /^\d{4}-(0[1-9]|1[0-2])$/.test(mes) ? mes : addMonths(currentMonth(), -1);
   const site = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin;
+  // o Asaas desativa chaves sem uso por 3 meses: uma consulta por mês mantém a do Aprova ativa
+  if (process.env.ASAAS_API_KEY) await asaas('/customers?limit=1').catch(() => {});
   try {
     const mail = await buildFechamento(admin, month, site);
     if (req.nextUrl.searchParams.get('preview') === '1') {
