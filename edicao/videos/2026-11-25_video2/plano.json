@@ -1,0 +1,579 @@
+{
+ "rosto_y": 0.53,
+ "legendas": [
+  {
+   "id": "l001",
+   "a": 0,
+   "b": 0.81,
+   "pt": "Olá, pessoal!",
+   "en": "Hi everyone!"
+  },
+  {
+   "id": "l002",
+   "a": 0.81,
+   "b": 1.75,
+   "pt": "Você tem sentido",
+   "en": "Have you been feeling"
+  },
+  {
+   "id": "l003",
+   "a": 1.75,
+   "b": 3.05,
+   "pt": "que está mais cansada?",
+   "en": "more tired?"
+  },
+  {
+   "id": "l004",
+   "a": 3.05,
+   "b": 5.29,
+   "pt": "Não dorme como dormia",
+   "en": "Not sleeping like before"
+  },
+  {
+   "id": "l005",
+   "a": 5.29,
+   "b": 7.8,
+   "pt": "nota o sono picado",
+   "en": "your sleep is broken"
+  },
+  {
+   "id": "l006",
+   "a": 8.19,
+   "b": 9.29,
+   "pt": "mudanças hormonais",
+   "en": "hormonal changes"
+  },
+  {
+   "id": "l007",
+   "a": 9.29,
+   "b": 10.03,
+   "pt": "o seu humor",
+   "en": "your mood"
+  },
+  {
+   "id": "l008",
+   "a": 10.03,
+   "b": 11.39,
+   "pt": "e o seu nível de energia",
+   "en": "and your energy level"
+  },
+  {
+   "id": "l009",
+   "a": 11.39,
+   "b": 13.41,
+   "pt": "não é mais como antes?",
+   "en": "aren't what they used to be?"
+  },
+  {
+   "id": "l010",
+   "a": 13.41,
+   "b": 14.45,
+   "pt": "Deixa eu me apresentar",
+   "en": "Let me introduce myself"
+  },
+  {
+   "id": "l011",
+   "a": 14.45,
+   "b": 15.53,
+   "pt": "Eu sou Teresa Mello",
+   "en": "I'm Teresa Mello"
+  },
+  {
+   "id": "l012",
+   "a": 15.53,
+   "b": 16.49,
+   "pt": "sou farmacêutica",
+   "en": "I'm a pharmacist"
+  },
+  {
+   "id": "l013",
+   "a": 16.49,
+   "b": 17.41,
+   "pt": "sou especialista",
+   "en": "I'm a specialist"
+  },
+  {
+   "id": "l014",
+   "a": 17.41,
+   "b": 18.67,
+   "pt": "em medicina integrativa",
+   "en": "in integrative medicine"
+  },
+  {
+   "id": "l015",
+   "a": 18.67,
+   "b": 19.95,
+   "pt": "Eu ajudo as mulheres",
+   "en": "I help women"
+  },
+  {
+   "id": "l016",
+   "a": 19.95,
+   "b": 21.35,
+   "pt": "a compreender melhor",
+   "en": "better understand"
+  },
+  {
+   "id": "l017",
+   "a": 21.35,
+   "b": 22.77,
+   "pt": "esse estado hormonal",
+   "en": "this hormonal phase"
+  },
+  {
+   "id": "l018",
+   "a": 22.77,
+   "b": 24.38,
+   "pt": "que ela está passando",
+   "en": "they're going through"
+  },
+  {
+   "id": "l019",
+   "a": 24.41,
+   "b": 24.91,
+   "pt": "perimenopausa",
+   "en": "perimenopause"
+  },
+  {
+   "id": "l020",
+   "a": 24.91,
+   "b": 25.91,
+   "pt": "e menopausa",
+   "en": "and menopause"
+  },
+  {
+   "id": "l021",
+   "a": 25.91,
+   "b": 28.23,
+   "pt": "através dos exames",
+   "en": "through lab tests"
+  },
+  {
+   "id": "l022",
+   "a": 28.23,
+   "b": 29.41,
+   "pt": "e dos seus sintomas",
+   "en": "and your symptoms"
+  },
+  {
+   "id": "l023",
+   "a": 29.41,
+   "b": 31.01,
+   "pt": "Eu vou analisar",
+   "en": "I'll analyze"
+  },
+  {
+   "id": "l024",
+   "a": 31.01,
+   "b": 32.05,
+   "pt": "eu vou verificar",
+   "en": "I'll check"
+  },
+  {
+   "id": "l025",
+   "a": 32.05,
+   "b": 33.01,
+   "pt": "e colocar",
+   "en": "and set"
+  },
+  {
+   "id": "l026",
+   "a": 33.01,
+   "b": 34.43,
+   "pt": "a melhor estratégia",
+   "en": "the best strategy"
+  },
+  {
+   "id": "l027",
+   "a": 34.43,
+   "b": 35.23,
+   "pt": "para você",
+   "en": "for you"
+  },
+  {
+   "id": "l028",
+   "a": 35.23,
+   "b": 36.99,
+   "pt": "para o seu estado hormonal",
+   "en": "for your hormones"
+  },
+  {
+   "id": "l029",
+   "a": 36.99,
+   "b": 38.47,
+   "pt": "para os seus sintomas",
+   "en": "for your symptoms"
+  },
+  {
+   "id": "l030",
+   "a": 38.47,
+   "b": 39.89,
+   "pt": "e verificar",
+   "en": "and check"
+  },
+  {
+   "id": "l031",
+   "a": 39.89,
+   "b": 41.81,
+   "pt": "como podemos trabalhar",
+   "en": "how we can work"
+  },
+  {
+   "id": "l032",
+   "a": 41.81,
+   "b": 45.13,
+   "pt": "do jeito mais personalizado",
+   "en": "in the most personal way"
+  },
+  {
+   "id": "l033",
+   "a": 45.13,
+   "b": 47.65,
+   "pt": "Assim, como farmacêutica",
+   "en": "Also, as a pharmacist"
+  },
+  {
+   "id": "l034",
+   "a": 47.65,
+   "b": 49.43,
+   "pt": "elaborei dois suplementos",
+   "en": "I created two supplements"
+  },
+  {
+   "id": "l035",
+   "a": 49.43,
+   "b": 50.49,
+   "pt": "o High Ease",
+   "en": "High Ease"
+  },
+  {
+   "id": "l036",
+   "a": 50.49,
+   "b": 52.07,
+   "pt": "para o suporte hormonal",
+   "en": "for hormonal support"
+  },
+  {
+   "id": "l037",
+   "a": 52.07,
+   "b": 53.07,
+   "pt": "e o High Calm",
+   "en": "and High Calm"
+  },
+  {
+   "id": "l038",
+   "a": 53.07,
+   "b": 54.85,
+   "pt": "para o suporte do sono",
+   "en": "for sleep support"
+  },
+  {
+   "id": "l039",
+   "a": 54.85,
+   "b": 57.57,
+   "pt": "Serve para homens também",
+   "en": "Men can use it too"
+  },
+  {
+   "id": "l040",
+   "a": 57.57,
+   "b": 58.71,
+   "pt": "Homens podem usar",
+   "en": "Men can use"
+  },
+  {
+   "id": "l041",
+   "a": 58.71,
+   "b": 59.55,
+   "pt": "o High Calm",
+   "en": "High Calm"
+  },
+  {
+   "id": "l042",
+   "a": 59.55,
+   "b": 61.41,
+   "pt": "São duas fórmulas naturais",
+   "en": "Two natural formulas"
+  },
+  {
+   "id": "l043",
+   "a": 61.41,
+   "b": 63.15,
+   "pt": "desenvolvidas por mim",
+   "en": "developed by me"
+  },
+  {
+   "id": "l044",
+   "a": 63.15,
+   "b": 64.87,
+   "pt": "para o suporte",
+   "en": "for support"
+  },
+  {
+   "id": "l045",
+   "a": 64.87,
+   "b": 66.97,
+   "pt": "estratégico suplementar",
+   "en": "strategic supplement"
+  },
+  {
+   "id": "l046",
+   "a": 66.97,
+   "b": 67.81,
+   "pt": "Se você",
+   "en": "So if you"
+  },
+  {
+   "id": "l047",
+   "a": 67.81,
+   "b": 69.25,
+   "pt": "precisa de uma visão",
+   "en": "need a view"
+  },
+  {
+   "id": "l048",
+   "a": 69.25,
+   "b": 70.91,
+   "pt": "da medicina integrativa",
+   "en": "from integrative medicine"
+  },
+  {
+   "id": "l049",
+   "a": 70.91,
+   "b": 72.25,
+   "pt": "entre em contato comigo",
+   "en": "get in touch with me"
+  },
+  {
+   "id": "l050",
+   "a": 72.25,
+   "b": 73.63,
+   "pt": "Eu moro na Inglaterra",
+   "en": "I live in England"
+  },
+  {
+   "id": "l051",
+   "a": 73.63,
+   "b": 75.65,
+   "pt": "também dou aulas",
+   "en": "I also teach"
+  },
+  {
+   "id": "l052",
+   "a": 75.65,
+   "b": 77.27,
+   "pt": "e mentoria a alunos",
+   "en": "and mentor students"
+  },
+  {
+   "id": "l053",
+   "a": 77.27,
+   "b": 78.59,
+   "pt": "de inglês",
+   "en": "in English"
+  },
+  {
+   "id": "l054",
+   "a": 78.59,
+   "b": 79.53,
+   "pt": "a melhorar",
+   "en": "to improve"
+  },
+  {
+   "id": "l055",
+   "a": 79.53,
+   "b": 80.83,
+   "pt": "a ter mais confiança",
+   "en": "and feel more confident"
+  },
+  {
+   "id": "l056",
+   "a": 80.83,
+   "b": 82.65,
+   "pt": "na fala e na mentoria",
+   "en": "in speaking and mentoring"
+  },
+  {
+   "id": "l057",
+   "a": 82.65,
+   "b": 84.35,
+   "pt": "porque sou tradutora oficial",
+   "en": "because I'm an official translator"
+  },
+  {
+   "id": "l058",
+   "a": 84.35,
+   "b": 85.97,
+   "pt": "português e inglês",
+   "en": "Portuguese and English"
+  },
+  {
+   "id": "l059",
+   "a": 85.97,
+   "b": 87.51,
+   "pt": "Deixo aqui o meu Instagram",
+   "en": "Here's my Instagram"
+  },
+  {
+   "id": "l060",
+   "a": 87.51,
+   "b": 88.91,
+   "pt": "Entre em contato comigo",
+   "en": "Get in touch with me"
+  },
+  {
+   "id": "l061",
+   "a": 88.91,
+   "b": 90.86,
+   "pt": "Mande um direct",
+   "en": "Send me a DM"
+  }
+ ],
+ "fotos": [
+  {
+   "id": "f01",
+   "a": 3.05,
+   "b": 7.45,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f01.jpg",
+   "foco_y": 0.45,
+   "frase": "não dorme como dormia (mulher acordada à noite)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f02",
+   "a": 25.91,
+   "b": 29.71,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f02.jpg",
+   "foco_y": 0.45,
+   "frase": "através dos exames e sintomas (consulta)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f04",
+   "a": 54.85,
+   "b": 57.83,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f04.jpg",
+   "foco_y": 0.4,
+   "frase": "serve para homens (homem dormindo)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f03",
+   "a": 59.55,
+   "b": 63.45,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f03.jpg",
+   "foco_y": 0.5,
+   "frase": "duas fórmulas naturais (cápsulas e ervas)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f05",
+   "a": 72.25,
+   "b": 74.55,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f05.jpg",
+   "foco_y": 0.5,
+   "frase": "moro na Inglaterra (vila inglesa)",
+   "fonte": "IA do Canva"
+  },
+  {
+   "id": "f06",
+   "a": 74.55,
+   "b": 78.89,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video2/fotos/f06.jpg",
+   "foco_y": 0.4,
+   "frase": "aulas e mentoria de inglês (professora online)",
+   "fonte": "IA do Canva"
+  }
+ ],
+ "destaques": [
+  {
+   "id": "d01",
+   "a": 17.46,
+   "b": 19.0,
+   "texto": "MEDICINA INTEGRATIVA"
+  },
+  {
+   "id": "d02",
+   "a": 49.48,
+   "b": 52.1,
+   "texto": "HIGH EASE"
+  },
+  {
+   "id": "d03",
+   "a": 52.12,
+   "b": 54.8,
+   "texto": "HIGH CALM"
+  },
+  {
+   "id": "d04",
+   "a": 87.04,
+   "b": 91.06,
+   "texto": "@teresa_mello_pharmacist"
+  }
+ ],
+ "sons": [
+  {
+   "id": "sfx01",
+   "t": 2.414,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f01"
+  },
+  {
+   "id": "sfx06",
+   "t": 17.443,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d01"
+  },
+  {
+   "id": "sfx02",
+   "t": 25.725,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -20,
+   "evento": "f02"
+  },
+  {
+   "id": "sfx07",
+   "t": 49.247,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
+   "db": -17,
+   "evento": "d02"
+  },
+  {
+   "id": "sfx08",
+   "t": 52.099,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
+   "db": -17,
+   "evento": "d03"
+  },
+  {
+   "id": "sfx03",
+   "t": 54.142,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -20,
+   "evento": "f04"
+  },
+  {
+   "id": "sfx04",
+   "t": 58.914,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f03"
+  },
+  {
+   "id": "sfx05",
+   "t": 72.065,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -20,
+   "evento": "f05"
+  },
+  {
+   "id": "sfx09",
+   "t": 87.023,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d04"
+  }
+ ]
+}
