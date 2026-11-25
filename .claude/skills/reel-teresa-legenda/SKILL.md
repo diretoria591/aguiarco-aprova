@@ -13,7 +13,9 @@ Gera os blocos de legenda (texto e tempo) do vídeo cortado. O desenho (cores, f
 
 ## Passo a passo
 1. `python3 -I edicao/scripts/palavras.py <pasta>/work/edit_audio.wav <pasta>/work/palavras.json --model /root/whisper-large-v3 --lingua <en|pt>` (tempo por palavra no tempo do corte).
-2. `python3 -I edicao/scripts/blocos.py <pasta>/work/palavras.json <pasta>/legendas.json` (blocos de até 5 palavras que cabem na largura).
+2. **Blocos à mão (o jeito que funcionou):** o Whisper com tempo por palavra quase não põe pontuação, e o `blocos.py` corta frases no meio. Liste as palavras com índice, escreva os blocos (cada um uma ideia curta, quebrando na pontuação de sentido) já com as duas línguas em `blocos.json` (`[[i, j, "inglês", "português"], ...]`) e rode `python3 -I edicao/scripts/blocos_por_indice.py <pasta>/work/palavras.json <pasta>/blocos.json <pasta>/legendas.json`. Ele avisa os blocos largos demais: divida-os. O português costuma ser ~30% mais longo: prefira blocos de 2 a 4 palavras.
+   Alternativa automática (rascunho): `python3 -I edicao/scripts/blocos.py <pasta>/work/palavras.json <pasta>/legendas.json` (blocos de até 5 palavras que cabem na largura).
+   Gaguejos da fala ("would would", "a a") não vão para a legenda.
 0. **Línguas:** o português fica sempre em cima (caixa verde) e o inglês embaixo. A fala dela vai para o campo da língua em que ela falou (`pt` ou `en`); o outro campo é a tradução. O `blocos.py` põe o texto falado em `pt`: se ela falou inglês, mova para `en` e traduza para `pt`.
 3. **Revisar o texto falado** de cada bloco, lendo o `legendas.json`: grafia correta, nomes próprios e termos de saúde (a Teresa é farmacêutica: nomes de substâncias, sintomas, suplementos). O texto é o que ela falou: corrige-se a grafia, nunca o conteúdo. Muletas que sobraram no corte ("né", "tá") podem sair da legenda.
 4. **Traduzir** cada bloco para a outra língua. Tradução natural, como um nativo diria, mas que acompanhe o bloco (o inglês aparece junto com o português daquele trecho). Se uma frase se dividir em dois blocos, divida a tradução no ponto equivalente. Termos técnicos com o nome usado em inglês.

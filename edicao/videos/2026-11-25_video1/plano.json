@@ -1,0 +1,558 @@
+{
+ "rosto_y": 0.49,
+ "legendas": [
+  {
+   "id": "l001",
+   "a": 0,
+   "b": 1.59,
+   "pt": "Você sente que",
+   "en": "Do you feel that you"
+  },
+  {
+   "id": "l002",
+   "a": 1.59,
+   "b": 4.57,
+   "pt": "não é mais a mesma?",
+   "en": "are not the same as before?"
+  },
+  {
+   "id": "l003",
+   "a": 4.57,
+   "b": 6.13,
+   "pt": "Seus hormônios mudaram",
+   "en": "Your hormones changed"
+  },
+  {
+   "id": "l004",
+   "a": 6.13,
+   "b": 8.35,
+   "pt": "seu humor mudou",
+   "en": "your mood changed"
+  },
+  {
+   "id": "l005",
+   "a": 8.35,
+   "b": 10.17,
+   "pt": "seu ânimo, sua energia",
+   "en": "your level, your energy"
+  },
+  {
+   "id": "l006",
+   "a": 10.17,
+   "b": 12.73,
+   "pt": "e você não entende bem",
+   "en": "and you don't quite understand"
+  },
+  {
+   "id": "l007",
+   "a": 12.73,
+   "b": 13.99,
+   "pt": "o que está havendo",
+   "en": "what's going on"
+  },
+  {
+   "id": "l008",
+   "a": 13.99,
+   "b": 15.79,
+   "pt": "com o seu corpo?",
+   "en": "what's happening to your body?"
+  },
+  {
+   "id": "l009",
+   "a": 15.79,
+   "b": 17.23,
+   "pt": "Se você é uma mulher",
+   "en": "If you are a woman"
+  },
+  {
+   "id": "l010",
+   "a": 17.23,
+   "b": 19.01,
+   "pt": "com mais de 40 anos",
+   "en": "over 40 years old"
+  },
+  {
+   "id": "l011",
+   "a": 19.01,
+   "b": 21.01,
+   "pt": "notando mudanças",
+   "en": "noticing changes"
+  },
+  {
+   "id": "l012",
+   "a": 21.01,
+   "b": 22.51,
+   "pt": "não é culpa sua",
+   "en": "it's not your fault"
+  },
+  {
+   "id": "l013",
+   "a": 22.51,
+   "b": 24.71,
+   "pt": "São os seus hormônios",
+   "en": "It's your hormone levels"
+  },
+  {
+   "id": "l014",
+   "a": 24.71,
+   "b": 26.45,
+   "pt": "A progesterona cai",
+   "en": "Progesterone drops"
+  },
+  {
+   "id": "l015",
+   "a": 26.45,
+   "b": 27.93,
+   "pt": "o estrogênio também",
+   "en": "estrogen too"
+  },
+  {
+   "id": "l016",
+   "a": 27.93,
+   "b": 29.47,
+   "pt": "eles oscilam",
+   "en": "they oscillate"
+  },
+  {
+   "id": "l017",
+   "a": 29.47,
+   "b": 33.81,
+   "pt": "o metabolismo muda",
+   "en": "you feel your metabolism change"
+  },
+  {
+   "id": "l018",
+   "a": 33.81,
+   "b": 36.31,
+   "pt": "Então você precisa",
+   "en": "So you need"
+  },
+  {
+   "id": "l019",
+   "a": 36.31,
+   "b": 38.55,
+   "pt": "da medicina integrativa",
+   "en": "integrative medicine"
+  },
+  {
+   "id": "l020",
+   "a": 38.55,
+   "b": 40.17,
+   "pt": "para checar seus níveis",
+   "en": "to check your levels"
+  },
+  {
+   "id": "l021",
+   "a": 40.17,
+   "b": 41.11,
+   "pt": "seus hormônios",
+   "en": "your hormones"
+  },
+  {
+   "id": "l022",
+   "a": 41.11,
+   "b": 42.69,
+   "pt": "suas vitaminas",
+   "en": "your vitamins"
+  },
+  {
+   "id": "l023",
+   "a": 42.69,
+   "b": 45.15,
+   "pt": "ferritina, vitamina B12",
+   "en": "ferritin, vitamin B12"
+  },
+  {
+   "id": "l024",
+   "a": 45.15,
+   "b": 47.73,
+   "pt": "outras vitaminas",
+   "en": "other vitamins"
+  },
+  {
+   "id": "l025",
+   "a": 47.73,
+   "b": 49.11,
+   "pt": "minerais e hormônios",
+   "en": "minerals and hormones"
+  },
+  {
+   "id": "l026",
+   "a": 49.11,
+   "b": 49.99,
+   "pt": "Nós avaliamos",
+   "en": "We look"
+  },
+  {
+   "id": "l027",
+   "a": 49.99,
+   "b": 51.71,
+   "pt": "e montamos um plano",
+   "en": "and set a nutrition"
+  },
+  {
+   "id": "l028",
+   "a": 51.71,
+   "b": 53.21,
+   "pt": "de nutrição e suplementos",
+   "en": "and supplement plan"
+  },
+  {
+   "id": "l029",
+   "a": 53.21,
+   "b": 57.57,
+   "pt": "Se quer a orientação certa",
+   "en": "If you want the right guidance"
+  },
+  {
+   "id": "l030",
+   "a": 57.57,
+   "b": 59.25,
+   "pt": "eu quero te apoiar",
+   "en": "I'd like to support you"
+  },
+  {
+   "id": "l031",
+   "a": 59.25,
+   "b": 61.13,
+   "pt": "Me mande a mensagem",
+   "en": "Send me a message"
+  },
+  {
+   "id": "l032",
+   "a": 61.13,
+   "b": 61.89,
+   "pt": "HEALTH",
+   "en": "HEALTH"
+  },
+  {
+   "id": "l033",
+   "a": 61.89,
+   "b": 64.09,
+   "pt": "e eu vou te ajudar",
+   "en": "and I'll help you"
+  },
+  {
+   "id": "l034",
+   "a": 64.09,
+   "b": 68.27,
+   "pt": "a ter mais disposição",
+   "en": "perform better"
+  },
+  {
+   "id": "l035",
+   "a": 68.27,
+   "b": 70.23,
+   "pt": "e se sentir muito melhor",
+   "en": "and feel much better"
+  },
+  {
+   "id": "l036",
+   "a": 70.23,
+   "b": 72.11,
+   "pt": "Trabalhei 30 anos",
+   "en": "I worked 30 years"
+  },
+  {
+   "id": "l037",
+   "a": 72.11,
+   "b": 73.35,
+   "pt": "na indústria farmacêutica",
+   "en": "in the pharma industry"
+  },
+  {
+   "id": "l038",
+   "a": 73.35,
+   "b": 76.51,
+   "pt": "então criei meu produto",
+   "en": "so I created my own product"
+  },
+  {
+   "id": "l039",
+   "a": 76.51,
+   "b": 79.59,
+   "pt": "High Ease e High Calm",
+   "en": "High Ease and High Calm"
+  },
+  {
+   "id": "l040",
+   "a": 79.59,
+   "b": 81.11,
+   "pt": "que apoiam",
+   "en": "that support"
+  },
+  {
+   "id": "l041",
+   "a": 81.11,
+   "b": 83.19,
+   "pt": "a mulher nessa fase",
+   "en": "women in this phase"
+  },
+  {
+   "id": "l042",
+   "a": 83.19,
+   "b": 84.41,
+   "pt": "Quero",
+   "en": "I'd like to"
+  },
+  {
+   "id": "l043",
+   "a": 84.41,
+   "b": 85.99,
+   "pt": "dividir o que eu sei",
+   "en": "share my knowledge"
+  },
+  {
+   "id": "l044",
+   "a": 85.99,
+   "b": 88.27,
+   "pt": "e te ajudar a entender",
+   "en": "and help you understand"
+  },
+  {
+   "id": "l045",
+   "a": 88.27,
+   "b": 89.67,
+   "pt": "todo esse desconforto",
+   "en": "all this discomfort"
+  },
+  {
+   "id": "l046",
+   "a": 89.67,
+   "b": 92.19,
+   "pt": "que a mulher passa",
+   "en": "women go through"
+  },
+  {
+   "id": "l047",
+   "a": 92.19,
+   "b": 92.91,
+   "pt": "Você não precisa",
+   "en": "You don't have to"
+  },
+  {
+   "id": "l048",
+   "a": 92.91,
+   "b": 93.91,
+   "pt": "passar por isso sozinha",
+   "en": "go through it alone"
+  },
+  {
+   "id": "l049",
+   "a": 93.91,
+   "b": 95.69,
+   "pt": "Você pode ter",
+   "en": "You can have"
+  },
+  {
+   "id": "l050",
+   "a": 95.69,
+   "b": 97.77,
+   "pt": "apoio personalizado",
+   "en": "personalized support"
+  },
+  {
+   "id": "l051",
+   "a": 97.77,
+   "b": 100.35,
+   "pt": "É muito importante",
+   "en": "It's very important"
+  },
+  {
+   "id": "l052",
+   "a": 100.35,
+   "b": 102.65,
+   "pt": "escolher a profissional certa",
+   "en": "to choose the right professional"
+  },
+  {
+   "id": "l053",
+   "a": 102.65,
+   "b": 104.69,
+   "pt": "e cuidar da sua saúde",
+   "en": "and look after your health"
+  },
+  {
+   "id": "l054",
+   "a": 104.69,
+   "b": 106.47,
+   "pt": "e do seu corpo",
+   "en": "and your body"
+  },
+  {
+   "id": "l055",
+   "a": 106.47,
+   "b": 107.67,
+   "pt": "Eu sou Teresa Mello",
+   "en": "I'm Teresa Mello"
+  },
+  {
+   "id": "l056",
+   "a": 107.67,
+   "b": 108.61,
+   "pt": "sou farmacêutica",
+   "en": "I'm a pharmacist"
+  },
+  {
+   "id": "l057",
+   "a": 108.61,
+   "b": 110.62,
+   "pt": "e quero te ajudar",
+   "en": "and I'd like to help you"
+  }
+ ],
+ "fotos": [
+  {
+   "id": "f01",
+   "a": 6.13,
+   "b": 10.37,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f01.jpg",
+   "foco_y": 0.4,
+   "frase": "your mood changed... your energy (mulher cansada)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  },
+  {
+   "id": "f02",
+   "a": 38.55,
+   "b": 45.45,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f02.jpg",
+   "foco_y": 0.5,
+   "frase": "check your levels... B12 (exames de sangue)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  },
+  {
+   "id": "f03",
+   "a": 49.11,
+   "b": 53.51,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f03.jpg",
+   "foco_y": 0.5,
+   "frase": "nutrition and supplement plan (prato saudável)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  },
+  {
+   "id": "f06",
+   "a": 64.09,
+   "b": 69.95,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f06.jpg",
+   "foco_y": 0.35,
+   "frase": "perform better and feel much better (mulher no parque)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  },
+  {
+   "id": "f04",
+   "a": 72.11,
+   "b": 76.81,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f04.jpg",
+   "foco_y": 0.45,
+   "frase": "pharma industry... my own product (laboratório)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  },
+  {
+   "id": "f05",
+   "a": 93.91,
+   "b": 97.81,
+   "arquivo": "/tmp/claude-0/-home-user-aguiarco-aprova/8f15d9b5-0984-5395-9623-ec5b92b9d511/scratchpad/video1/fotos/f05.jpg",
+   "foco_y": 0.45,
+   "frase": "personalized support (consulta)",
+   "fonte": "IA do Canva (gerada para este vídeo)"
+  }
+ ],
+ "destaques": [
+  {
+   "id": "d01",
+   "a": 21.06,
+   "b": 22.9,
+   "texto": "NÃO É CULPA SUA"
+  },
+  {
+   "id": "d02",
+   "a": 36.36,
+   "b": 38.45,
+   "texto": "MEDICINA INTEGRATIVA"
+  },
+  {
+   "id": "d03",
+   "a": 61.18,
+   "b": 63.34,
+   "texto": "HEALTH"
+  },
+  {
+   "id": "d04",
+   "a": 70.28,
+   "b": 72.0,
+   "texto": "30 ANOS"
+  }
+ ],
+ "sons": [
+  {
+   "id": "sfx01",
+   "t": 5.945,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -20,
+   "evento": "f01"
+  },
+  {
+   "id": "sfx07",
+   "t": 21.043,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d01"
+  },
+  {
+   "id": "sfx08",
+   "t": 36.127,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p02-bubble.wav",
+   "db": -17,
+   "evento": "d02"
+  },
+  {
+   "id": "sfx02",
+   "t": 37.914,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f02"
+  },
+  {
+   "id": "sfx03",
+   "t": 48.402,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -20,
+   "evento": "f03"
+  },
+  {
+   "id": "sfx09",
+   "t": 61.159,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p03-long.wav",
+   "db": -17,
+   "evento": "d03"
+  },
+  {
+   "id": "sfx04",
+   "t": 63.905,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w03-arrow.wav",
+   "db": -20,
+   "evento": "f06"
+  },
+  {
+   "id": "sfx10",
+   "t": 70.263,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/pop/p01-dry.wav",
+   "db": -17,
+   "evento": "d04"
+  },
+  {
+   "id": "sfx05",
+   "t": 71.474,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w01-air.wav",
+   "db": -20,
+   "evento": "f04"
+  },
+  {
+   "id": "sfx06",
+   "t": 93.202,
+   "arquivo": "/home/user/aguiarco-aprova/edicao/sons/whoosh/w02-fast.wav",
+   "db": -20,
+   "evento": "f05"
+  }
+ ]
+}

@@ -39,4 +39,4 @@ Fase atual: 6 (teste no primeiro vídeo da Teresa) · Atualizado em 2026-11-25
 - Scripts em edicao/scripts/: compor.py, palavras.py, blocos.py e estado.py (testados num trecho de 4 s) + os da edicao-reels-falados
 
 ## Próximo passo
-Rodar o fluxo inteiro em 'Video 1_nov 2026' (Drive 1WYSluP4…) e corrigir as skills com o que aparecer.
+1º vídeo (Video 1_nov 2026) entregue em 25/11 como Teresa_Video1_final_v01.mp4. Aguardando a revisão; depois, aplicar os aprendizados e fechar (fase 7).

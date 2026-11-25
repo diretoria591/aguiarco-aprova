@@ -36,6 +36,8 @@ hexrgb = lambda h: tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
 
 def caixa_texto(txt, tam, cor_txt, cor_cx, padx, pady, raio, sombra=True):
     """Uma caixa arredondada com o texto, numa imagem RGBA recortada (com sombra suave)."""
+    while tam > 30 and fonte(tam).getlength(txt) + 2 * padx > EST["legenda"].get("largura_max", 900) + 60:
+        tam -= 2  # nunca deixar a caixa passar da tela: diminui a letra até caber
     f = fonte(tam)
     l, t, r, b = f.getbbox(txt)
     tw, th = r - l, f.getbbox("Hg")[3] - f.getbbox("Hg")[1]

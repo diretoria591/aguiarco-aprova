@@ -1,10 +1,10 @@
 {
  "fonte": "fontes/Nunito-900.ttf",
  "legenda": {
-  "pt_tam": 72,
+  "pt_tam": 66,
   "pt_texto": "#FFFFFF",
   "pt_caixa": "#1E7821",
-  "en_tam": 60,
+  "en_tam": 56,
   "en_texto": "#1E7821",
   "en_caixa": "#E7E3E4",
   "padx": 30,
@@ -16,7 +16,7 @@
   "pt_centro_y_com_foto": 1530
  },
  "destaque": {
-  "tam": 110,
+  "tam": 100,
   "texto_cor": "#FFFFFF",
   "caixa": "#1E7821",
   "padx": 40,
