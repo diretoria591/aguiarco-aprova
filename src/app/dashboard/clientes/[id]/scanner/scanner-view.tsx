@@ -22,7 +22,7 @@ type Prog = { state: 'wait' | 'run' | 'ok' | 'err'; text: string };
 type Swap = { key: string; target: 'media' | 'add' | 'cover'; idx?: number };
 
 const LABEL: Record<ScanState, string> = { ok: 'Pronto', raw: 'Material bruto', fix: 'Em alteração', gone: 'Já foi', dup: 'Já está no Aprova' };
-const COVER_FORMATS: PostFormat[] = ['reels', 'video'];
+const COVER_FORMATS: PostFormat[] = ['reels', 'video', 'destaque'];
 const MULTI: PostFormat[] = ['carrossel', 'stories'];
 const dm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };

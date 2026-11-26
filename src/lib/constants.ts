@@ -8,6 +8,7 @@ export const TYPES: Record<PostFormat, { label: string; icon: IconName }> = {
   carrossel: { label: 'Carrossel', icon: 'layers' },
   arte: { label: 'Arte', icon: 'pen' },
   stories: { label: 'Stories', icon: 'image' },
+  destaque: { label: 'Destaque', icon: 'sparkle' },
   texto: { label: 'Texto', icon: 'text' },
 };
 

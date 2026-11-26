@@ -241,7 +241,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView, who 
   const th = thumbOf(p);
   const mats = materialsOf(p);
   const hasCover = mats.some((m) => m.kind === 'cover');
-  const needsCover = p.format === 'reels' && mats.some((m) => m.kind === 'video') && !hasCover;
+  const needsCover = ((p.format === 'reels' && mats.some((m) => m.kind === 'video')) || p.format === 'destaque') && !hasCover;
   const bulk = mats.filter((m) => m.source === 'upload' && m.downloadUrl);
   const long = p.caption.length > 120;
   const note = (p.schedule_note ?? '').trim();
@@ -319,7 +319,7 @@ function Row({ p, busy, selected, onToggle, onSchedule, onNotified, onView, who 
           {needsCover && (
             <ul className="mlist"><li className="mitem nocover">
               <span className="mthumb"><Icon name="alert" /></span>
-              <span className="minfo"><b>Sem capa enviada</b><small>Use um quadro do vídeo como capa</small></span>
+              <span className="minfo"><b>Sem capa enviada</b><small>{p.format === 'destaque' ? 'Peça a capa do destaque antes de publicar' : 'Use um quadro do vídeo como capa'}</small></span>
             </li></ul>
           )}
           <div className="mcap">

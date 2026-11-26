@@ -34,7 +34,7 @@ export type ScanResult = { title: string; month: string; posts: ScanPost[]; file
 
 const MONTHS = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const FORMAT_LABEL: Record<PostFormat, string> = {
-  foto: 'Foto', video: 'Vídeo', reels: 'Reels', carrossel: 'Carrossel', arte: 'Arte', stories: 'Stories', texto: 'Texto',
+  foto: 'Foto', video: 'Vídeo', reels: 'Reels', carrossel: 'Carrossel', arte: 'Arte', stories: 'Stories', destaque: 'Destaque', texto: 'Texto',
 };
 
 export const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -141,6 +141,7 @@ function detectMonth(title: string, md: string, today: Date): string {
 
 function toFormat(text: string, hasCards: boolean, media: ScanFile[]): PostFormat {
   const f = fold(text);
+  if (/destaque|highlight/.test(f)) return 'destaque';
   if (/reel/.test(f)) return 'reels';
   if (/carross|carousel/.test(f)) return 'carrossel';
   if (/stor/.test(f)) return 'stories';
@@ -215,7 +216,7 @@ export function parseCalendar(md: string, today = new Date()): ScanResult {
     if (/reprovad|trocar|tira print|print/.test(capaText)) { flags.push('Tem um recado sobre a capa no doc'); }
 
     const format = toFormat(fmtWord ?? '', cards.length > 0, media);
-    if (format !== 'reels' && format !== 'video') { cover = null; coverOptions = []; }
+    if (format !== 'reels' && format !== 'video' && format !== 'destaque') { cover = null; coverOptions = []; }
 
     // data (se a data do título parece errada e há um "POST dd/mm" do mês do doc logo abaixo, vale o POST)
     let day = b.day, mon = b.month;

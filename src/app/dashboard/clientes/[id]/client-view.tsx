@@ -365,7 +365,7 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
   }
 
   const { cover, items } = splitMedia(m.post_media);
-  const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
+  const isVideo = m.format === 'reels' || m.format === 'stories' || m.format === 'destaque' || (items.length > 0 && items.every(isVideoLike));
 
   return (
     <>

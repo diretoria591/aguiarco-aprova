@@ -14,7 +14,7 @@ import { useMe } from './me';
 
 const ACCEPT = /^(image|video)\/|application\/pdf/;
 /** Formatos que aceitam capa personalizada. */
-const COVER_FORMATS: PostFormat[] = ['reels', 'video'];
+const COVER_FORMATS: PostFormat[] = ['reels', 'video', 'destaque'];
 
 /**
  * Item da lista de arquivos. Em "nova versão" a lista já começa com os
@@ -51,7 +51,7 @@ function MediaThumb({ m }: { m: PostMedia }) {
 /** Como chamar a posição N do post no recado ("tela 2", "o vídeo"…). */
 function slotName(format: PostFormat, olds: PostMedia[], m: PostMedia) {
   const i = olds.indexOf(m);
-  if (olds.length > 1) return format === 'carrossel' ? `a tela ${i + 1}` : `o item ${i + 1}`;
+  if (olds.length > 1) return format === 'carrossel' ? `a tela ${i + 1}` : format === 'destaque' ? `o story ${i + 1}` : `o item ${i + 1}`;
   if (m.file_type.startsWith('image/')) return 'a imagem';
   if (m.file_type.startsWith('video/') || isEmbed(m)) return 'o vídeo';
   return 'o arquivo';
@@ -435,8 +435,10 @@ export function UploadForm({
 
         {COVER_FORMATS.includes(type) && (
           <div className="field">
-            <label>Capa personalizada <span className="muted" style={{ fontWeight: 400 }}>(opcional — a imagem que aparece no feed)</span></label>
-            <div className="cover-pick">
+            {type === 'destaque'
+              ? <label>Capa do destaque <span className="muted" style={{ fontWeight: 400 }}>— o ícone redondo que aparece no perfil</span></label>
+              : <label>Capa personalizada <span className="muted" style={{ fontWeight: 400 }}>(opcional — a imagem que aparece no feed)</span></label>}
+            <div className={`cover-pick${type === 'destaque' ? ' round' : ''}`}>
               <div className="cv">
                 {cover ? <Preview file={cover} />
                   : oldCover && !dropOldCover

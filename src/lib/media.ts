@@ -142,6 +142,7 @@ export function materialsOf(post: { format: string; post_media: PostMedia[] }): 
   const videos = items.filter(isVideoLike);
   const images = items.filter((m) => m.file_type.startsWith('image/'));
   const reels = post.format === 'reels';
+  const destaque = post.format === 'destaque';
   const out: Material[] = [];
   let img = 0;
 
@@ -172,7 +173,7 @@ export function materialsOf(post: { format: string; post_media: PostMedia[] }): 
       const many = images.length > 1;
       out.push({
         key: m.id, kind: 'image', source: 'upload',
-        label: many ? `Tela ${img} de ${images.length}` : post.format === 'stories' ? 'Imagem do stories' : 'Imagem do post',
+        label: many ? `${destaque ? 'Story' : 'Tela'} ${img} de ${images.length}` : post.format === 'stories' || destaque ? 'Imagem do stories' : 'Imagem do post',
         detail: `Imagem estática · ${m.file_name}`, thumb: m.file_url,
         openUrl: m.file_url, downloadUrl: storageDownloadUrl(m.file_url, m.file_name),
         downloadLabel: many ? `Baixar tela ${img}` : 'Clique aqui para baixar a imagem',
@@ -188,7 +189,7 @@ export function materialsOf(post: { format: string; post_media: PostMedia[] }): 
 
   if (cover) {
     out.push({
-      key: cover.id, kind: 'cover', source: 'upload', label: `Capa${reels ? ' do Reels' : ''}`,
+      key: cover.id, kind: 'cover', source: 'upload', label: `Capa${reels ? ' do Reels' : destaque ? ' do destaque' : ''}`,
       detail: `Imagem estática · ${cover.file_name}`, thumb: cover.file_url,
       openUrl: cover.file_url, downloadUrl: storageDownloadUrl(cover.file_url, cover.file_name),
       downloadLabel: 'Clique aqui para baixar a capa',

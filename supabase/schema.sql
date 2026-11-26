@@ -100,7 +100,7 @@ create table if not exists public.posts (
   title            text not null check (char_length(title) between 1 and 200),
   caption          text not null default '',
   format           text not null default 'carrossel'
-                   check (format in ('foto', 'video', 'reels', 'carrossel', 'arte', 'stories', 'texto')),
+                   check (format in ('foto', 'video', 'reels', 'carrossel', 'arte', 'stories', 'destaque', 'texto')),
   status           text not null default 'pending'
                    check (status in ('pending', 'adjustment_requested', 'approved', 'rejected')),
   scheduled_date   date,
