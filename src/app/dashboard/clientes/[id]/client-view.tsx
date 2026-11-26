@@ -34,7 +34,14 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
   useEffect(() => setOrigin(window.location.origin), []);
   useEffect(() => {
     // volta do scanner com ?avisar=1: já abre o aviso ao cliente
-    if (new URLSearchParams(window.location.search).get('avisar') === '1') {
+    const q = new URLSearchParams(window.location.search);
+    // link do e-mail de aviso (?post=<id>): já abre o conteúdo
+    const postId = q.get('post');
+    if (postId) {
+      setDetailId(postId);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    if (q.get('avisar') === '1') {
       setNotifyOpen(true);
       window.history.replaceState(null, '', window.location.pathname);
     }
