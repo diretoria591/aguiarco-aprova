@@ -3,6 +3,7 @@ import type { TeamRole } from './types';
 
 export const SECTIONS = [
   { key: 'clientes', label: 'Clientes', href: '/dashboard' },
+  { key: 'alteracoes', label: 'Alterações', href: '/dashboard/alteracoes' },
   { key: 'agendamento', label: 'Agendamento', href: '/dashboard/agendamento' },
   { key: 'roteiros', label: 'Roteiros', href: '/dashboard/roteiros' },
   { key: 'cobrar', label: 'Cobrar hoje', href: '/dashboard/cobrar' },

@@ -163,3 +163,13 @@ No cadastro de cliente recorrente escolhe-se a **estrategista responsável** (`c
 ## Termômetro de entregas
 
 Aba **Entregas**: para cada cliente recorrente, a meta mensal do contrato (`clients.meta_posts_min/max`, `meta_videos_min`) × o que foi aprovado no mês (Aprova + posts_externos), com o que está em aprovação à parte e o esperado até hoje. Status: em dia, atenção (abaixo de 90% do ritmo), atrasado (abaixo de 70%) e acima do contrato (passou do máximo). A dona da conta vê todos; quem acompanha as entregas (`delivery_supervisor_id`) vê só os seus. Aviso fixo no topo do Aprova para quem acompanha entregas (ex.: João) e e-mail toda segunda (na reta final do mês, "falta conteúdo de…").
+
+## Pedidos de alteração (Alterações e Minhas demandas)
+
+Quando o cliente pede alteração, o pedido aparece na aba **Alterações** (Kim e quem tiver a aba, como o João), separado por cliente.
+
+1. **Para encaminhar:** escolha quem altera primeiro e, se precisar, quem altera depois (opcional), com o prazo de cada pessoa. O Aprova sugere o próximo dia de entrega da pessoa e avisa quando o prazo cai num dia em que ela não entrega, num fim de semana, no dia da publicação ou depois dele ("Tudo bem, seguir assim" confirma).
+2. A pessoa recebe um e-mail (Resend) e vê o pedido em **Minhas demandas**, também por cliente. Ela troca só o que o cliente pediu. A versão fica guardada em `alteracao_media`/`alteracoes.plan` e **o cliente não vê nada**. Quando a primeira pessoa termina, o pedido passa sozinho para a segunda (com e-mail).
+3. **Para revisar:** antes e depois, o recado de cada pessoa e o pedido do cliente. Basta uma pessoa clicar em **Tudo certo, enviar ao cliente**: a versão entra no conteúdo (nova versão, aguardando aprovação). **Voltar para…** devolve para uma das pessoas com recado (e-mail).
+
+Quem faz alterações e os dias e horário de entrega ficam na aba **Equipe** (linha "Alterações"). Ninguém entrega no sábado nem no domingo. Tabelas: `supabase/migrations/2026-11-26_alteracoes.sql`.

@@ -11,6 +11,7 @@ import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
 import { errMsg, normalizeIg } from './client-form';
 import { useMe } from './me';
+import { STAGED_PREFIX, type Plan, type PlanRef } from '@/lib/alteracoes';
 
 const ACCEPT = /^(image|video)\/|application\/pdf/;
 /** Formatos que aceitam capa personalizada. */
@@ -72,9 +73,22 @@ function Preview({ file }: { file: File }) {
   return <span>{file.name}</span>;
 }
 
+/**
+ * Modo "alteração encaminhada": a versão nova fica guardada (o cliente não vê) até a revisão.
+ * Os arquivos que já estão na versão em andamento vêm com id `s:<id>`.
+ */
+export type StageMode = {
+  alteracaoId: string;
+  /** Texto do botão, ex.: "Terminei, passar para a Brenda" ou "Entregar para revisão". */
+  submitLabel: string;
+  /** Para onde vai depois, ex.: "para a Brenda" ou "para a revisão da Kim ou do João". */
+  goesTo: string;
+  onFinish: (plan: Plan, note: string, summary: string) => Promise<boolean>;
+};
+
 export function UploadForm({
-  client, material, onClose, onDone,
-}: { client: Client; material?: Post; onClose: () => void; onDone?: () => void }) {
+  client, material, onClose, onDone, stage,
+}: { client: Client; material?: Post; onClose: () => void; onDone?: () => void; stage?: StageMode }) {
   const isVersion = !!material;
   const router = useRouter();
   const me = useMe();
@@ -258,6 +272,36 @@ export function UploadForm({
           client_id: client.id, post_id: post.id, type: 'enviado', actor: me.name, action_text: `${me.name} enviou ${title}`,
         });
         toast('Material enviado para aprovação');
+      } else if (stage) {
+        // guarda os arquivos novos à parte: o conteúdo só muda no "Tudo certo" da revisão
+        const rows = await uploadAll(material.id, true, items);
+        let saved: { id: string; order_index: number; file_type: string }[] = [];
+        if (rows.length) {
+          const { data, error: e2 } = await supabase.from('alteracao_media')
+            .insert(rows.map((r) => ({ ...r, alteracao_id: stage.alteracaoId }))).select('id, order_index, file_type');
+          if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
+          saved = data ?? [];
+        }
+        const ref = (m: PostMedia): PlanRef => (m.id.startsWith(STAGED_PREFIX) ? { src: 'staged', id: m.id.slice(STAGED_PREFIX.length) } : { src: 'live', id: m.id });
+        const byIndex = new Map(saved.filter((r) => !r.file_type.startsWith(COVER_PREFIX)).map((r) => [r.order_index, r.id]));
+        const newCover = saved.find((r) => r.file_type.startsWith(COVER_PREFIX));
+        const plan: Plan = {
+          caption,
+          items: items.flatMap((it, i): PlanRef[] => {
+            if (it.kind === 'keep') return [ref(it.media)];
+            const id = byIndex.get(i);
+            return id ? [{ src: 'staged', id }] : [];
+          }),
+          cover: newCover ? { src: 'staged', id: newCover.id } : oldCover && !dropOldCover ? ref(oldCover) : null,
+        };
+        const note = String(fd.get('note') ?? '').trim();
+        const ok = await stage.onFinish(plan, note, changeSummary(caption));
+        if (!ok) {
+          if (saved.length) await supabase.from('alteracao_media').delete().in('id', saved.map((r) => r.id));
+          await removeFiles(rows.map((r) => r.storage_path)).catch(() => {});
+          setProgress(null);
+          return;
+        }
       } else {
         const v = material.version + 1;
         const rows = await uploadAll(material.id, true, items);
@@ -355,13 +399,13 @@ export function UploadForm({
 
   return (
     <Modal
-      title={isVersion ? <>Nova <b>versão</b></> : <>Enviar para <b>{client.name}</b></>}
+      title={stage ? <>Fazer a <b>alteração</b></> : isVersion ? <>Nova <b>versão</b></> : <>Enviar para <b>{client.name}</b></>}
       onClose={() => { if (!busy) onClose(); }}
       foot={
         <>
           <button className="btn line" onClick={onClose} disabled={busy}>Cancelar</button>
           <button className="btn" onClick={submit} disabled={busy}>
-            <Icon name="send" />{isVersion ? 'Enviar nova versão' : 'Enviar para aprovação'}
+            <Icon name={stage ? 'check' : 'send'} />{stage ? stage.submitLabel : isVersion ? 'Enviar nova versão' : 'Enviar para aprovação'}
           </button>
         </>
       }
@@ -369,10 +413,17 @@ export function UploadForm({
       <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
         {isVersion ? (
           <>
-            <p className="muted small" style={{ margin: '0 0 14px' }}>
-              “{material.title}” volta para <b>aguardando aprovação</b> e o cliente vê a versão nova.
-              Troque só o que o cliente pediu: o resto continua como está.
-            </p>
+            {stage ? (
+              <p className="muted small" style={{ margin: '0 0 14px' }}>
+                <b>O cliente ainda não vê</b> o que você fizer aqui. Quando terminar, a alteração vai {stage.goesTo}.
+                Troque só o que o cliente pediu: o resto continua como está.
+              </p>
+            ) : (
+              <p className="muted small" style={{ margin: '0 0 14px' }}>
+                “{material.title}” volta para <b>aguardando aprovação</b> e o cliente vê a versão nova.
+                Troque só o que o cliente pediu: o resto continua como está.
+              </p>
+            )}
             {lastAsk && (
               <div className="ask-box">
                 <span className="eyebrow">O que o cliente pediu</span>
@@ -469,8 +520,17 @@ export function UploadForm({
 
         {isVersion ? (
           <div className="field">
-            <label>Recado para o cliente <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
-            <input className="input" name="note" placeholder="Ex.: Ajustamos a cor do título como você pediu." />
+            {stage ? (
+              <>
+                <label>O que você fez <span className="muted" style={{ fontWeight: 400 }}>(aparece para quem vem depois e na revisão)</span></label>
+                <input className="input" name="note" placeholder="Ex.: Troquei a foto 3 pela fachada nova." />
+              </>
+            ) : (
+              <>
+                <label>Recado para o cliente <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+                <input className="input" name="note" placeholder="Ex.: Ajustamos a cor do título como você pediu." />
+              </>
+            )}
           </div>
         ) : (
           <>

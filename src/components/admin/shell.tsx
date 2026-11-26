@@ -31,8 +31,11 @@ export type ShellPauta = { id: string; client_id: string; name: string; ref_mont
 
 export type ShellEntregas = { atrasado: string[]; atencao: string[]; acima: string[]; total: number } | null;
 
-export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null }: {
-  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas;
+/** Pedidos de alteração: para encaminhar/revisar (Kim e João) e a vez da pessoa (Minhas demandas). */
+export type ShellAlt = { encaminhar: number; revisar: number; minhas: number; doesChanges: boolean };
+
+export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
+  children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas; alt?: ShellAlt | null;
 }) {
   const me = useMe();
   const path = usePathname();
@@ -40,6 +43,8 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const [open, setOpen] = useState(false);
   const [depth, setDepth] = useState(0);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
+    : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
+    : path.startsWith('/dashboard/demandas') ? 'demandas'
     : path.startsWith('/dashboard/agendamento') ? 'agendamento'
     : path.startsWith('/dashboard/roteiros') ? 'roteiros'
     : path.startsWith('/dashboard/lembretes') ? 'lembretes'
@@ -98,9 +103,14 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const links = links0.map((l) => ({
     ...l,
     href: l.key === 'numeros' && tasks ? `/dashboard/numeros?mes=${tasks.month}` : l.href,
-    extra: l.key === 'agendamento' ? badge(queueCount) : l.key === 'cobrar' ? badge(cobrarCount) : l.key === 'numeros' ? badge(tasks?.numbersMissing ?? 0) : null,
+    extra: l.key === 'agendamento' ? badge(queueCount) : l.key === 'cobrar' ? badge(cobrarCount) : l.key === 'numeros' ? badge(tasks?.numbersMissing ?? 0)
+      : l.key === 'alteracoes' ? badge((alt?.encaminhar ?? 0) + (alt?.revisar ?? 0)) : null,
     show: l.key === 'numeros' ? showNumeros : can(l.key),
   }));
+  // "Minhas demandas" para quem faz alterações (ou recebeu uma), no topo do menu
+  if (alt && (alt.doesChanges || alt.minhas > 0)) {
+    links.unshift({ key: 'demandas', href: '/dashboard/demandas', label: 'Minhas demandas', extra: badge(alt.minhas), show: true });
+  }
 
   return (
     <div className="shell">
@@ -154,6 +164,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
           </div>
         )}
         {section !== 'entregas' && <EntregasBanner data={entregas} name={firstName(me.viewingAs?.name ?? me.name)} />}
+        {section !== 'demandas' && <DemandasBanner n={alt?.minhas ?? 0} name={firstName(me.viewingAs?.name ?? me.name)} />}
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
         <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
@@ -236,6 +247,17 @@ function EntregasBanner({ data, name }: { data: ShellEntregas; name: string }) {
         {late || warn ? '. Acesse agora o termômetro.' : '.'}
       </span>
       <Link className="btn sm" href="/dashboard/entregas">Abrir termômetro</Link>
+    </div>
+  );
+}
+
+/** Para quem tem alteração para fazer: sempre à vista até entregar. */
+function DemandasBanner({ n, name }: { n: number; name: string }) {
+  if (!n) return null;
+  return (
+    <div className="task-banner">
+      <span><b>{name}, você tem {n} alteraç{n > 1 ? 'ões' : 'ão'} para fazer.</b> Veja o prazo de cada uma em Minhas demandas.</span>
+      <Link className="btn sm" href="/dashboard/demandas">Ver agora</Link>
     </div>
   );
 }

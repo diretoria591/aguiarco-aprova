@@ -12,6 +12,7 @@ import { Modal, useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
 import { addMember, removeMember } from './actions';
 import { SECTIONS, allowedSections } from '@/lib/sections';
+import { WEEKDAYS } from '@/lib/alteracoes';
 
 export function TeamView({ team, canManage }: { team: Profile[]; canManage: boolean }) {
   const me = useMe();
@@ -83,6 +84,7 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
                   })}
                 </div>
               )}
+              {isAdmin && <DeliveryRow u={u} />}
             </div>
           ))}
         </section>
@@ -156,5 +158,45 @@ function ChangePassword({ onClose }: { onClose: () => void }) {
           onKeyDown={(e) => { if (e.key === 'Enter') ok(); }} />
       </div>
     </Modal>
+  );
+}
+
+/** Pedidos de alteração: se a pessoa faz alterações e quando entrega (para o prazo sugerido). */
+function DeliveryRow({ u }: { u: Profile }) {
+  const router = useRouter();
+  const { toast } = useUI();
+  const [nick, setNick] = useState(u.nickname ?? '');
+  const [job, setJob] = useState(u.job ?? '');
+  const [hours, setHours] = useState(u.delivery_hours ?? '');
+  const days = u.delivery_days ?? [1, 2, 3, 4, 5];
+  async function save(patch: Partial<Profile>, msg?: string) {
+    const { error } = await createClient().from('profiles').update(patch).eq('id', u.id);
+    if (error) return toast('Não foi possível salvar.', 'err');
+    if (msg) toast(msg);
+    router.refresh();
+  }
+  const toggleDay = (n: number) => save({ delivery_days: days.includes(n) ? days.filter((d) => d !== n) : [...days, n].sort() });
+  return (
+    <div className="perm-row deliv-row" role="group" aria-label={`Alterações de ${u.name}`}>
+      <span className="small muted">Alterações:</span>
+      <button className={u.does_changes ? 'on' : ''} aria-pressed={!!u.does_changes}
+        onClick={() => save({ does_changes: !u.does_changes }, u.does_changes ? 'Saiu dos botões de alteração' : 'Aparece nos botões de alteração')}>
+        {u.does_changes ? 'Faz alterações ✓' : 'Faz alterações'}
+      </button>
+      {u.does_changes && (
+        <>
+          <span className="small muted">Entrega:</span>
+          {WEEKDAYS.map((w) => (
+            <button key={w.n} className={days.includes(w.n) ? 'on' : ''} aria-pressed={days.includes(w.n)} onClick={() => toggleDay(w.n)}>{w.short}</button>
+          ))}
+          <input className="input sm" aria-label="Horário" placeholder="Horário (ex.: 13h às 19h)" value={hours}
+            onChange={(e) => setHours(e.target.value)} onBlur={() => hours !== (u.delivery_hours ?? '') && save({ delivery_hours: hours.trim() })} />
+          <input className="input sm" aria-label="Nome no botão" placeholder="Nome no botão (ex.: Duda)" value={nick}
+            onChange={(e) => setNick(e.target.value)} onBlur={() => nick !== (u.nickname ?? '') && save({ nickname: nick.trim() })} />
+          <input className="input sm" aria-label="O que faz" placeholder="O que faz (ex.: Design)" value={job}
+            onChange={(e) => setJob(e.target.value)} onBlur={() => job !== (u.job ?? '') && save({ job: job.trim() })} />
+        </>
+      )}
+    </div>
   );
 }

@@ -115,6 +115,13 @@ export interface Profile {
   owner?: boolean;
   /** Abas liberadas (null = padrão da função). */
   sections?: string[] | null;
+  /** Pedidos de alteração: se a pessoa faz alterações, como aparece nos botões, o que faz e quando entrega. */
+  does_changes?: boolean;
+  nickname?: string;
+  job?: string;
+  /** 1 = segunda … 5 = sexta (ninguém entrega no fim de semana). */
+  delivery_days?: number[];
+  delivery_hours?: string;
   created_at: string;
 }
 
