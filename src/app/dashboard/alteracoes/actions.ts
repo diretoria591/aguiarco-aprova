@@ -46,7 +46,7 @@ async function notify(alt: AltFull, etapa: Etapa, kind: 'nova' | 'vez' | 'volta'
     const mail = demandaEmail({
       to: etapa.name, kind, clientName: alt.clients?.name ?? 'Cliente', title: alt.posts.title,
       format: TYPES[alt.posts.format as PostFormat]?.label ?? alt.posts.format, version: alt.posts.version,
-      ask: alt.request_text, due: etapa.due_date, publish: alt.publish_date, by, next: extra.next ?? null,
+      ask: alt.request_text, obs: alt.forward_note, obsBy: alt.created_by_name, due: etapa.due_date, publish: alt.publish_date, by, next: extra.next ?? null,
       prevName: extra.prevName, prevNote: extra.prevNote, backNote: extra.backNote,
       url: `${await siteUrl()}/dashboard/demandas?cliente=${alt.client_id}`,
     });
@@ -58,7 +58,7 @@ async function notify(alt: AltFull, etapa: Etapa, kind: 'nova' | 'vez' | 'volta'
 }
 
 /** Kim ou João escolhem quem faz (1ª pessoa e, se quiser, a 2ª) e o prazo de cada uma. */
-export async function forwardAlteracao(input: { postId: string; steps: { profileId: string; due: string }[] }): Promise<Result> {
+export async function forwardAlteracao(input: { postId: string; steps: { profileId: string; due: string }[]; note?: string }): Promise<Result> {
   const u = await me();
   if (!u?.reviewer) return { ok: false, error: 'Só a Kim e o João encaminham alterações.' };
   const steps = input.steps.filter((s) => s.profileId).slice(0, 2);
@@ -82,6 +82,7 @@ export async function forwardAlteracao(input: { postId: string; steps: { profile
   const { data: alt, error } = await supabase.from('alteracoes').insert({
     client_id: post.client_id, post_id: post.id, request_comment_id: ask?.id ?? null, request_text: ask?.content ?? '',
     publish_date: publishDateOf(post), created_by: u.id, created_by_name: u.name,
+    forward_note: String(input.note ?? '').trim().slice(0, 1500),
   }).select('id').single();
   if (error) return { ok: false, error: error.message };
   const now = new Date().toISOString();

@@ -80,6 +80,12 @@ export function DayStrip({ days, hours }: { days: number[]; hours?: string }) {
   );
 }
 
+/** Observação de quem encaminhou: "traduz" o pedido do cliente para quem vai fazer. */
+export function ObsBox({ text, by }: { text: string; by?: string }) {
+  if (!text) return null;
+  return <div className="alt-obs"><b>Observação{by ? ` da ${by.trim().split(/\s+/)[0]}` : ''}:</b> {text}</div>;
+}
+
 export function AskBox({ text }: { text: string }) {
   if (!text) return null;
   return <div className="alt-ask"><b>O cliente pediu:</b> “{text}”</div>;

@@ -81,3 +81,6 @@ create policy "team full access alteracao_media" on public.alteracao_media
 
 -- tutorial de Minhas demandas: mostrado no primeiro acesso de quem faz alterações
 alter table public.profiles add column if not exists tutorial_demandas_at timestamptz;
+
+-- observação opcional da Kim/João ao encaminhar ("traduz" o pedido do cliente para a equipe)
+alter table public.alteracoes add column if not exists forward_note text not null default '';

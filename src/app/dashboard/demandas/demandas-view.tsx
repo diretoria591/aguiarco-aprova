@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
-import { AskBox, ClientTabs, Thumb, Trail } from '@/components/admin/alteracoes-ui';
+import { AskBox, ClientTabs, ObsBox, Thumb, Trail } from '@/components/admin/alteracoes-ui';
 import { UploadForm } from '@/components/admin/upload-form';
 import { TYPES } from '@/lib/constants';
 import { firstName } from '@/lib/format';
@@ -120,6 +120,7 @@ function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa
           ))}
           {state === 'depois' && <p className="small muted" style={{ margin: '0 0 8px' }}>Vem para você quando {before?.name ?? 'a outra pessoa'} terminar. Você recebe um e-mail.</p>}
           <AskBox text={a.request_text} />
+          <ObsBox text={a.forward_note} by={a.created_by_name} />
           <div className="row">
             {state === 'vez' && (
               <button type="button" className="btn" onClick={() => setOpen(true)}>
@@ -144,6 +145,7 @@ function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa
             alteracaoId: a.id,
             submitLabel: next ? `Terminei, passar para ${next.name}` : 'Entregar para revisão',
             goesTo: next ? `para ${next.name}` : 'para a revisão da Kim ou do João',
+            obs: a.forward_note, obsBy: a.created_by_name,
             onFinish: async (plan, note, summary) => {
               const r = await finishEtapa({ etapaId: etapa.id, plan, note, summary });
               if (!r.ok) { toast(r.error, 'err'); return false; }
