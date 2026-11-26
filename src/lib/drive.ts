@@ -8,8 +8,8 @@ import 'server-only';
 const UA = 'Mozilla/5.0 (compatible; AprovaScanner/1.0)';
 
 export class DriveError extends Error {
-  /** too_big: passou do limite de tamanho do Aprova */
-  constructor(message: string, public code: '' | 'too_big' = '') { super(message); }
+  /** too_big: passou do limite de tamanho do Aprova · fail: o download caiu no meio */
+  constructor(message: string, public code: '' | 'too_big' | 'fail' = '') { super(message); }
 }
 
 const looksHtml = (type: string | null) => !!type && /text\/html/i.test(type);
@@ -67,8 +67,29 @@ export async function downloadDriveFile(fileId: string, maxBytes: number) {
   }
   const len = Number(res.headers.get('content-length') || 0);
   if (len && len > maxBytes) throw new DriveError(`O arquivo tem ${Math.round(len / 1048576)} MB e passa do limite de ${Math.round(maxBytes / 1048576)} MB.`, 'too_big');
-  const buf = new Uint8Array(await res.arrayBuffer());
-  if (buf.byteLength > maxBytes) throw new DriveError(`O arquivo passa do limite de ${Math.round(maxBytes / 1048576)} MB.`, 'too_big');
+  // lê aos poucos e para assim que passar do limite (sem tamanho informado, o arquivo podia estourar a memória)
+  const reader = res.body?.getReader();
+  if (!reader) throw new DriveError('Não consegui baixar o arquivo do Drive agora. Tente de novo.', 'fail');
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new DriveError(`O arquivo passa do limite de ${Math.round(maxBytes / 1048576)} MB.`, 'too_big');
+      }
+      chunks.push(value);
+    }
+  } catch (e) {
+    if (e instanceof DriveError) throw e;
+    throw new DriveError('O download do Drive foi interrompido. Tente de novo.', 'fail');
+  }
+  const buf = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { buf.set(c, off); off += c.byteLength; }
   const name = nameFrom(res.headers.get('content-disposition')) || fileId;
   const ext = (name.match(/\.([a-z0-9]{2,5})$/i)?.[1] ?? '').toLowerCase();
   let type = (res.headers.get('content-type') || '').split(';')[0].trim();

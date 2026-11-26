@@ -43,7 +43,8 @@ export async function storeMedia(postId: string, m: Media, index: number): Promi
   }
   const res = await fetch('/api/scanner/arquivo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId, driveId: m.id, index }) });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok && data.code === 'too_big' && isVideo(m)) return driveVideo(m.id);
+  // vídeo grande ou que não deu para copiar: entra pelo player do Drive (o arquivo está aberto para quem tem o link)
+  if (isVideo(m) && (!res.ok && (data.code === 'too_big' || data.code === 'fail' || res.status >= 500 || !data.error))) return driveVideo(m.id);
   if (!res.ok) throw new Error(`${m.name}: ${data.error || 'falha ao baixar do Drive.'}`);
   return data as { url: string; path: string; type: string; name: string };
 }
