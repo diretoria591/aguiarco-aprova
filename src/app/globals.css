@@ -911,3 +911,84 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .hl-story .sc-mini{width:40px;height:70px;border-radius:6px}
 .hl-story span{position:absolute;left:3px;top:3px;background:rgba(44,44,44,.75);color:#fff;font-size:10px;border-radius:999px;padding:0 6px;line-height:16px}
 .sc-fmt.hl-warn{background:var(--wait-bg);color:var(--wait)}
+
+/* pedidos de alteração (Alterações e Minhas demandas) */
+.tab .n.hot{background:var(--late);color:#fff}
+.alt-clients{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:0 0 16px}
+.alt-cl{flex:none;display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+.alt-cl:hover{border-color:var(--faint)}
+.alt-cl.on{border:2px solid var(--ink);padding:7px 11px;font-weight:600}
+.alt-cl .alt-mono{width:30px;height:30px;border-radius:50%;background:var(--sand-2);color:var(--brown);display:grid;place-items:center;font-size:11px;font-weight:600;flex:none;overflow:hidden}
+.alt-cl .n{background:var(--line-2);color:var(--ink-2);border-radius:999px;padding:0 8px;font-size:11.5px;font-weight:600}
+.alt-cl .n.late,.alt-cl.on .n{background:var(--late);color:#fff}
+.alt-cl .n:empty{display:none}
+.alt-list{display:grid;gap:14px}
+.alt-card{padding:16px}
+.alt-card.quiet{opacity:.78}
+.alt-row{display:flex;gap:16px;align-items:flex-start}
+.alt-body{flex:1;min-width:0;display:grid;gap:8px}
+.alt-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.alt-title{font-weight:600;font-size:15px}
+.alt-thumb{position:relative;width:74px;height:92px;border-radius:10px;overflow:hidden;background:var(--line-2);display:grid;place-items:center;color:var(--muted);flex:none}
+.alt-thumb img,.alt-thumb video{width:100%;height:100%;object-fit:cover}
+.alt-thumb small{position:absolute;left:4px;bottom:4px;background:rgba(44,44,44,.75);color:#fff;font-size:10px;border-radius:6px;padding:0 6px;line-height:16px}
+.alt-trail{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
+.alt-trail .seg{display:contents}
+.alt-trail .t{border-radius:999px;padding:4px 10px;background:var(--line-2);color:var(--muted)}
+.alt-trail .t em{font-style:normal;opacity:.85}
+.alt-trail .t.done{background:var(--ok-bg);color:var(--ok)}
+.alt-trail .t.now{background:var(--fix-bg);color:var(--fix);font-weight:600}
+.alt-trail .t.late{background:var(--late-bg);color:var(--late);font-weight:600}
+.alt-trail .t.rev{background:#ECE6F6;color:#5B3E9B;font-weight:600}
+.alt-trail .sep{color:var(--faint)}
+.alt-ask{background:var(--wait-bg);border-radius:var(--r-sm);padding:10px 12px;font-size:13.5px;white-space:pre-wrap}
+.alt-ask b{color:var(--wait)}
+.alt-back{background:var(--late-bg);border-radius:var(--r-sm);padding:10px 12px;font-size:13.5px}
+.alt-back b{color:var(--late)}
+.alt-hand{background:var(--sand-2);border-radius:var(--r-sm);padding:10px 12px;font-size:13.5px}
+.alt-pick{border-top:1px solid var(--line);padding-top:12px;margin-top:4px;display:grid;gap:14px}
+.alt-pick .q{font-size:13.5px;font-weight:600;margin:0 0 8px}
+.alt-pick .q span{font-weight:400;color:var(--muted)}
+.alt-pick .row,.alt-card .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.alt-people{display:flex;gap:8px;flex-wrap:wrap}
+.alt-people .person{display:flex;flex-direction:column;align-items:flex-start;gap:0;border:1px solid transparent;background:var(--sand);color:var(--ink);border-radius:12px;padding:8px 14px;cursor:pointer;font:inherit;text-align:left}
+.alt-people .person b{font-size:14px;font-weight:600}
+.alt-people .person span{font-size:11.5px;color:var(--ink-2)}
+.alt-people .person:hover{background:#D8BDAB}
+.alt-people .person.on{background:var(--ink);color:#fff}
+.alt-people .person.on span{color:rgba(255,255,255,.75)}
+.alt-people .person.ghost{background:transparent;border:1px dashed var(--faint)}
+.alt-people .person.ghost.on{background:var(--line-2);color:var(--ink);border-style:solid}
+.alt-people .person.ghost.on span{color:var(--muted)}
+.alt-people .person:focus-visible{outline:2px solid var(--brown);outline-offset:2px}
+.alt-due{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:13px}
+.alt-due label{font-weight:500}
+.alt-due .input{width:auto;height:38px}
+.alt-days{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap}
+.alt-days span{min-width:32px;text-align:center;border-radius:6px;padding:2px 4px;font-size:11px;font-weight:600;background:var(--ok-bg);color:var(--ok)}
+.alt-days span.no{background:var(--line-2);color:var(--faint);text-decoration:line-through}
+.alt-days .hrs{background:transparent;color:var(--muted);font-weight:500}
+.alt-warn{border:1px solid #F2C2BE;background:var(--late-bg);border-radius:12px;padding:12px 14px;font-size:13.5px}
+.alt-warn .t{display:flex;align-items:center;gap:6px;color:var(--late)}
+.alt-warn .t svg{width:16px;height:16px}
+.alt-warn ul{margin:6px 0 10px;padding-left:18px}
+.alt-compare{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--sand-3);border-radius:var(--r-sm);padding:12px}
+.alt-compare>div{min-width:0;display:grid;gap:6px}
+.alt-compare .strip{display:flex;gap:6px;overflow-x:auto;max-width:100%}
+.alt-compare .strip .alt-thumb{width:56px;height:70px}
+.alt-compare .arrow{font-size:20px;color:var(--muted)}
+.alt-caption{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px}
+.alt-caption p{margin:4px 0 0;white-space:pre-wrap;font-size:13.5px}
+.alt-notes{background:var(--line-2);border-radius:var(--r-sm);padding:10px 12px;font-size:13.5px}
+.alt-notes p{margin:0 0 4px} .alt-notes p:last-child{margin:0}
+.alt-backform{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.alt-backform label{font-size:13px;font-weight:500}
+.btn.line.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.status.alt-rev{color:#5B3E9B;background:#ECE6F6}
+.status.alt-wait{color:var(--muted);background:var(--line-2)}
+@media (max-width:640px){
+  .alt-row{flex-direction:column}
+  .alt-row>.alt-thumb{width:64px;height:80px}
+  .alt-compare .arrow{transform:rotate(90deg)}
+}
+.deliv-row .input.sm{height:30px;font-size:12px;padding:0 10px;width:auto;min-width:0;flex:1 1 150px;max-width:220px}
