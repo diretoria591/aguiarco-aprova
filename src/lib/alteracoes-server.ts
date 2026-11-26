@@ -42,31 +42,44 @@ export async function loadBoard(supabase: SupabaseClient) {
 
 /** Demandas de uma pessoa: a vez dela, as que vêm depois de outra pessoa e as entregues em revisão. */
 export async function loadMine(supabase: SupabaseClient, profileId: string) {
-  const { data: mine } = await supabase.from('alteracao_etapas').select('alteracao_id').eq('profile_id', profileId);
+  // só o que já foi passado para a pessoa (a vez dela ou o que ela já entregou); a 2ª pessoa não vê antes da sua vez
+  const { data: mine } = await supabase.from('alteracao_etapas').select('alteracao_id').eq('profile_id', profileId).in('status', ['fazendo', 'feita']);
   const ids = [...new Set((mine ?? []).map((e) => e.alteracao_id as string))];
   if (!ids.length) return { rows: [] as AltRow[], error: null as string | null };
   const { data, error } = await supabase.from('alteracoes').select(ALT_SELECT).in('id', ids).in('status', ['fazendo', 'revisao']).order('created_at');
   return { rows: (data ?? []) as AltRow[], error: error?.message ?? null };
 }
 
-/** Números para o menu: pedidos para encaminhar, para revisar e a vez da pessoa. */
+/** Uma demanda da pessoa, para o aviso do topo ("Bom dia, Brenda! ..."). */
+export type MinhaDemanda = { client: string; clientId: string; title: string; due: string | null };
+
+/** Números para o menu e o aviso do topo: pedidos para encaminhar, para revisar e a vez da pessoa. */
 export async function loadAltCounts(supabase: SupabaseClient, profileId: string, reviewer: boolean) {
-  const mine = supabase.from('alteracao_etapas').select('id, alteracoes!inner(status)', { count: 'exact', head: true })
-    .eq('profile_id', profileId).eq('status', 'fazendo').eq('alteracoes.status', 'fazendo');
+  const mineQ = supabase.from('alteracao_etapas').select('due_date, alteracoes!inner(status, client_id, posts(title), clients(name))')
+    .eq('profile_id', profileId).eq('status', 'fazendo').eq('alteracoes.status', 'fazendo').order('due_date');
+  const one = <T,>(x: T | T[] | null | undefined) => (Array.isArray(x) ? x[0] : x) ?? null;
+  const toList = (data: unknown[] | null): MinhaDemanda[] => (data ?? []).map((r) => {
+    const row = r as { due_date: string | null; alteracoes: unknown };
+    const a = one(row.alteracoes as { client_id: string; posts: { title: string } | { title: string }[] | null; clients: { name: string } | { name: string }[] | null } | null);
+    return { client: one(a?.clients)?.name ?? 'Cliente', clientId: a?.client_id ?? '', title: one(a?.posts)?.title ?? '', due: row.due_date };
+  });
   if (!reviewer) {
-    const { count } = await mine;
-    return { encaminhar: 0, revisar: 0, minhas: count ?? 0 };
+    const { data } = await mineQ;
+    const lista = toList(data);
+    return { encaminhar: 0, revisar: 0, minhas: lista.length, lista };
   }
   const [m, posts, open, rev] = await Promise.all([
-    mine,
+    mineQ,
     supabase.from('posts').select('id').eq('status', 'adjustment_requested'),
     supabase.from('alteracoes').select('post_id').in('status', ['fazendo', 'revisao']),
     supabase.from('alteracoes').select('id', { count: 'exact', head: true }).eq('status', 'revisao'),
   ]);
   const busy = new Set((open.data ?? []).map((a) => a.post_id as string));
+  const lista = toList(m.data);
   return {
     encaminhar: (posts.data ?? []).filter((p) => !busy.has(p.id as string)).length,
     revisar: rev.count ?? 0,
-    minhas: m.count ?? 0,
+    minhas: lista.length,
+    lista,
   };
 }

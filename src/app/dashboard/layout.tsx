@@ -58,7 +58,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     // termômetro no topo para quem acompanha entregas (ex.: João); a dona vê pela aba
     view.sections.includes('entregas') && !view.owner ? loadEntregas(supabase, view.id, currentMonth()) : Promise.resolve(null),
     // pedidos de alteração: para encaminhar/revisar (Kim e João) e a vez da pessoa
-    loadAltCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ encaminhar: 0, revisar: 0, minhas: 0 })),
+    loadAltCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ encaminhar: 0, revisar: 0, minhas: 0, lista: [] })),
     supabase.from('profiles').select('does_changes, tutorial_demandas_at, delivery_days, delivery_hours').eq('id', view.id).maybeSingle()
       .then((r) => (r.data ?? {}) as { does_changes?: boolean; tutorial_demandas_at?: string | null; delivery_days?: number[] | null; delivery_hours?: string | null }),
   ]);
