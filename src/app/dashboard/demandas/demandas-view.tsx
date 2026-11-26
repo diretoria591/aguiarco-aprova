@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
+import { useMe } from '@/components/admin/me';
 import { AskBox, ClientTabs, Thumb, Trail } from '@/components/admin/alteracoes-ui';
 import { UploadForm } from '@/components/admin/upload-form';
 import { TYPES } from '@/lib/constants';
@@ -78,6 +79,8 @@ export function DemandasView({ rows, error, meId, name, cliente, today }: {
 
 function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa; state: State; meId: string; today: string }) {
   const { toast } = useUI();
+  const me = useMe();
+  const seesClients = (me.sections ?? []).includes('clientes');
   const [open, setOpen] = useState(false);
   const etapas = etapasOf(a);
   const prev = etapas.filter((e) => e.ordem < etapa.ordem && e.status === 'feita');
@@ -119,7 +122,7 @@ function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa
                 <Icon name="edit" />Fazer a alteração
               </button>
             )}
-            <Link className="btn line sm" href={`/dashboard/clientes/${a.client_id}?post=${a.post_id}`}><Icon name="eye" />Ver conteúdo e conversa</Link>
+            {seesClients && <Link className="btn line sm" href={`/dashboard/clientes/${a.client_id}?post=${a.post_id}`}><Icon name="eye" />Ver conteúdo e conversa</Link>}
           </div>
           {state === 'vez' && (
             <p className="small muted" style={{ margin: '8px 0 0' }}>
