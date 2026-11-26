@@ -57,6 +57,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url, path, type, name });
   } catch (e) {
     const msg = e instanceof DriveError ? e.message : 'Não consegui baixar o arquivo do Drive agora. Tente de novo.';
-    return NextResponse.json({ error: msg, code: e instanceof DriveError ? e.code : '' }, { status: 422 });
+    return NextResponse.json({ error: msg, code: e instanceof DriveError ? e.code : 'fail' }, { status: 422 });
   }
 }
