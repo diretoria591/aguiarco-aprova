@@ -185,6 +185,11 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
               <span className="d">Cole o link do calendário no Google Docs e o Aprova monta os posts sozinho.</span>
               <span className="warn"><b>Exige mais atenção.</b> O scanner pode ler algo errado. Você vai conferir post por post antes de enviar.</span>
             </Link>
+            <Link className="send-choice" href={`/dashboard/clientes/${client.id}/scanner/destaques`} onClick={() => setChoose(false)}>
+              <span className="tag">Destaques</span>
+              <span className="t">Destaques <b>pelo scanner</b></span>
+              <span className="d">Cole o link da pasta de destaques no Drive e o Aprova monta cada destaque com a capa e os stories na ordem.</span>
+            </Link>
           </div>
         </Modal>
       )}

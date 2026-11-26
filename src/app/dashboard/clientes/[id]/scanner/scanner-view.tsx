@@ -1,19 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { removeFiles, safePath, uploadFile } from '@/lib/upload';
+import { removeFiles } from '@/lib/upload';
 import { MAX_UPLOAD_MB, TYPES } from '@/lib/constants';
 import { COVER_PREFIX } from '@/lib/media';
 import { driveRef, isVideoName, type ScanFile, type ScanPost, type ScanState } from '@/lib/scanner';
+import { fromScan, isVideo, storeMedia, Thumb, type Media } from './shared';
 import type { Client, PostFormat } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
 import { errMsg, normalizeIg } from '@/components/admin/client-form';
 import { useMe } from '@/components/admin/me';
 
-type Media = { src: 'drive'; id: string; name: string } | { src: 'local'; file: File; name: string };
 type Item = Omit<ScanPost, 'media' | 'cover'> & {
   media: Media[]; cover: Media | null; sel: boolean; keepLate: boolean; edited: boolean; pro: string;
 };
@@ -33,23 +33,6 @@ function retitle(it: Item, date: string, format: PostFormat): string {
   return it.title.startsWith(old) ? `${TYPES[format].label} ${dm(date)}${it.title.slice(old.length)}` : it.title;
 }
 const locked = (it: Item) => it.state === 'gone' || it.state === 'dup';
-const fromScan = (f: ScanFile): Media => ({ src: 'drive', id: f.id, name: f.name });
-const isVideo = (m: Media) => (m.src === 'local' ? m.file.type.startsWith('video/') : isVideoName(m.name));
-
-function Thumb({ m, className = 'sc-thumb' }: { m: Media | null; className?: string }) {
-  const local = m?.src === 'local' && m.file.type.startsWith('image/') ? m.file : null;
-  const url = useMemo(() => (local ? URL.createObjectURL(local) : null), [local]);
-  useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
-  const [broken, setBroken] = useState(false);
-  const src = url ?? (m?.src === 'drive' ? `https://drive.google.com/thumbnail?id=${m.id}&sz=w320` : null);
-  return (
-    <div className={className}>
-      <Icon name={!m ? 'text' : isVideo(m) ? 'video' : 'image'} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      {src && !broken && <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} />}
-    </div>
-  );
-}
 
 export function ScannerView({ client }: { client: Pick<Client, 'id' | 'name' | 'segment'> }) {
   const me = useMe();
@@ -76,6 +59,7 @@ export function ScannerView({ client }: { client: Pick<Client, 'id' | 'name' | '
 
   async function read() {
     setError('');
+    if (driveRef(url)?.folder) { setError('Esse é o link de uma pasta do Drive. Para destaques, volte e escolha “Destaques pelo scanner”.'); return; }
     if (!/docs\.google\.com\/document\//.test(url)) { setError('Cole o link de um documento do Google Docs (docs.google.com/document/…).'); return; }
     setStep('reading');
     try {
@@ -107,17 +91,7 @@ export function ScannerView({ client }: { client: Pick<Client, 'id' | 'name' | '
       .select('id').single();
     if (error) throw error;
     const rows: { post_id: string; file_url: string; storage_path: string | null; file_type: string; file_name: string; order_index: number }[] = [];
-    const put = async (m: Media, index: number) => {
-      if (m.src === 'local') {
-        const path = safePath(`posts/${post.id}`, m.file, index);
-        const fileUrl = await uploadFile(path, m.file);
-        return { url: fileUrl, path, type: m.file.type, name: m.file.name };
-      }
-      const res = await fetch('/api/scanner/arquivo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId: post.id, driveId: m.id, index }) });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(`${m.name}: ${data.error || 'falha ao baixar do Drive.'}`);
-      return data as { url: string; path: string; type: string; name: string };
-    };
+    const put = (m: Media, index: number) => storeMedia(post.id, m, index);
     try {
       for (let i = 0; i < it.media.length; i++) {
         set('run', `Baixando ${i + 1} de ${it.media.length}${it.cover ? ' (+ capa)' : ''}…`);
