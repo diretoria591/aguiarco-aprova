@@ -1022,3 +1022,11 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .pkind.on .ic{background:var(--ink);color:#fff}
 .pkind:focus-visible{outline:2px solid var(--brown);outline-offset:2px}
 .pwhere{font-size:12.5px;color:var(--ink-2);background:var(--sand-2);border-radius:var(--r-sm);padding:9px 12px;margin:0 0 14px}
+
+/* Pedidos de roteiro */
+.rp-item{display:grid;gap:6px;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;background:var(--surface)}
+.rp-item .input{font-weight:600}
+.rp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted)}
+.linkish{background:none;border:0;padding:0;font:inherit;color:var(--brown);text-decoration:underline;cursor:pointer}
+.rp-section{margin:0 0 22px}
+.rp-section > h2{font-size:16px;font-weight:600;margin:0 0 10px}

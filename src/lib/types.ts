@@ -117,6 +117,8 @@ export interface Profile {
   sections?: string[] | null;
   /** Pedidos de alteração: se a pessoa faz alterações, como aparece nos botões, o que faz e quando entrega. */
   does_changes?: boolean;
+  /** Aparece em "quem escreve" nos pedidos de roteiro. */
+  writes_roteiros?: boolean;
   nickname?: string;
   job?: string;
   /** 1 = segunda … 5 = sexta (ninguém entrega no fim de semana). */

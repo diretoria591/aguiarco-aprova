@@ -153,7 +153,9 @@ async function sendApprovalEmail(admin: SupabaseClient, row: OutboxRow, siteUrl:
     .select('*, post_media(*), clients(name,instagram,segment)').eq('id', row.post_id).maybeSingle();
   if (error) throw error;
   if (!data) throw new Error('Conteúdo não encontrado (pode ter sido excluído).');
-  const post = data as Post & { clients: Pick<Client, 'name' | 'instagram' | 'segment'> | null };
+  const post = data as Post & { clients: Pick<Client, 'name' | 'instagram' | 'segment'> | null; is_roteiro?: boolean };
+  // roteiro aprovado não vai para o agendamento: não avisa quem agenda
+  if (post.is_roteiro) return;
   const client = post.clients;
   const { subject, html, text } = approvalEmail(post, client, siteUrl);
 

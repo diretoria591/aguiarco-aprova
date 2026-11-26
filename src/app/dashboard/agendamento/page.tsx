@@ -20,6 +20,7 @@ export default async function AgendamentoPage() {
       .from('posts')
       .select('*, post_media(*), clients(id,name,logo_url,instagram,segment)')
       .eq('status', 'approved')
+      .eq('is_roteiro', false)
       .or(`client_notified_at.is.null,client_notified_at.gt.${since}`)
       .order('scheduled_date', { ascending: true, nullsFirst: false }),
     supabase.from('profiles').select('*'),

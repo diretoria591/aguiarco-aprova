@@ -14,6 +14,8 @@ import { dayLabel, etapasOf, STAGED_PREFIX, type Alteracao, type Etapa } from '@
 import type { Client, Post, PostFormat, PostMedia } from '@/lib/types';
 import { finishEtapa } from '../alteracoes/actions';
 import { DemandasTutorial } from '@/components/admin/demandas-tutorial';
+import type { PedidoRoteiro } from '@/lib/pedidos-roteiro';
+import { RoteirosEscrever } from './roteiros-escrever';
 
 type AltRow = Alteracao & { posts: Post; clients: Client };
 type State = 'vez' | 'depois' | 'entregue';
@@ -33,8 +35,8 @@ function baseMaterial(a: AltRow): Post {
   return { ...a.posts, caption: a.plan.caption, post_media: [...items, ...(cover ? [{ ...cover, order_index: -1 }] : [])] };
 }
 
-export function DemandasView({ rows, error, meId, name, cliente, today, days, hours }: {
-  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string; days: number[]; hours: string;
+export function DemandasView({ rows, error, meId, name, cliente, today, days, hours, roteiros = [] }: {
+  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string; days: number[]; hours: string; roteiros?: PedidoRoteiro[];
 }) {
   const [help, setHelp] = useState(false);
   const list = useMemo(() => rows.map((a) => {
@@ -69,9 +71,11 @@ export function DemandasView({ rows, error, meId, name, cliente, today, days, ho
       {help && <DemandasTutorial name={firstName(name)} days={days} hours={hours} profileId={meId} save={false} onClose={() => setHelp(false)} />}
       {error && <div className="card empty" style={{ marginBottom: 16 }}><p style={{ margin: 0 }}>Não foi possível carregar: {error}</p></div>}
       <p className="muted small" style={{ margin: '-14px 0 16px' }}>
-        {total ? `${firstName(name)}, você tem ${total} alteraç${total > 1 ? 'ões' : 'ão'} para fazer. Escolha o cliente.` : 'Nada para fazer agora.'}
+        {total ? `${firstName(name)}, você tem ${total} alteraç${total > 1 ? 'ões' : 'ão'} para fazer. Escolha o cliente.` : roteiros.some((r) => r.status === 'fazendo') ? 'Nenhuma alteração agora.' : 'Nada para fazer agora.'}
         {' '}O cliente só vê depois da revisão da Kim ou do João.
       </p>
+      <RoteirosEscrever rows={roteiros} today={today} />
+      {roteiros.length > 0 && <h2 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 10px' }}>Alterações</h2>}
       <ClientTabs clients={clients} current={current} hrefFor={(id) => `/dashboard/demandas?cliente=${id}`} />
       {!current && <div className="card empty"><p style={{ margin: 0 }}>Quando a Kim ou o João encaminharem uma alteração para você, ela aparece aqui e chega no seu e-mail.</p></div>}
       <div className="alt-list">

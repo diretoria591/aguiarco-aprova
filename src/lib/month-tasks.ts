@@ -23,7 +23,7 @@ export async function loadMonthTasks(supabase: SupabaseClient, strategistId: str
   const month = addMonths(currentMonth(), -1);
   const [from, to] = monthRange(month);
   const [postsRes, extRes, repRes, pontRes, stratRes] = await Promise.all([
-    supabase.from('posts').select('client_id,scheduled_date,sent_at').eq('status', 'approved'),
+    supabase.from('posts').select('client_id,scheduled_date,sent_at').eq('status', 'approved').eq('is_roteiro', false),
     supabase.from('posts_externos').select('client_id').gte('publish_date', from).lt('publish_date', to),
     supabase.from('relatorios').select('client_id,status,metrics_at').eq('ref_month', month),
     // clientes pontuais (avulsos) não têm números nem relatório mensal

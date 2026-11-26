@@ -26,7 +26,7 @@ export default async function RelatorioPage({ params, searchParams }: {
   const [from, to] = monthRange(month);
   const [clientRes, postsRes, repRes, extRes] = await Promise.all([
     supabase.from('clients').select('id,name,logo_url,instagram,revision_limit').eq('id', clientId).maybeSingle(),
-    supabase.from('posts').select(REPORT_POST_SELECT).eq('client_id', clientId),
+    supabase.from('posts').select(REPORT_POST_SELECT).eq('client_id', clientId).eq('is_roteiro', false),
     supabase.from('relatorios').select('*').eq('client_id', clientId).eq('ref_month', month).maybeSingle(),
     supabase.from('posts_externos').select(EXTERNAL_SELECT).eq('client_id', clientId).gte('publish_date', from).lt('publish_date', to),
   ]);

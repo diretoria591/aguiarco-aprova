@@ -39,6 +39,8 @@ export type ShellAlt = {
   encaminhar: number; revisar: number; minhas: number; doesChanges: boolean; tutorial?: boolean; days?: number[]; hours?: string;
   /** demandas da pessoa (a vez dela), para o aviso do topo */
   lista?: { client: string; clientId: string; title: string; due: string | null }[];
+  /** pedidos de roteiro: para escrever (a pessoa) e para revisar (Kim e João) */
+  roteiros?: { escrever: number; revisar: number; lista: { client: string; due: string | null }[] };
 };
 
 export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
@@ -51,6 +53,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const [depth, setDepth] = useState(0);
   const [tutorial, setTutorial] = useState(!!alt?.tutorial);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
+    : path.startsWith('/dashboard/roteiros/pedidos') ? 'pedidos'
     : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
     : path.startsWith('/dashboard/demandas') ? 'demandas'
     : path.startsWith('/dashboard/agendamento') ? 'agendamento'
@@ -116,8 +119,14 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
     show: l.key === 'numeros' ? showNumeros : can(l.key),
   }));
   // "Minhas demandas" para quem faz alterações (ou recebeu uma), no topo do menu
-  if (alt && (alt.doesChanges || alt.minhas > 0)) {
-    links.unshift({ key: 'demandas', href: '/dashboard/demandas', label: 'Minhas demandas', extra: badge(alt.minhas), show: true });
+  const escrever = alt?.roteiros?.escrever ?? 0;
+  if (alt && (alt.doesChanges || alt.minhas > 0 || escrever > 0)) {
+    links.unshift({ key: 'demandas', href: '/dashboard/demandas', label: 'Minhas demandas', extra: badge(alt.minhas + escrever), show: true });
+  }
+  // pedidos de roteiro (Kim e João): logo depois de Alterações
+  const altIdx = links.findIndex((l) => l.key === 'alteracoes');
+  if (altIdx >= 0) {
+    links.splice(altIdx + 1, 0, { key: 'pedidos', href: '/dashboard/roteiros/pedidos', label: 'Pedidos de roteiro', extra: badge(alt?.roteiros?.revisar ?? 0), show: can('alteracoes') });
   }
 
   return (
@@ -174,6 +183,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
         {section !== 'entregas' && <EntregasBanner data={entregas} name={firstName(me.viewingAs?.name ?? me.name)} />}
         <HelloBanner alt={alt} name={firstName(me.viewingAs?.name ?? me.name)} section={section}
           greeted={!!entregas && section !== 'entregas'} />
+        <RoteirosBanner data={alt?.roteiros ?? null} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
         <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
@@ -312,6 +322,40 @@ function HelloBanner({ alt, name, section, greeted }: { alt: ShellAlt | null; na
       <div className="hello-actions">
         {showMine && <Link className="btn sm" href={`/dashboard/demandas${target?.clientId ? `?cliente=${target.clientId}` : ''}`}>{late.length ? 'Fazer agora' : 'Ver minhas demandas'}</Link>}
         {showFila && <Link className={`btn sm${showMine ? ' line' : ''}`} href="/dashboard/alteracoes">Abrir alterações</Link>}
+      </div>
+    </div>
+  );
+}
+
+/** Pedidos de roteiro: para quem escreve (prazo vencido em vermelho) e para a revisão da Kim e do João. */
+function RoteirosBanner({ data, name, section }: { data: ShellAlt['roteiros'] | null; name: string; section: string }) {
+  if (!data) return null;
+  const today = todayYMD();
+  const showMine = data.escrever > 0 && section !== 'demandas';
+  const showRev = data.revisar > 0 && section !== 'pedidos';
+  if (!showMine && !showRev) return null;
+  const late = data.lista.filter((d) => d.due && d.due < today);
+  const hoje = data.lista.filter((d) => d.due === today);
+  const next = data.lista.find((d) => d.due && d.due >= today);
+  const tone = showMine && late.length ? 'late' : showMine && hoje.length ? '' : 'ok';
+  const clientes = (xs: { client: string }[]) => [...new Set(xs.map((x) => x.client))].join(', ');
+  return (
+    <div className={`task-banner hello-banner ${tone}`}>
+      <span>
+        {showMine && (
+          <>
+            <b>{name}, {late.length ? `${late.length} pedido${late.length > 1 ? 's' : ''} de roteiro atrasado${late.length > 1 ? 's' : ''} (${clientes(late)})`
+              : hoje.length ? `hoje é o prazo dos roteiros de ${clientes(hoje)}`
+              : `você tem ${data.escrever} pedido${data.escrever > 1 ? 's' : ''} de roteiro para escrever`}.</b>
+            {!late.length && !hoje.length && next ? <> O próximo vence {dayLabel(next.due)} ({next.client}).</> : null}
+          </>
+        )}
+        {showMine && showRev ? ' ' : null}
+        {showRev && <>{showMine ? 'E ' : <b>{name}, </b>}{data.revisar} pedido{data.revisar > 1 ? 's' : ''} de roteiro entregue{data.revisar > 1 ? 's' : ''} para revisar.</>}
+      </span>
+      <div className="hello-actions">
+        {showMine && <Link className="btn sm" href="/dashboard/demandas">Escrever roteiros</Link>}
+        {showRev && <Link className={`btn sm${showMine ? ' line' : ''}`} href="/dashboard/roteiros/pedidos?aba=revisar">Revisar roteiros</Link>}
       </div>
     </div>
   );

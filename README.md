@@ -173,3 +173,9 @@ Quando o cliente pede alteração, o pedido aparece na aba **Alterações** (Kim
 3. **Para revisar:** antes e depois, o recado de cada pessoa e o pedido do cliente. Basta uma pessoa clicar em **Tudo certo, enviar ao cliente**: a versão entra no conteúdo (nova versão, aguardando aprovação). **Voltar para…** devolve para uma das pessoas com recado (e-mail).
 
 Quem faz alterações e os dias e horário de entrega ficam na aba **Equipe** (linha "Alterações"). Ninguém entrega no sábado nem no domingo. Tabelas: `supabase/migrations/2026-11-26_alteracoes.sql`.
+
+## Pedidos de roteiro
+
+Kim e João (quem tem a aba Alterações) pedem roteiros em **Roteiros → Pedir roteiros** (`/dashboard/roteiros/pedidos`): cliente, quem escreve (Renata, Duda, Carol), quantos, mês e prazo, com briefing. A pessoa recebe por e-mail e vê em **Minhas demandas → Roteiros para escrever**, escreve cada roteiro (ou cola o link do Doc), salva rascunho e entrega. Na aba **Para revisar**, Kim/João ajustam o texto, pedem ajuste ou clicam **Enviar para o cliente**: cada roteiro vira um material de texto no link de aprovação do cliente (marcado `is_roteiro`, não entra em Agendamento, termômetro nem relatórios).
+
+**Demandas fixas**: roteiros que todo mês saem pelo contrato (cliente, quem escreve, quantos, prazo no dia X). No mês corrente o Aprova cria sozinho o pedido dos roteiros do mês seguinte, uma vez só. Quem aparece como "escreve roteiros" é marcado na aba Equipe. Migration: `2026-11-26_pedidos_roteiro.sql`.

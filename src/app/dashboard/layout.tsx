@@ -12,6 +12,7 @@ import { loadPendingPautas } from '@/lib/pautas-pending';
 import { loadEntregas } from '@/lib/entregas-server';
 import { currentMonth } from '@/lib/format';
 import { loadAltCounts } from '@/lib/alteracoes-server';
+import { ensureFixos, loadPedidoCounts } from '@/lib/pedidos-roteiro-server';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -46,11 +47,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   // quantos posts aprovados esperam agendamento (número na aba Agendamento)
   const { count } = await supabase.from('posts').select('id', { count: 'exact', head: true })
-    .eq('status', 'approved').is('scheduled_at', null);
+    .eq('status', 'approved').is('scheduled_at', null).eq('is_roteiro', false);
   const queueCount = count ?? 0;
   const role = view.role;
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
-  const [cobrarCount, tasks, pautas, entregas, altCounts, doer] = await Promise.all([
+  // demandas fixas: cria os pedidos de roteiro do mês (uma vez por mês, sem duplicar)
+  await ensureFixos(supabase);
+  const [cobrarCount, tasks, pautas, entregas, altCounts, doer, rotCounts] = await Promise.all([
     view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
     loadMonthTasks(supabase, view.owner ? null : view.id),
     // pautas de sábado: lembrete na segunda para quem cuida da estratégia (aba Relatórios)
@@ -61,6 +64,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     loadAltCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ encaminhar: 0, revisar: 0, minhas: 0, lista: [] })),
     supabase.from('profiles').select('does_changes, tutorial_demandas_at, delivery_days, delivery_hours').eq('id', view.id).maybeSingle()
       .then((r) => (r.data ?? {}) as { does_changes?: boolean; tutorial_demandas_at?: string | null; delivery_days?: number[] | null; delivery_hours?: string | null }),
+    // pedidos de roteiro: para escrever (Renata, Duda, Carol) e para revisar (Kim e João)
+    loadPedidoCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ escrever: 0, revisar: 0, lista: [] })),
   ]);
   const entregasAlert = entregas && entregas.rows.length ? {
     atrasado: entregas.rows.filter((r) => r.status === 'atrasado').map((r) => r.name),
@@ -73,7 +78,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
       <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas} entregas={entregasAlert}
         alt={{
-          ...altCounts, doesChanges: !!doer.does_changes,
+          ...altCounts, doesChanges: !!doer.does_changes, roteiros: rotCounts,
           // tutorial no primeiro acesso de quem faz alterações (não abre no "Ver como")
           tutorial: !!doer.does_changes && !doer.tutorial_demandas_at && view.id === real.id,
           days: doer.delivery_days ?? [1, 2, 3, 4, 5], hours: doer.delivery_hours ?? '',

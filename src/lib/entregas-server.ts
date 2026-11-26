@@ -23,7 +23,7 @@ export async function loadEntregas(supabase: SupabaseClient, supervisorId: strin
   if (supervisorId) q = q.eq('delivery_supervisor_id', supervisorId);
   const [clientsRes, postsRes, extRes, profRes, manRes] = await Promise.all([
     q.order('name'),
-    supabase.from('posts').select('client_id,status,format,scheduled_date,sent_at'),
+    supabase.from('posts').select('client_id,status,format,scheduled_date,sent_at').eq('is_roteiro', false),
     supabase.from('posts_externos').select('client_id,format').gte('publish_date', from).lt('publish_date', to),
     supabase.from('profiles').select('id,name'),
     supabase.from('entregas_manuais').select('id,client_id,quantidade,nota,created_by,created_at').eq('ref_month', month).order('created_at'),
