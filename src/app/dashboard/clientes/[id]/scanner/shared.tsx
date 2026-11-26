@@ -27,7 +27,15 @@ export function Thumb({ m, className = 'sc-thumb' }: { m: Media | null; classNam
 }
 
 /** Guarda um arquivo no Storage do Aprova (do Drive, pelo servidor; do aparelho, direto). */
-export async function storeMedia(postId: string, m: Media, index: number): Promise<{ url: string; path: string; type: string; name: string }> {
+/**
+ * Vídeo do Drive maior que o limite do Aprova (50 MB): em vez de copiar, entra como vídeo do Drive,
+ * que o cliente assiste dentro do Aprova (o arquivo já está aberto para quem tem o link).
+ */
+const driveVideo = (id: string) => ({
+  url: `https://drive.google.com/file/d/${id}/preview`, path: null, type: 'embed/drive', name: `https://drive.google.com/file/d/${id}/view`,
+});
+
+export async function storeMedia(postId: string, m: Media, index: number): Promise<{ url: string; path: string | null; type: string; name: string }> {
   if (m.src === 'local') {
     const path = safePath(`posts/${postId}`, m.file, index);
     const fileUrl = await uploadFile(path, m.file);
@@ -35,6 +43,7 @@ export async function storeMedia(postId: string, m: Media, index: number): Promi
   }
   const res = await fetch('/api/scanner/arquivo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId, driveId: m.id, index }) });
   const data = await res.json().catch(() => ({}));
+  if (!res.ok && data.code === 'too_big' && isVideo(m)) return driveVideo(m.id);
   if (!res.ok) throw new Error(`${m.name}: ${data.error || 'falha ao baixar do Drive.'}`);
   return data as { url: string; path: string; type: string; name: string };
 }
