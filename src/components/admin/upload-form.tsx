@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { removeFiles, safePath, uploadFile } from '@/lib/upload';
 import { MAX_UPLOAD_MB, TYPES } from '@/lib/constants';
-import { COVER_PREFIX, EMBED_PREFIX, parseVideoLink, splitMedia, type Embed } from '@/lib/media';
-import type { Client, Post, PostFormat } from '@/lib/types';
+import { COVER_PREFIX, EMBED_PREFIX, embedLabel, embedThumb, isEmbed, parseVideoLink, splitMedia, type Embed } from '@/lib/media';
+import type { Client, Post, PostFormat, PostMedia } from '@/lib/types';
 import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
 import { errMsg, normalizeIg } from './client-form';
@@ -16,10 +16,50 @@ const ACCEPT = /^(image|video)\/|application\/pdf/;
 /** Formatos que aceitam capa personalizada. */
 const COVER_FORMATS: PostFormat[] = ['reels', 'video'];
 
-type Item = { kind: 'file'; file: File } | { kind: 'link'; embed: Embed };
+/**
+ * Item da lista de arquivos. Em "nova versão" a lista já começa com os
+ * arquivos atuais (`keep`); trocar um deles vira `file`/`link` com `was`
+ * apontando para o original (dá para desfazer).
+ */
+type Item =
+  | { kind: 'keep'; media: PostMedia }
+  | { kind: 'file'; file: File; was?: PostMedia }
+  | { kind: 'link'; embed: Embed; was?: PostMedia };
 type MediaRow = { post_id: string; file_url: string; storage_path: string | null; file_type: string; file_name: string; order_index: number };
 const itemKey = (it: Item, i: number) =>
-  it.kind === 'file' ? `${it.file.name}-${it.file.size}-${it.file.lastModified}-${i}` : `${it.embed.src}-${i}`;
+  it.kind === 'keep' ? it.media.id
+    : it.kind === 'file' ? `${it.file.name}-${it.file.size}-${it.file.lastModified}-${i}` : `${it.embed.src}-${i}`;
+
+/** Miniatura de um arquivo que já está no post. */
+function MediaThumb({ m }: { m: PostMedia }) {
+  if (m.file_type.startsWith('image/')) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={m.file_url} alt="" />;
+  }
+  if (m.file_type.startsWith('video/')) return <video src={`${m.file_url}#t=0.1`} muted preload="metadata" />;
+  if (isEmbed(m)) {
+    const thumb = embedThumb(m.file_url);
+    return (
+      <div className="emb" style={thumb ? { backgroundImage: `linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url("${thumb}")` } : undefined}>
+        <Icon name="video" /><span>{embedLabel(m.file_type)}</span>
+      </div>
+    );
+  }
+  return <span>{m.file_name}</span>;
+}
+
+/** Como chamar a posição N do post no recado ("tela 2", "o vídeo"…). */
+function slotName(format: PostFormat, olds: PostMedia[], m: PostMedia) {
+  const i = olds.indexOf(m);
+  if (olds.length > 1) return format === 'carrossel' ? `a tela ${i + 1}` : `o item ${i + 1}`;
+  if (m.file_type.startsWith('image/')) return 'a imagem';
+  if (m.file_type.startsWith('video/') || isEmbed(m)) return 'o vídeo';
+  return 'o arquivo';
+}
+
+function joinPt(list: string[]) {
+  return list.length <= 1 ? list.join('') : `${list.slice(0, -1).join(', ')} e ${list[list.length - 1]}`;
+}
 
 function Preview({ file }: { file: File }) {
   const url = useMemo(() => URL.createObjectURL(file), [file]);
@@ -42,26 +82,57 @@ export function UploadForm({
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
-  const [itemsState, setItems] = useState<Item[]>([]);
+  const replaceRef = useRef<HTMLInputElement>(null);
+  const oldItems = useMemo(
+    () => (material ? splitMedia([...material.post_media].sort((a, b) => a.order_index - b.order_index)).items : []),
+    [material],
+  );
+  const [itemsState, setItems] = useState<Item[]>(() => oldItems.map((media) => ({ kind: 'keep' as const, media })));
   const items = itemsState;
   const [link, setLink] = useState('');
+  /** posição que está sendo trocada (mostra a barra "trocar por arquivo ou link") */
+  const [replacing, setReplacing] = useState<number | null>(null);
+  const [replaceLink, setReplaceLink] = useState('');
   const oldCover = material ? splitMedia(material.post_media).cover : null;
+  const lastAsk = material ? [...material.comments].reverse().find((c) => c.author_role === 'client' && c.kind === 'adjustment') : undefined;
   const [cover, setCover] = useState<File | null>(null);
   const [dropOldCover, setDropOldCover] = useState(false);
   const [type, setType] = useState<PostFormat>(material?.format ?? 'carrossel');
   const [over, setOver] = useState(false);
-  const [keep, setKeep] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
 
-  function add(list: FileList | null) {
-    if (!list) return;
+  function validFiles(list: FileList | null) {
     const ok: File[] = [];
-    Array.from(list).forEach((f) => {
+    Array.from(list ?? []).forEach((f) => {
       if (!ACCEPT.test(f.type)) return toast(`“${f.name}” não é foto, vídeo ou PDF.`, 'err');
       if (f.size > MAX_UPLOAD_MB * 1024 * 1024) return toast(`“${f.name}” passa de ${MAX_UPLOAD_MB} MB.`, 'err');
       ok.push(f);
     });
+    return ok;
+  }
+  function add(list: FileList | null) {
+    const ok = validFiles(list);
     setItems((cur) => cur.concat(ok.map((file) => ({ kind: 'file' as const, file }))));
+  }
+  /** original da posição i (se ela era/é um arquivo que já estava no post) */
+  const origOf = (it: Item) => (it.kind === 'keep' ? it.media : it.was);
+  function replaceWith(i: number, next: { kind: 'file'; file: File } | { kind: 'link'; embed: Embed }) {
+    setItems((cur) => cur.map((it, k) => (k === i ? { ...next, was: origOf(it) } : it)));
+    setReplacing(null);
+    setReplaceLink('');
+  }
+  function replaceFile(list: FileList | null) {
+    const f = validFiles(list)[0];
+    if (f && replacing !== null) replaceWith(replacing, { kind: 'file', file: f });
+  }
+  function replaceByLink() {
+    if (replacing === null || !replaceLink.trim()) return;
+    const embed = parseVideoLink(replaceLink);
+    if (!embed) return toast('Não reconheci esse link. Cole o endereço do vídeo (YouTube, Vimeo, Drive, Instagram, TikTok, Loom…).', 'err');
+    replaceWith(replacing, { kind: 'link', embed });
+  }
+  function undoReplace(i: number) {
+    setItems((cur) => cur.map((it, k) => (k === i && it.kind !== 'keep' && it.was ? { kind: 'keep', media: it.was } : it)));
   }
   function addLink() {
     if (!link.trim()) return;
@@ -102,6 +173,7 @@ export function UploadForm({
       if (withItems) {
         for (let i = 0; i < items.length; i++) {
           const it = items[i];
+          if (it.kind === 'keep') continue;
           if (it.kind === 'link') {
             rows.push({ post_id: postId, file_url: it.embed.src, storage_path: null, file_type: `${EMBED_PREFIX}${it.embed.provider}`, file_name: it.embed.original.slice(0, 500), order_index: i });
           } else {
@@ -121,6 +193,28 @@ export function UploadForm({
     return rows;
   }
 
+  /** Resumo do que mudou na versão, para o cliente saber onde olhar. */
+  function changeSummary(caption: string) {
+    if (!material) return '';
+    const name = (m: PostMedia) => slotName(material.format, oldItems, m);
+    const swapped = items.flatMap((it) => (it.kind !== 'keep' && it.was ? [name(it.was)] : []));
+    const present = new Set(items.flatMap((it) => { const o = origOf(it); return o ? [o.id] : []; }));
+    const removed = oldItems.filter((m) => !present.has(m.id)).map(name);
+    const added = items.filter((it) => it.kind !== 'keep' && !it.was).length;
+    const parts: string[] = [];
+    if (swapped.length) parts.push(`trocamos ${joinPt(swapped)}`);
+    if (cover && COVER_FORMATS.includes(type)) parts.push(oldCover ? 'trocamos a capa' : 'incluímos a capa');
+    else if (dropOldCover && oldCover) parts.push('tiramos a capa');
+    if (removed.length) parts.push(`tiramos ${joinPt(removed)}`);
+    if (added) parts.push(added === 1 ? 'incluímos 1 arquivo novo' : `incluímos ${added} arquivos novos`);
+    const moved = items.some((it, i) => it.kind === 'keep' && oldItems.indexOf(it.media) !== i);
+    if (moved && !removed.length && !added) parts.push('mudamos a ordem');
+    if (caption !== material.caption) parts.push('ajustamos a legenda');
+    if (!parts.length) return '';
+    const txt = joinPt(parts);
+    return `O que mudou: ${txt.charAt(0).toUpperCase()}${txt.slice(1)}.`;
+  }
+
   async function submit() {
     const form = formRef.current!;
     const fd = new FormData(form);
@@ -136,7 +230,7 @@ export function UploadForm({
       setItems(items);
       setLink('');
     }
-    if (!items.length && !caption.trim() && !keep) return toast('Envie pelo menos um arquivo, um link ou um texto.', 'err');
+    if (!items.length && !caption.trim()) return toast('Envie pelo menos um arquivo, um link ou um texto.', 'err');
 
     const supabase = createClient();
     setProgress(0);
@@ -166,17 +260,21 @@ export function UploadForm({
         toast('Material enviado para aprovação');
       } else {
         const v = material.version + 1;
-        const rows = await uploadAll(material.id, !keep, items);
+        const rows = await uploadAll(material.id, true, items);
         if (rows.length) {
           const { error: e2 } = await supabase.from('post_media').insert(rows);
           if (e2) { await removeFiles(rows.map((r) => r.storage_path)); throw e2; }
         }
-        // remove o que foi substituído: itens antigos (se não manteve) e a capa antiga (se trocou/removeu)
+        // os que ficaram: só atualiza a posição se mudou de lugar
+        await Promise.all(items.map((it, i) => (it.kind === 'keep' && it.media.order_index !== i
+          ? supabase.from('post_media').update({ order_index: i }).eq('id', it.media.id)
+          : null)));
+        // remove o que saiu: itens trocados/removidos e a capa antiga (se trocou/removeu)
         const newCover = rows.some((r) => r.file_type.startsWith(COVER_PREFIX));
-        const old = splitMedia(material.post_media);
+        const keptIds = new Set(items.flatMap((it) => (it.kind === 'keep' ? [it.media.id] : [])));
         const gone = [
-          ...(keep ? [] : old.items),
-          ...(old.cover && (newCover || dropOldCover) ? [old.cover] : []),
+          ...oldItems.filter((m) => !keptIds.has(m.id)),
+          ...(oldCover && (newCover || dropOldCover) ? [oldCover] : []),
         ];
         if (gone.length) {
           await supabase.from('post_media').delete().in('id', gone.map((m) => m.id));
@@ -188,9 +286,10 @@ export function UploadForm({
         }).eq('id', material.id);
         if (error) throw error;
         const note = String(fd.get('note') ?? '').trim();
+        const summary = changeSummary(caption);
         await supabase.from('comments').insert({
           post_id: material.id, author_name: me.name, author_role: 'agency', kind: 'version',
-          content: note || `Nova versão enviada (v${v}).`, version: v,
+          content: [note || `Nova versão enviada (v${v}).`, summary].filter(Boolean).join('\n'), version: v,
         });
         await supabase.from('activity_logs').insert({
           client_id: client.id, post_id: material.id, type: 'nova_versao', actor: me.name, meta: `v${v}`,
@@ -209,6 +308,51 @@ export function UploadForm({
 
   const busy = progress !== null;
 
+  function renderPreviews() {
+    return (
+      <>
+        <div className={`previews${isVersion ? ' big' : ''}`}>
+          {items.map((it, i) => (
+            <div className={`pv${replacing === i ? ' sel' : ''}`} key={itemKey(it, i)}>
+              {it.kind === 'keep' ? <MediaThumb m={it.media} /> : it.kind === 'file' ? <Preview file={it.file} /> : (
+                <div className="emb" style={it.embed.thumb ? { backgroundImage: `linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url("${it.embed.thumb}")` } : undefined}>
+                  <Icon name="video" /><span>{it.embed.label}</span>
+                </div>
+              )}
+              <span className="n">{i + 1}</span>
+              {isVersion && it.kind !== 'keep' && <span className="tag">{it.was ? 'trocado' : 'novo'}</span>}
+              <button type="button" aria-label="Remover" title="Remover" onClick={() => { setReplacing(null); setItems((cur) => cur.filter((_, k) => k !== i)); }}><Icon name="x" /></button>
+              {isVersion && (it.kind === 'keep' || it.was) && (
+                it.kind === 'keep'
+                  ? <button type="button" className="swap" onClick={() => setReplacing(replacing === i ? null : i)}>Trocar</button>
+                  : <button type="button" className="swap" onClick={() => undoReplace(i)}>Desfazer</button>
+              )}
+              {items.length > 1 && (
+                <div className="mv">
+                  <button type="button" aria-label="Mover para trás" onClick={() => move(i, -1)}><Icon name="left" /></button>
+                  <button type="button" aria-label="Mover para frente" onClick={() => move(i, 1)}><Icon name="right" /></button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {replacing !== null && items[replacing] && (
+          <div className="swap-bar">
+            <b>Trocar {(() => { const o = origOf(items[replacing]); return o && material ? slotName(material.format, oldItems, o) : `o item ${replacing + 1}`; })()} por:</b>
+            <div className="linkrow wrap" style={{ marginTop: 6 }}>
+              <button type="button" className="btn sm" onClick={() => replaceRef.current?.click()}><Icon name="upload" />Escolher arquivo</button>
+              <input className="input" value={replaceLink} onChange={(e) => setReplaceLink(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); replaceByLink(); } }}
+                placeholder="ou cole o link do vídeo" />
+              <button type="button" className="btn line sm" onClick={replaceByLink} disabled={!replaceLink.trim()}><Icon name="link" />Usar link</button>
+              <button type="button" className="btn line sm" onClick={() => { setReplacing(null); setReplaceLink(''); }}>Cancelar</button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <Modal
       title={isVersion ? <>Nova <b>versão</b></> : <>Enviar para <b>{client.name}</b></>}
@@ -224,9 +368,18 @@ export function UploadForm({
     >
       <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
         {isVersion ? (
-          <p className="muted small" style={{ margin: '0 0 14px' }}>
-            “{material.title}” volta para <b>aguardando aprovação</b> e o cliente vê a versão nova.
-          </p>
+          <>
+            <p className="muted small" style={{ margin: '0 0 14px' }}>
+              “{material.title}” volta para <b>aguardando aprovação</b> e o cliente vê a versão nova.
+              Troque só o que o cliente pediu: o resto continua como está.
+            </p>
+            {lastAsk && (
+              <div className="ask-box">
+                <span className="eyebrow">O que o cliente pediu</span>
+                <p>{lastAsk.content}</p>
+              </div>
+            )}
+          </>
         ) : (
           <>
             <div className="field">
@@ -247,7 +400,12 @@ export function UploadForm({
         )}
 
         <div className="field">
-          <label>Arquivos <span className="muted" style={{ fontWeight: 400 }}>— fotos, vídeos ou PDF (pode misturar foto e vídeo no carrossel); a ordem é a do carrossel</span></label>
+          {isVersion && oldItems.length > 0 ? (
+            <label>Arquivos <span className="muted" style={{ fontWeight: 400 }}>— clique em <b>Trocar</b> só no que vai mudar; para incluir mais, use o campo abaixo</span></label>
+          ) : (
+            <label>Arquivos <span className="muted" style={{ fontWeight: 400 }}>— fotos, vídeos ou PDF (pode misturar foto e vídeo no carrossel); a ordem é a do carrossel</span></label>
+          )}
+          {isVersion && items.length > 0 && renderPreviews()}
           <div
             className={`drop${over ? ' over' : ''}`}
             onClick={() => fileRef.current?.click()}
@@ -270,32 +428,9 @@ export function UploadForm({
               placeholder="Ou cole o link de um vídeo (YouTube, Vimeo, Drive, Instagram, TikTok, Loom…)" />
             <button type="button" className="btn line" onClick={addLink} disabled={!link.trim()}><Icon name="link" />Adicionar</button>
           </div>
-          {items.length > 0 && (
-            <div className="previews">
-              {items.map((it, i) => (
-                <div className="pv" key={itemKey(it, i)}>
-                  {it.kind === 'file' ? <Preview file={it.file} /> : (
-                    <div className="emb" style={it.embed.thumb ? { backgroundImage: `linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url("${it.embed.thumb}")` } : undefined}>
-                      <Icon name="video" /><span>{it.embed.label}</span>
-                    </div>
-                  )}
-                  <span className="n">{i + 1}</span>
-                  <button type="button" aria-label="Remover" onClick={() => setItems((cur) => cur.filter((_, k) => k !== i))}><Icon name="x" /></button>
-                  {items.length > 1 && (
-                    <div className="mv">
-                      <button type="button" aria-label="Mover para trás" onClick={() => move(i, -1)}><Icon name="left" /></button>
-                      <button type="button" aria-label="Mover para frente" onClick={() => move(i, 1)}><Icon name="right" /></button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-          {isVersion && splitMedia(material.post_media).items.length > 0 && (
-            <label className="small" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-              <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /> Manter os arquivos atuais (mudar só o texto)
-            </label>
-          )}
+          {!isVersion && items.length > 0 && renderPreviews()}
+          <input ref={replaceRef} type="file" accept="image/*,video/*,application/pdf" hidden
+            onChange={(e) => { replaceFile(e.target.files); e.target.value = ''; }} />
         </div>
 
         {COVER_FORMATS.includes(type) && (
