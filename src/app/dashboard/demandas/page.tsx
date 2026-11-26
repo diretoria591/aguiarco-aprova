@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { currentViewer } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { todayYMD } from '@/lib/format';
+import { currentMonth, todayYMD } from '@/lib/format';
 import { loadMine } from '@/lib/alteracoes-server';
-import { ensureFixos, loadMyPedidos } from '@/lib/pedidos-roteiro-server';
+import { ensureFixos, loadMyPedidos, loadWriters } from '@/lib/pedidos-roteiro-server';
 import { DemandasView } from './demandas-view';
 
 export const metadata: Metadata = { title: 'Minhas demandas' };
@@ -17,12 +17,14 @@ export default async function DemandasPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const supabase = await createClient();
   await ensureFixos(supabase);
-  const [{ rows, error }, { data: prof }, roteiros] = await Promise.all([
+  const [{ rows, error }, { data: prof }, roteiros, writers, clientsRes] = await Promise.all([
     loadMine(supabase, v.view.id),
     supabase.from('profiles').select('delivery_days, delivery_hours').eq('id', v.view.id).maybeSingle(),
     loadMyPedidos(supabase, v.view.id),
+    loadWriters(supabase),
+    supabase.from('clients').select('id, name').order('name'),
   ]);
   const p = (prof ?? {}) as { delivery_days?: number[] | null; delivery_hours?: string | null };
-  return <DemandasView rows={rows} error={error} meId={v.view.id} name={v.view.name} cliente={sp.cliente ?? null} today={todayYMD()} roteiros={roteiros.rows}
+  return <DemandasView rows={rows} error={error} meId={v.view.id} name={v.view.name} cliente={sp.cliente ?? null} today={todayYMD()} pedidos={{ rows: roteiros.rows, asked: roteiros.asked, writers, clients: (clientsRes.data ?? []) as { id: string; name: string }[], month: currentMonth() }}
     days={p.delivery_days ?? [1, 2, 3, 4, 5]} hours={p.delivery_hours ?? ''} />;
 }

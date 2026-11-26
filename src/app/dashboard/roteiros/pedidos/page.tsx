@@ -5,10 +5,10 @@ import { currentMonth, todayYMD } from '@/lib/format';
 import { ensureFixos, loadPedidosBoard, loadWriters } from '@/lib/pedidos-roteiro-server';
 import { PedidosView, type PedidosAba } from './pedidos-view';
 
-export const metadata: Metadata = { title: 'Pedidos de roteiro' };
+export const metadata: Metadata = { title: 'Pedidos de texto' };
 export const dynamic = 'force-dynamic';
 
-/** Kim e João: pedir roteiros, acompanhar, revisar, enviar ao cliente e as demandas fixas do contrato. */
+/** Kim e João: pedir roteiro, copy, legenda ou texto, acompanhar prazos, revisar, enviar ao cliente e as demandas fixas do contrato. */
 export default async function PedidosPage({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   await requireSection('alteracoes');
   const sp = await searchParams;

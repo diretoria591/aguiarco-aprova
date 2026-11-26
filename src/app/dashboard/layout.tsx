@@ -10,7 +10,7 @@ import { loadMonthTasks } from '@/lib/month-tasks';
 import { currentViewer } from '@/lib/auth';
 import { loadPendingPautas } from '@/lib/pautas-pending';
 import { loadEntregas } from '@/lib/entregas-server';
-import { currentMonth } from '@/lib/format';
+import { currentMonth, todayYMD } from '@/lib/format';
 import { loadAltCounts } from '@/lib/alteracoes-server';
 import { ensureFixos, loadPedidoCounts } from '@/lib/pedidos-roteiro-server';
 import type { TeamRole } from '@/lib/types';
@@ -64,8 +64,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     loadAltCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ encaminhar: 0, revisar: 0, minhas: 0, lista: [] })),
     supabase.from('profiles').select('does_changes, tutorial_demandas_at, delivery_days, delivery_hours').eq('id', view.id).maybeSingle()
       .then((r) => (r.data ?? {}) as { does_changes?: boolean; tutorial_demandas_at?: string | null; delivery_days?: number[] | null; delivery_hours?: string | null }),
-    // pedidos de roteiro: para escrever (Renata, Duda, Carol) e para revisar (Kim e João)
-    loadPedidoCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ escrever: 0, revisar: 0, lista: [] })),
+    // pedidos de texto: para escrever, recebidos de outra pessoa, para revisar e atrasados (Kim e João)
+    loadPedidoCounts(supabase, view.id, view.sections.includes('alteracoes'), todayYMD()).catch(() => ({ escrever: 0, revisar: 0, recebidos: 0, atrasados: [], lista: [] })),
   ]);
   const entregasAlert = entregas && entregas.rows.length ? {
     atrasado: entregas.rows.filter((r) => r.status === 'atrasado').map((r) => r.name),

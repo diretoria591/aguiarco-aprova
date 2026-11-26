@@ -40,7 +40,7 @@ export type ShellAlt = {
   /** demandas da pessoa (a vez dela), para o aviso do topo */
   lista?: { client: string; clientId: string; title: string; due: string | null }[];
   /** pedidos de roteiro: para escrever (a pessoa) e para revisar (Kim e João) */
-  roteiros?: { escrever: number; revisar: number; lista: { client: string; due: string | null }[] };
+  roteiros?: { escrever: number; revisar: number; recebidos: number; atrasados: { who: string; what: string }[]; lista: { client: string; due: string | null }[] };
 };
 
 export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
@@ -119,14 +119,14 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
     show: l.key === 'numeros' ? showNumeros : can(l.key),
   }));
   // "Minhas demandas" para quem faz alterações (ou recebeu uma), no topo do menu
-  const escrever = alt?.roteiros?.escrever ?? 0;
+  const escrever = (alt?.roteiros?.escrever ?? 0) + (alt?.roteiros?.recebidos ?? 0);
   if (alt && (alt.doesChanges || alt.minhas > 0 || escrever > 0)) {
     links.unshift({ key: 'demandas', href: '/dashboard/demandas', label: 'Minhas demandas', extra: badge(alt.minhas + escrever), show: true });
   }
   // pedidos de roteiro (Kim e João): logo depois de Alterações
   const altIdx = links.findIndex((l) => l.key === 'alteracoes');
   if (altIdx >= 0) {
-    links.splice(altIdx + 1, 0, { key: 'pedidos', href: '/dashboard/roteiros/pedidos', label: 'Pedidos de roteiro', extra: badge(alt?.roteiros?.revisar ?? 0), show: can('alteracoes') });
+    links.splice(altIdx + 1, 0, { key: 'pedidos', href: '/dashboard/roteiros/pedidos', label: 'Pedidos de texto', extra: badge((alt?.roteiros?.revisar ?? 0) + (alt?.roteiros?.atrasados.length ?? 0)), show: can('alteracoes') });
   }
 
   return (
@@ -327,35 +327,40 @@ function HelloBanner({ alt, name, section, greeted }: { alt: ShellAlt | null; na
   );
 }
 
-/** Pedidos de roteiro: para quem escreve (prazo vencido em vermelho) e para a revisão da Kim e do João. */
+/**
+ * Pedidos de texto (roteiro, copy, legenda): o que a pessoa tem para escrever (prazo vencido em vermelho),
+ * o que chegou do que ela pediu e, para a Kim e o João, o que está para revisar e o que atrasou.
+ */
 function RoteirosBanner({ data, name, section }: { data: ShellAlt['roteiros'] | null; name: string; section: string }) {
   if (!data) return null;
   const today = todayYMD();
   const showMine = data.escrever > 0 && section !== 'demandas';
+  const showRec = data.recebidos > 0 && section !== 'demandas';
   const showRev = data.revisar > 0 && section !== 'pedidos';
-  if (!showMine && !showRev) return null;
+  const showLate = data.atrasados.length > 0 && section !== 'pedidos';
+  if (!showMine && !showRec && !showRev && !showLate) return null;
   const late = data.lista.filter((d) => d.due && d.due < today);
   const hoje = data.lista.filter((d) => d.due === today);
   const next = data.lista.find((d) => d.due && d.due >= today);
-  const tone = showMine && late.length ? 'late' : showMine && hoje.length ? '' : 'ok';
-  const clientes = (xs: { client: string }[]) => [...new Set(xs.map((x) => x.client))].join(', ');
+  const tone = (showMine && late.length) || showLate ? 'late' : showMine && hoje.length ? '' : 'ok';
+  const list = (xs: string[]) => xs.slice(0, 3).join('; ') + (xs.length > 3 ? ` e mais ${xs.length - 3}` : '');
+  const parts: React.ReactNode[] = [];
+  if (showMine) {
+    parts.push(late.length
+      ? <><b>{late.length} pedido{late.length > 1 ? 's' : ''} para escrever com prazo vencido</b> ({list(late.map((d) => d.client))}).</>
+      : hoje.length
+        ? <><b>Hoje é o prazo de {list(hoje.map((d) => d.client))}.</b></>
+        : <>Você tem <b>{data.escrever} pedido{data.escrever > 1 ? 's' : ''} para escrever</b>.{next ? <> O próximo vence {dayLabel(next.due)} ({next.client}).</> : null}</>);
+  }
+  if (showRec) parts.push(<><b>Chegou {data.recebidos === 1 ? 'o que você pediu' : `${data.recebidos} coisas que você pediu`}</b> para outra pessoa da equipe.</>);
+  if (showLate) parts.push(<><b>{data.atrasados.length} pedido{data.atrasados.length > 1 ? 's' : ''} atrasado{data.atrasados.length > 1 ? 's' : ''}:</b> {list(data.atrasados.map((a) => `${a.who} (${a.what})`))}.</>);
+  if (showRev) parts.push(<>{data.revisar} pedido{data.revisar > 1 ? 's' : ''} entregue{data.revisar > 1 ? 's' : ''} para revisar.</>);
   return (
     <div className={`task-banner hello-banner ${tone}`}>
-      <span>
-        {showMine && (
-          <>
-            <b>{name}, {late.length ? `${late.length} pedido${late.length > 1 ? 's' : ''} de roteiro atrasado${late.length > 1 ? 's' : ''} (${clientes(late)})`
-              : hoje.length ? `hoje é o prazo dos roteiros de ${clientes(hoje)}`
-              : `você tem ${data.escrever} pedido${data.escrever > 1 ? 's' : ''} de roteiro para escrever`}.</b>
-            {!late.length && !hoje.length && next ? <> O próximo vence {dayLabel(next.due)} ({next.client}).</> : null}
-          </>
-        )}
-        {showMine && showRev ? ' ' : null}
-        {showRev && <>{showMine ? 'E ' : <b>{name}, </b>}{data.revisar} pedido{data.revisar > 1 ? 's' : ''} de roteiro entregue{data.revisar > 1 ? 's' : ''} para revisar.</>}
-      </span>
+      <span><b>{name}, </b>{parts.map((p, i) => <span key={i}>{i > 0 ? ' ' : ''}{p}</span>)}</span>
       <div className="hello-actions">
-        {showMine && <Link className="btn sm" href="/dashboard/demandas">Escrever roteiros</Link>}
-        {showRev && <Link className={`btn sm${showMine ? ' line' : ''}`} href="/dashboard/roteiros/pedidos?aba=revisar">Revisar roteiros</Link>}
+        {(showMine || showRec) && <Link className="btn sm" href="/dashboard/demandas">{showMine ? 'Escrever agora' : 'Ver o que chegou'}</Link>}
+        {(showRev || showLate) && <Link className={`btn sm${showMine || showRec ? ' line' : ''}`} href={`/dashboard/roteiros/pedidos?aba=${showRev ? 'revisar' : 'equipe'}`}>{showRev ? 'Revisar' : 'Ver atrasados'}</Link>}
       </div>
     </div>
   );

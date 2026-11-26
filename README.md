@@ -174,8 +174,9 @@ Quando o cliente pede alteração, o pedido aparece na aba **Alterações** (Kim
 
 Quem faz alterações e os dias e horário de entrega ficam na aba **Equipe** (linha "Alterações"). Ninguém entrega no sábado nem no domingo. Tabelas: `supabase/migrations/2026-11-26_alteracoes.sql`.
 
-## Pedidos de roteiro
+## Pedidos de texto (roteiro, copy, legenda, texto)
 
-Kim e João (quem tem a aba Alterações) pedem roteiros em **Roteiros → Pedir roteiros** (`/dashboard/roteiros/pedidos`): cliente, quem escreve (Renata, Duda, Carol), quantos, mês e prazo, com briefing. A pessoa recebe por e-mail e vê em **Minhas demandas → Roteiros para escrever**, escreve cada roteiro (ou cola o link do Doc), salva rascunho e entrega. Na aba **Para revisar**, Kim/João ajustam o texto, pedem ajuste ou clicam **Enviar para o cliente**: cada roteiro vira um material de texto no link de aprovação do cliente (marcado `is_roteiro`, não entra em Agendamento, termômetro nem relatórios).
-
-**Demandas fixas**: roteiros que todo mês saem pelo contrato (cliente, quem escreve, quantos, prazo no dia X). No mês corrente o Aprova cria sozinho o pedido dos roteiros do mês seguinte, uma vez só. Quem aparece como "escreve roteiros" é marcado na aba Equipe. Migration: `2026-11-26_pedidos_roteiro.sql`.
+- **Kim e João** pedem em **Roteiros → Pedir roteiro ou copy** (`/dashboard/roteiros/pedidos`): tipo (roteiro de vídeo, copy, legenda ou texto), cliente (opcional fora roteiro), para qual material, quem faz, quantos, **prazo para receber** (obrigatório) e briefing. A pessoa recebe por e-mail e em **Minhas demandas → Para escrever**. Ao entregar, quem pediu recebe um e-mail. Em **Para revisar**: ajustar o texto, **Enviar para o cliente** (cada texto vira um material de texto no link de aprovação, marcado `is_roteiro`: fica fora de Agendamento, termômetro e relatórios), **Recebido, não enviar** (para usar num material) ou **Pedir ajuste**. Prazo vencido aparece no aviso do topo e no menu da Kim e do João.
+- **Entre a equipe**: em Minhas demandas, **Pedir … para alguém** — o pedido não passa pela revisão; volta para quem pediu em **Pedidos que eu fiz** (Recebido / Pedir ajuste / Cancelar).
+- **Demandas fixas** (roteiros do contrato): cliente, quem escreve, quantos, prazo no dia X. No mês corrente o Aprova cria sozinho o pedido dos roteiros do mês seguinte, uma vez só.
+- Quem aparece em "quem faz" é marcado na aba Equipe (**Escreve roteiros e textos**). Migration: `2026-11-26_pedidos_roteiro.sql`.

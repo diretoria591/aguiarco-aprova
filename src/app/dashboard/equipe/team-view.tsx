@@ -184,8 +184,8 @@ function DeliveryRow({ u }: { u: Profile }) {
         {u.does_changes ? 'Faz alterações ✓' : 'Faz alterações'}
       </button>
       <button className={u.writes_roteiros ? 'on' : ''} aria-pressed={!!u.writes_roteiros}
-        onClick={() => save({ writes_roteiros: !u.writes_roteiros }, u.writes_roteiros ? 'Saiu da lista de quem escreve roteiros' : 'Aparece em quem escreve roteiros')}>
-        {u.writes_roteiros ? 'Escreve roteiros ✓' : 'Escreve roteiros'}
+        onClick={() => save({ writes_roteiros: !u.writes_roteiros }, u.writes_roteiros ? 'Saiu da lista de quem escreve' : 'Aparece em quem escreve roteiros e textos')}>
+        {u.writes_roteiros ? 'Escreve roteiros e textos ✓' : 'Escreve roteiros e textos'}
       </button>
       {u.does_changes && (
         <>

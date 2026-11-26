@@ -97,7 +97,7 @@ export function RoteirosHome({ clients, roteiros, teams, error }: {
           <h1 suppressHydrationWarning>{greet()}, <b>{firstName(me.name)}</b></h1>
         </div>
         <div className="rt-actions">
-          {(me.sections ?? []).includes('alteracoes') && <Link className="btn line" href="/dashboard/roteiros/pedidos"><Icon name="pen" />Pedir roteiros</Link>}
+          {(me.sections ?? []).includes('alteracoes') && <Link className="btn line" href="/dashboard/roteiros/pedidos"><Icon name="pen" />Pedir roteiro ou copy</Link>}
           {admin && <Link className="btn line" href="/dashboard/roteiros/equipe"><Icon name="users" />Equipes e clientes</Link>}
           <Link className="btn" href="/dashboard/roteiros/novo"><Icon name="plus" />Novos roteiros</Link>
         </div>

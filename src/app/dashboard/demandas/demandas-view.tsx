@@ -14,8 +14,8 @@ import { dayLabel, etapasOf, STAGED_PREFIX, type Alteracao, type Etapa } from '@
 import type { Client, Post, PostFormat, PostMedia } from '@/lib/types';
 import { finishEtapa } from '../alteracoes/actions';
 import { DemandasTutorial } from '@/components/admin/demandas-tutorial';
-import type { PedidoRoteiro } from '@/lib/pedidos-roteiro';
-import { RoteirosEscrever } from './roteiros-escrever';
+import type { PedidoRoteiro, Writer } from '@/lib/pedidos-roteiro';
+import { PedidosTexto } from './roteiros-escrever';
 
 type AltRow = Alteracao & { posts: Post; clients: Client };
 type State = 'vez' | 'depois' | 'entregue';
@@ -35,9 +35,12 @@ function baseMaterial(a: AltRow): Post {
   return { ...a.posts, caption: a.plan.caption, post_media: [...items, ...(cover ? [{ ...cover, order_index: -1 }] : [])] };
 }
 
-export function DemandasView({ rows, error, meId, name, cliente, today, days, hours, roteiros = [] }: {
-  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string; days: number[]; hours: string; roteiros?: PedidoRoteiro[];
+type Pedidos = { rows: PedidoRoteiro[]; asked: PedidoRoteiro[]; writers: Writer[]; clients: { id: string; name: string }[]; month: string };
+
+export function DemandasView({ rows, error, meId, name, cliente, today, days, hours, pedidos }: {
+  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string; days: number[]; hours: string; pedidos?: Pedidos;
 }) {
+  const roteiros = pedidos?.rows ?? [];
   const [help, setHelp] = useState(false);
   const list = useMemo(() => rows.map((a) => {
     const mine = etapasOf(a).filter((e) => e.profile_id === meId);
@@ -74,8 +77,8 @@ export function DemandasView({ rows, error, meId, name, cliente, today, days, ho
         {total ? `${firstName(name)}, você tem ${total} alteraç${total > 1 ? 'ões' : 'ão'} para fazer. Escolha o cliente.` : roteiros.some((r) => r.status === 'fazendo') ? 'Nenhuma alteração agora.' : 'Nada para fazer agora.'}
         {' '}O cliente só vê depois da revisão da Kim ou do João.
       </p>
-      <RoteirosEscrever rows={roteiros} today={today} />
-      {roteiros.length > 0 && <h2 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 10px' }}>Alterações</h2>}
+      {pedidos && <PedidosTexto rows={pedidos.rows} asked={pedidos.asked} today={today} month={pedidos.month} meId={meId} writers={pedidos.writers} clients={pedidos.clients} />}
+      {(roteiros.length > 0 || (pedidos?.asked.length ?? 0) > 0) && <h2 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 10px' }}>Alterações</h2>}
       <ClientTabs clients={clients} current={current} hrefFor={(id) => `/dashboard/demandas?cliente=${id}`} />
       {!current && <div className="card empty"><p style={{ margin: 0 }}>Quando a Kim ou o João encaminharem uma alteração para você, ela aparece aqui e chega no seu e-mail.</p></div>}
       <div className="alt-list">

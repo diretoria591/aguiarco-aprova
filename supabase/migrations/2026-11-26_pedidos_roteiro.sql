@@ -79,3 +79,22 @@ end $$;
 -- roteiro enviado ao cliente vira um material de texto marcado: não entra na fila de Agendamento,
 -- no termômetro de entregas nem nos relatórios (não é post publicado)
 alter table public.posts add column if not exists is_roteiro boolean not null default false;
+
+-- ---------------------------------------------------------------------
+-- Pedidos de texto em geral (roteiro de vídeo, copy, legenda, texto) e entre a equipe
+-- ---------------------------------------------------------------------
+alter table public.roteiro_pedidos add column if not exists tipo text not null default 'roteiro';
+alter table public.roteiro_pedidos drop constraint if exists roteiro_pedidos_tipo_check;
+alter table public.roteiro_pedidos add constraint roteiro_pedidos_tipo_check check (tipo in ('roteiro', 'copy', 'legenda', 'texto'));
+-- para qual material é (ex.: "carrossel de Natal")
+alter table public.roteiro_pedidos add column if not exists material text not null default '';
+-- pedido de uma das meninas para outra: volta para quem pediu (não passa pela revisão da Kim/João)
+alter table public.roteiro_pedidos add column if not exists peer boolean not null default false;
+-- concluido: quem pediu recebeu e vai usar (sem enviar ao cliente)
+alter table public.roteiro_pedidos drop constraint if exists roteiro_pedidos_status_check;
+alter table public.roteiro_pedidos add constraint roteiro_pedidos_status_check
+  check (status in ('fazendo', 'revisao', 'enviado', 'concluido', 'cancelado'));
+alter table public.roteiro_pedidos add column if not exists done_at timestamptz;
+-- pedido interno pode não ser de um cliente
+alter table public.roteiro_pedidos alter column client_id drop not null;
+create index if not exists roteiro_pedidos_created_by_idx on public.roteiro_pedidos (created_by, status);

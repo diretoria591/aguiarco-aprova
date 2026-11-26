@@ -1,12 +1,32 @@
-/* Pedidos de roteiro: Kim/João pedem, quem escreve entrega, Kim/João revisam e enviam ao cliente. */
-import { addMonths } from './format';
+/*
+ * Pedidos de texto (roteiro de vídeo, copy, legenda, texto): Kim/João pedem para a equipe
+ * (revisam e enviam ao cliente) e as meninas pedem umas para as outras (volta para quem pediu).
+ */
+import { addMonths, monthLabel } from './format';
 
-export type PedidoStatus = 'fazendo' | 'revisao' | 'enviado' | 'cancelado';
+export type PedidoStatus = 'fazendo' | 'revisao' | 'enviado' | 'concluido' | 'cancelado';
+export type PedidoTipo = 'roteiro' | 'copy' | 'legenda' | 'texto';
+
+export const TIPOS: Record<PedidoTipo, { label: string; one: string; many: string; item: string; hint: string }> = {
+  roteiro: { label: 'Roteiro de vídeo', one: 'roteiro', many: 'roteiros', item: 'Roteiro', hint: 'Gancho:\nDesenvolvimento:\nCTA:' },
+  copy: { label: 'Copy', one: 'copy', many: 'copies', item: 'Copy', hint: 'Texto da arte, do anúncio ou da página' },
+  legenda: { label: 'Legenda', one: 'legenda', many: 'legendas', item: 'Legenda', hint: 'Legenda do post, com CTA e hashtags' },
+  texto: { label: 'Texto', one: 'texto', many: 'textos', item: 'Texto', hint: 'Texto pedido' },
+};
+export const TIPO_KEYS = Object.keys(TIPOS) as PedidoTipo[];
+export const tipoOf = (t: string | null | undefined): PedidoTipo => (t && t in TIPOS ? (t as PedidoTipo) : 'roteiro');
+/** "3 roteiros", "1 legenda" */
+export const qtdTipo = (n: number, t: string | null | undefined) => `${n} ${n === 1 ? TIPOS[tipoOf(t)].one : TIPOS[tipoOf(t)].many}`;
 export type RoteiroItem = { title: string; content: string };
 
 export interface PedidoRoteiro {
   id: string;
-  client_id: string;
+  client_id: string | null;
+  tipo: PedidoTipo;
+  material: string;
+  peer: boolean;
+  created_by: string | null;
+  done_at: string | null;
   profile_id: string | null;
   assignee_name: string;
   ref_month: string;
@@ -54,3 +74,13 @@ export function fixoPeriod(month: string, dueDay: number) {
 /** Roteiros entregues com conteúdo (título ou texto). */
 export const filledItems = (itens: RoteiroItem[] | null | undefined) =>
   (itens ?? []).filter((i) => i.title.trim() || i.content.trim());
+
+/** "Valéria · 3 legendas · carrossel de Natal" (roteiro mostra o mês) */
+export function pedidoTitle(p: Pick<PedidoRoteiro, 'tipo' | 'quantidade' | 'ref_month' | 'material'> & { clients?: { name: string } | null }) {
+  const t = tipoOf(p.tipo);
+  return [
+    p.clients?.name ?? (t === 'roteiro' ? 'Cliente' : 'Interno'),
+    t === 'roteiro' ? `${qtdTipo(p.quantidade, t)} de ${monthLabel(p.ref_month)}` : qtdTipo(p.quantidade, t),
+    p.material.trim(),
+  ].filter(Boolean).join(' · ');
+}
