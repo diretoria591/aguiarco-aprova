@@ -24,6 +24,8 @@ type Filter = 'todos' | PostStatus;
 
 export function ClientView({ client, posts, events }: { client: Client; posts: Post[]; events: ActivityLog[] }) {
   const { toast, confirm } = useUI();
+  // "Só vê" (função Agendamento): olha o cliente e os conteúdos, mas não envia, edita nem exclui
+  const ro = useMe().role === 'scheduler';
   const [filter, setFilter] = useState<Filter>('todos');
   const [editOpen, setEditOpen] = useState(false);
   const [upload, setUpload] = useState<{ material?: Post } | null>(null);
@@ -97,11 +99,13 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
             </span>
           </div>
         </div>
-        <div className="actions">
-          <button className="btn line" title="Editar cliente" onClick={() => setEditOpen(true)}><Icon name="edit" />Editar</button>
-          <button className="btn line" onClick={() => setNotifyOpen(true)}><Icon name="bell" />Avisar cliente</button>
-          <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>
-        </div>
+        {ro ? <div className="actions"><span className="role-tag">Só visualização</span></div> : (
+          <div className="actions">
+            <button className="btn line" title="Editar cliente" onClick={() => setEditOpen(true)}><Icon name="edit" />Editar</button>
+            <button className="btn line" onClick={() => setNotifyOpen(true)}><Icon name="bell" />Avisar cliente</button>
+            <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>
+          </div>
+        )}
       </div>
 
       <OnboardingCard client={client} />
@@ -142,7 +146,7 @@ export function ClientView({ client, posts, events }: { client: Client; posts: P
             <div className="card empty">
               <h3>Primeiro <b>envio</b></h3>
               <p>Envie fotos, vídeos, carrosséis, artes ou textos para {client.name} aprovar.</p>
-              <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>
+              {!ro && <button className="btn" onClick={() => setChoose(true)}><Icon name="upload" />Enviar material</button>}
             </div>
           )}
         </section>
@@ -420,12 +424,14 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
               <p className="eyebrow" style={{ margin: '0 0 12px' }}>Conversa</p>
               {m.comments.length ? <Thread comments={m.comments} admin={{ limit, onToggleError: toggleError }} /> : <p className="muted small" style={{ margin: 0 }}>Nenhum comentário ainda.</p>}
             </div>
-            <div className="reply">
+            {me.role !== 'scheduler' && <div className="reply">
               <textarea className="textarea" placeholder="Responder ao cliente…" value={reply} onChange={(e) => setReply(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }} />
               <button className="btn" onClick={send} disabled={sending} aria-label="Enviar"><Icon name="send" /></button>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
+            </div>}
+            {me.role === 'scheduler' ? (
+              <p className="small muted" style={{ marginTop: 'auto' }}>Só visualização. Alterações chegam para você em Minhas demandas.</p>
+            ) : <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 6 }}>
               {m.status === 'adjustment_requested' && (
                 <button className="btn ok" onClick={() => setAdjOpen(true)} title="Para ajustes que só dá para fazer na hora de agendar (ex.: música)">
                   <Icon name="check" />Ajustado e agendado
@@ -441,7 +447,7 @@ function PostDetail({ m, limit, onClose, onNewVersion }: { m: Post; limit: numbe
               )}
               <button className="btn sand" onClick={onNewVersion}><Icon name="refresh" />Enviar nova versão</button>
               <button className="btn danger" onClick={del}><Icon name="trash" />Excluir</button>
-            </div>
+            </div>}
           </div>
         </div>
       </Modal>

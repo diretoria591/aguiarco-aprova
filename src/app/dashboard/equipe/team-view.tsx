@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { initials } from '@/lib/format';
 import type { Profile, TeamRole } from '@/lib/types';
 
-const ROLE_LABEL: Record<TeamRole, string> = { admin: 'Admin', team: 'Equipe', scheduler: 'Agendamento' };
+const ROLE_LABEL: Record<TeamRole, string> = { admin: 'Admin', team: 'Equipe', scheduler: 'Só vê e agenda' };
 import { Icon } from '@/components/icon';
 import { Modal, useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
@@ -95,7 +95,7 @@ export function TeamView({ team, canManage }: { team: Profile[]; canManage: bool
               Cada pessoa vê só as abas marcadas em “Vê”. A dona da conta vê tudo, é a única que muda permissões e pode usar o “Ver como” (no topo) para ver o painel de qualquer pessoa sem precisar de senha. Clientes não precisam de senha: cada um acessa pelo próprio link.
             </p>
             <p className="small muted" style={{ margin: '10px 0 0' }}>
-              <b style={{ color: 'var(--ink)', fontWeight: 500 }}>Agendamento</b>: marca como agendado e avisa o cliente. Só a dona da conta muda funções e permissões.
+              <b style={{ color: 'var(--ink)', fontWeight: 500 }}>Só vê e agenda</b>: vê os clientes, mas não cadastra, não envia material nem edita. Pode agendar (aba Agendamento) e fazer as alterações que forem passadas para ela. Só a dona da conta muda funções e permissões.
             </p>
             {!canManage && (
               <p className="small muted" style={{ margin: '10px 0 0' }}>
