@@ -72,3 +72,28 @@ export async function downloadDriveFile(fileId: string, maxBytes: number) {
   if (!type || type === 'application/octet-stream' || type === 'binary/octet-stream') type = EXT_TYPE[ext] ?? 'application/octet-stream';
   return { buf, name, type, ext };
 }
+
+const unescape = (s: string) => s.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+/**
+ * Tudo o que está numa pasta pública do Drive (arquivos e subpastas) e o nome
+ * da pasta. Diferente de listFolder, mantém arquivos sem extensão no nome
+ * (o Drive esconde a extensão de alguns, como a capa do destaque).
+ * Devolve null se a pasta não abrir para quem tem o link.
+ */
+export async function listFolderEntries(folderId: string): Promise<{ title: string; entries: { id: string; name: string; folder: boolean }[] } | null> {
+  const res = await fetch(`https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}`, {
+    headers: { 'User-Agent': UA }, cache: 'no-store',
+  });
+  if (!res.ok || !looksHtml(res.headers.get('content-type'))) return null;
+  const html = await res.text();
+  if (!html.includes('flip-entries')) return null;
+  const title = unescape(html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '').trim();
+  const entries: { id: string; name: string; folder: boolean }[] = [];
+  const re = /id="entry-([\w-]{10,})"[\s\S]*?<a href="([^"]*)"[\s\S]*?class="flip-entry-title">([^<]*)</g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    entries.push({ id: m[1], name: unescape(m[3]).trim(), folder: /\/folders\//.test(m[2]) });
+  }
+  return { title, entries };
+}
