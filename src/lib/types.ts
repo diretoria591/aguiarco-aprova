@@ -1,6 +1,6 @@
 export type PostStatus = 'pending' | 'adjustment_requested' | 'approved' | 'rejected';
 export type ClientSegment = '' | 'saude' | 'gastronomia' | 'beleza' | 'empresas' | 'marca_pessoal' | 'outra';
-export type PostFormat = 'foto' | 'video' | 'reels' | 'carrossel' | 'arte' | 'stories' | 'texto';
+export type PostFormat = 'foto' | 'video' | 'reels' | 'carrossel' | 'arte' | 'stories' | 'destaque' | 'texto';
 
 export interface Client {
   id: string;

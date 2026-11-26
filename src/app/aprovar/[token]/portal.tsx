@@ -188,7 +188,7 @@ function PostCard({
   const { toast } = useUI();
   const t = TYPES[m.format] ?? { label: m.format, icon: 'image' as const };
   const { cover, items } = splitMedia(m.post_media);
-  const isVideo = m.format === 'reels' || m.format === 'stories' || (items.length > 0 && items.every(isVideoLike));
+  const isVideo = m.format === 'reels' || m.format === 'stories' || m.format === 'destaque' || (items.length > 0 && items.every(isVideoLike));
   const [panel, setPanel] = useState<null | 'changes' | 'comment' | 'reject'>(null);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);

@@ -385,7 +385,7 @@ export function MockupModal({ clientName, posts, onClose, onChanged }: {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                     <div className="field" style={{ margin: 0 }}><label>Formato</label>
                       <select className="input" value={x.format} onChange={(e) => setExtra(x.key, { format: e.target.value as PostFormat })}>
-                        {(['stories', 'reels', 'carrossel', 'foto', 'arte', 'video'] as PostFormat[]).map((f) => <option key={f} value={f}>{TYPES[f].label}</option>)}
+                        {(['stories', 'reels', 'carrossel', 'foto', 'arte', 'video', 'destaque'] as PostFormat[]).map((f) => <option key={f} value={f}>{TYPES[f].label}</option>)}
                       </select></div>
                     <div className="field" style={{ margin: 0 }}><label>Data</label>
                       <input className="input" type="date" value={x.date} onChange={(e) => setExtra(x.key, { date: e.target.value })} /></div>
