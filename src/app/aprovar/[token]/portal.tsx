@@ -12,6 +12,18 @@ import { Thread } from '@/components/thread';
 import { roundsUsed } from '@/lib/rounds';
 
 type Tab = 'todos' | PostStatus;
+/** Destaques (stories fixos no perfil) ficam numa aba à parte; o resto vai para o feed. */
+type Kind = 'feed' | 'destaque';
+const kindOf = (m: Post): Kind => (m.format === 'destaque' ? 'destaque' : 'feed');
+const firstTab = (ps: Post[]): Tab => {
+  const c = countStatuses(ps);
+  return c.pendente ? 'pending' : c.ajustes ? 'adjustment_requested' : 'todos';
+};
+/** Abre em Posts do feed; só começa em Destaques quando o feed não tem nada esperando e os destaques têm. */
+const firstKind = (ps: Post[]): Kind => {
+  const wait = (k: Kind) => ps.some((m) => kindOf(m) === k && (m.status === 'pending' || m.status === 'adjustment_requested'));
+  return !wait('feed') && wait('destaque') ? 'destaque' : 'feed';
+};
 
 const store = {
   get(k: string) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -22,10 +34,15 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
   const supabase = useMemo(() => portalSupabase(token), [token]);
   const { toast } = useUI();
   const [data, setData] = useState(initial);
+  const [kind, setKind] = useState<Kind>(() => firstKind(monthPosts(initial.posts)));
   const [tab, setTab] = useState<Tab>(() => {
-    const c = countStatuses(monthPosts(initial.posts));
-    return c.pendente ? 'pending' : c.ajustes ? 'adjustment_requested' : 'todos';
+    const all = monthPosts(initial.posts);
+    const both = all.some((m) => kindOf(m) === 'destaque') && all.some((m) => kindOf(m) === 'feed');
+    const k = firstKind(all);
+    return firstTab(both ? all.filter((m) => kindOf(m) === k) : all);
   });
+  /** abas de tipo que o cliente já abriu (o número para de piscar) */
+  const [opened, setOpened] = useState<Set<Kind>>(() => new Set([firstKind(monthPosts(initial.posts))]));
   const [askingName, setAskingName] = useState<((v: string | null) => void) | null>(null);
   const myName = useRef('');
   const seen = useRef(new Set<string>());
@@ -49,14 +66,26 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
 
   // o cliente só vê o mês atual (+ o que ainda estiver pendente de meses anteriores)
   const month = currentMonth();
-  const posts = monthPosts(data.posts);
+  const allPosts = monthPosts(data.posts);
+  // feed e destaques separados só quando o mês tem os dois
+  const hasBoth = allPosts.some((m) => kindOf(m) === 'destaque') && allPosts.some((m) => kindOf(m) === 'feed');
+  const posts = hasBoth ? allPosts.filter((m) => kindOf(m) === kind) : allPosts;
   const c = countStatuses(posts);
+  const cAll = countStatuses(allPosts);
+  const waiting = (k: Kind) => allPosts.filter((m) => kindOf(m) === k && m.status === 'pending').length;
+  function pickKind(k: Kind) {
+    if (k === kind) return;
+    setKind(k);
+    setOpened((o) => new Set(o).add(k));
+    setTab(firstTab(allPosts.filter((m) => kindOf(m) === k)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   const name = data.client.contact_name ? data.client.contact_name.split(/\s+/)[0] : data.client.name;
   const list = posts.filter((m) => tab === 'todos' || m.status === tab);
   const fresh = useRef<Set<string> | null>(null);
-  if (fresh.current === null) fresh.current = new Set(posts.filter(isNew).map((m) => m.id));
-  posts.forEach((m) => { if (isNew(m)) fresh.current!.add(m.id); });
-  const newCount = posts.filter((m) => m.status === 'pending' && fresh.current!.has(m.id)).length;
+  if (fresh.current === null) fresh.current = new Set(allPosts.filter(isNew).map((m) => m.id));
+  allPosts.forEach((m) => { if (isNew(m)) fresh.current!.add(m.id); });
+  const newCount = allPosts.filter((m) => m.status === 'pending' && fresh.current!.has(m.id)).length;
   const tabs: [Tab, string, number][] = [
     ['pending', 'Para aprovar', c.pendente],
     ['adjustment_requested', 'Em ajuste', c.ajustes],
@@ -64,7 +93,7 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
     ...(c.reprovado ? [['rejected', 'Reprovados', c.reprovado] as [Tab, string, number]] : []),
     ['todos', 'Todos', posts.length],
   ];
-  const toPublish = posts.length - c.reprovado; // reprovados não entram na conta
+  const toPublish = allPosts.length - cAll.reprovado; // reprovados não entram na conta
 
   // marca como "visto" quando a peça aparece na tela
   useEffect(() => {
@@ -81,7 +110,7 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
     }), { threshold: 0.45 });
     feed.current.querySelectorAll<HTMLElement>('.post').forEach((p) => io.observe(p));
     return () => io.disconnect();
-  }, [data, tab, supabase, token]);
+  }, [data, tab, kind, supabase, token]);
 
   return (
     <>
@@ -100,15 +129,36 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
         {toPublish > 0 && (
           <section className="card pprog" suppressHydrationWarning>
             <p>
-              {c.pendente
-                ? <>Você já aprovou <b>{c.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. Falta{c.pendente > 1 ? 'm' : ''} <b>{c.pendente}</b>.</>
-                : <>Você já aprovou <b>{c.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. {c.ajustes ? 'Estamos ajustando o restante.' : 'Tudo em dia, obrigada pela parceria!'}</>}
+              {cAll.pendente
+                ? <>Você já aprovou <b>{cAll.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. Falta{cAll.pendente > 1 ? 'm' : ''} <b>{cAll.pendente}</b>.</>
+                : <>Você já aprovou <b>{cAll.aprovado} de {toPublish}</b> conteúdo{toPublish > 1 ? 's' : ''} de {monthName(month)}. {cAll.ajustes ? 'Estamos ajustando o restante.' : 'Tudo em dia, obrigada pela parceria!'}</>}
             </p>
-            <div className="bar"><i style={{ width: `${(c.aprovado / toPublish) * 100}%` }} /></div>
+            <div className="bar"><i style={{ width: `${(cAll.aprovado / toPublish) * 100}%` }} /></div>
           </section>
         )}
         {newCount > 0 && (
           <div className="pnew"><Icon name="bell" /><span>Chegaram <b>{newCount} novo{newCount > 1 ? 's' : ''} conteúdo{newCount > 1 ? 's' : ''}</b> para você aprovar.</span></div>
+        )}
+        {hasBoth && (
+          <>
+            <div className="pkinds" role="tablist" aria-label="Tipo de conteúdo">
+              {([['feed', 'Posts do feed', 'Reels, carrosséis e fotos', 'layers'], ['destaque', 'Destaques', 'Stories fixos no perfil', 'sparkle']] as const).map(([k, label, sub, icon]) => {
+                const n = waiting(k);
+                return (
+                  <button key={k} type="button" role="tab" aria-selected={kind === k} className={`pkind${kind === k ? ' on' : ''}`} onClick={() => pickKind(k)}>
+                    <span className="ic"><Icon name={icon} /></span>
+                    <b>{label}</b><span className="sub">{sub}</span>
+                    <span className={`cnt${n ? '' : ' zero'}${n && !opened.has(k) && kind !== k ? ' pulse' : ''}`} aria-label={`${n} para aprovar`}>{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="pwhere">
+              {kind === 'feed'
+                ? <>Estes vão para o <b>feed</b> do seu Instagram.</>
+                : <>Destaques ficam no seu <b>perfil</b>, nas bolinhas abaixo da bio. <b>Não aparecem no feed.</b></>}
+            </p>
+          </>
         )}
         <nav className="ptabs">
           {tabs.map(([k, l, n]) => (
