@@ -12,9 +12,9 @@ import { Thread } from '@/components/thread';
 import { roundsUsed } from '@/lib/rounds';
 
 type Tab = 'todos' | PostStatus;
-/** Destaques (stories fixos no perfil) ficam numa aba à parte; o resto vai para o feed. */
+/** Destaques e stories (vão para o perfil, não para o feed) ficam numa aba à parte; o resto vai para o feed. */
 type Kind = 'feed' | 'destaque';
-const kindOf = (m: Post): Kind => (m.format === 'destaque' ? 'destaque' : 'feed');
+const kindOf = (m: Post): Kind => (m.format === 'destaque' || m.format === 'stories' ? 'destaque' : 'feed');
 const firstTab = (ps: Post[]): Tab => {
   const c = countStatuses(ps);
   return c.pendente ? 'pending' : c.ajustes ? 'adjustment_requested' : 'todos';
@@ -72,6 +72,11 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
   const posts = hasBoth ? allPosts.filter((m) => kindOf(m) === kind) : allPosts;
   const c = countStatuses(posts);
   const cAll = countStatuses(allPosts);
+  // nome da 2ª aba conforme o que tem: destaques, stories ou os dois
+  const hasHl = allPosts.some((m) => m.format === 'destaque' || /destaque/i.test(m.title));
+  const hasStories = allPosts.some((m) => m.format === 'stories' && !/destaque/i.test(m.title));
+  const storyLabel = hasHl && hasStories ? 'Destaques e stories' : hasStories ? 'Stories' : 'Destaques';
+  const storySub = storyLabel === 'Stories' ? 'Aparecem no perfil por 24h' : 'Stories fixos no perfil';
   const waiting = (k: Kind) => allPosts.filter((m) => kindOf(m) === k && m.status === 'pending').length;
   function pickKind(k: Kind) {
     if (k === kind) return;
@@ -142,7 +147,7 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
         {hasBoth && (
           <>
             <div className="pkinds" role="tablist" aria-label="Tipo de conteúdo">
-              {([['feed', 'Posts do feed', 'Reels, carrosséis e fotos', 'layers'], ['destaque', 'Destaques', 'Stories fixos no perfil', 'sparkle']] as const).map(([k, label, sub, icon]) => {
+              {([['feed', 'Posts do feed', 'Reels, carrosséis e fotos', 'layers'], ['destaque', storyLabel, storySub, 'sparkle']] as const).map(([k, label, sub, icon]) => {
                 const n = waiting(k);
                 return (
                   <button key={k} type="button" role="tab" aria-selected={kind === k} className={`pkind${kind === k ? ' on' : ''}`} onClick={() => pickKind(k)}>
@@ -156,7 +161,9 @@ export function Portal({ token, initial }: { token: string; initial: PortalData 
             <p className="pwhere">
               {kind === 'feed'
                 ? <>Estes vão para o <b>feed</b> do seu Instagram.</>
-                : <>Destaques ficam no seu <b>perfil</b>, nas bolinhas abaixo da bio. <b>Não aparecem no feed.</b></>}
+                : storyLabel === 'Stories'
+                  ? <>Stories aparecem no seu <b>perfil</b> por 24 horas. <b>Não aparecem no feed.</b></>
+                  : <>Destaques ficam no seu <b>perfil</b>, nas bolinhas abaixo da bio. <b>Não aparecem no feed.</b></>}
             </p>
           </>
         )}
