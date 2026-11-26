@@ -59,7 +59,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     view.sections.includes('entregas') && !view.owner ? loadEntregas(supabase, view.id, currentMonth()) : Promise.resolve(null),
     // pedidos de alteração: para encaminhar/revisar (Kim e João) e a vez da pessoa
     loadAltCounts(supabase, view.id, view.sections.includes('alteracoes')).catch(() => ({ encaminhar: 0, revisar: 0, minhas: 0 })),
-    supabase.from('profiles').select('does_changes').eq('id', view.id).maybeSingle().then((r) => !!(r.data as { does_changes?: boolean } | null)?.does_changes),
+    supabase.from('profiles').select('does_changes, tutorial_demandas_at, delivery_days, delivery_hours').eq('id', view.id).maybeSingle()
+      .then((r) => (r.data ?? {}) as { does_changes?: boolean; tutorial_demandas_at?: string | null; delivery_days?: number[] | null; delivery_hours?: string | null }),
   ]);
   const entregasAlert = entregas && entregas.rows.length ? {
     atrasado: entregas.rows.filter((r) => r.status === 'atrasado').map((r) => r.name),
@@ -71,7 +72,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   return (
     <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
       <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas} entregas={entregasAlert}
-        alt={{ ...altCounts, doesChanges: doer }}
+        alt={{
+          ...altCounts, doesChanges: !!doer.does_changes,
+          // tutorial no primeiro acesso de quem faz alterações (não abre no "Ver como")
+          tutorial: !!doer.does_changes && !doer.tutorial_demandas_at && view.id === real.id,
+          days: doer.delivery_days ?? [1, 2, 3, 4, 5], hours: doer.delivery_hours ?? '',
+        }}
         team={team?.map((t) => ({ id: t.id, name: t.name || 'Sem nome', role: t.role || 'team' })) ?? null}>{children}</AdminShell>
     </MeProvider>
   );

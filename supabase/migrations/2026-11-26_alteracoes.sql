@@ -78,3 +78,6 @@ create policy "team full access alteracao_etapas" on public.alteracao_etapas
 drop policy if exists "team full access alteracao_media" on public.alteracao_media;
 create policy "team full access alteracao_media" on public.alteracao_media
   for all to authenticated using (public.is_team()) with check (public.is_team());
+
+-- tutorial de Minhas demandas: mostrado no primeiro acesso de quem faz alterações
+alter table public.profiles add column if not exists tutorial_demandas_at timestamptz;

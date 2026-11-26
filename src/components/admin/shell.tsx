@@ -8,6 +8,7 @@ import { firstName, greet, initials, monthName } from '@/lib/format';
 import { Icon } from '@/components/icon';
 import { useMe } from './me';
 import { SECTIONS } from '@/lib/sections';
+import { DemandasTutorial } from './demandas-tutorial';
 
 /** Tarefas do começo do mês (vêm de lib/month-tasks, no servidor). */
 export type ShellTasks = { day: number; month: string; numbersMissing: number; reportsTotal: number; reportsReady: number } | null;
@@ -32,7 +33,7 @@ export type ShellPauta = { id: string; client_id: string; name: string; ref_mont
 export type ShellEntregas = { atrasado: string[]; atencao: string[]; acima: string[]; total: number } | null;
 
 /** Pedidos de alteração: para encaminhar/revisar (Kim e João) e a vez da pessoa (Minhas demandas). */
-export type ShellAlt = { encaminhar: number; revisar: number; minhas: number; doesChanges: boolean };
+export type ShellAlt = { encaminhar: number; revisar: number; minhas: number; doesChanges: boolean; tutorial?: boolean; days?: number[]; hours?: string };
 
 export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
   children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas; alt?: ShellAlt | null;
@@ -42,6 +43,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [depth, setDepth] = useState(0);
+  const [tutorial, setTutorial] = useState(!!alt?.tutorial);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
     : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
     : path.startsWith('/dashboard/demandas') ? 'demandas'
@@ -168,6 +170,10 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
         <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
+        {tutorial && alt && (
+          <DemandasTutorial name={firstName(me.name)} days={alt.days ?? [1, 2, 3, 4, 5]} hours={alt.hours ?? ''} profileId={me.id} save
+            onClose={() => { setTutorial(false); router.push('/dashboard/demandas'); router.refresh(); }} />
+        )}
       </div>
     </div>
   );
