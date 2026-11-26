@@ -13,6 +13,7 @@ export const SECTIONS = [
   { key: 'ideias', label: 'Banco de ideias', href: '/dashboard/ideias' },
   { key: 'lembretes', label: 'Lembretes', href: '/dashboard/lembretes' },
   { key: 'rodadas', label: 'Rodadas extras', href: '/dashboard/rodadas' },
+  { key: 'desempenho', label: 'Desempenho', href: '/dashboard/desempenho' },
   { key: 'equipe', label: 'Equipe', href: '/dashboard/equipe' },
 ] as const;
 export type SectionKey = (typeof SECTIONS)[number]['key'];

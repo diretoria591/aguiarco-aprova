@@ -180,3 +180,7 @@ Quem faz alterações e os dias e horário de entrega ficam na aba **Equipe** (l
 - **Entre a equipe**: em Minhas demandas, **Pedir … para alguém** — o pedido não passa pela revisão; volta para quem pediu em **Pedidos que eu fiz** (Recebido / Pedir ajuste / Cancelar).
 - **Demandas fixas** (roteiros do contrato): cliente, quem escreve, quantos, prazo no dia X. No mês corrente o Aprova cria sozinho o pedido dos roteiros do mês seguinte, uma vez só.
 - Quem aparece em "quem faz" é marcado na aba Equipe (**Escreve roteiros e textos**). Migration: `2026-11-26_pedidos_roteiro.sql`.
+
+## Desempenho da equipe
+
+Aba **Desempenho** (`/dashboard/desempenho`, só a dona; libere para outra pessoa na aba Equipe). Para cada pessoa, no mês atual ou nos dois anteriores: agendamentos (no prazo = até o próximo dia de entrega da pessoa depois da aprovação e antes da publicação), alterações e pedidos de texto (até o prazo combinado, e os abertos com prazo vencido), relatórios (dia 5) e números (dia 3). O Aprova sugere a mensagem — parabéns, bom com pontos de atenção ou alerta — e a Kim ajusta e envia: a pessoa vê o recado no topo do Aprova até clicar em "Li, obrigada!" (e por e-mail, se marcado). Também dá para copiar para o WhatsApp. Recados ficam na tabela `feedbacks` (cada pessoa só lê os dela). Migration: `2026-11-26_desempenho.sql`.

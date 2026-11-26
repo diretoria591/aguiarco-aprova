@@ -11,6 +11,7 @@ import { SECTIONS } from '@/lib/sections';
 import { DemandasTutorial } from './demandas-tutorial';
 import { addDays, dayLabel } from '@/lib/alteracoes';
 import { todayYMD } from '@/lib/format';
+import { markFeedbackSeen } from '@/app/dashboard/desempenho/actions';
 
 /** Tarefas do começo do mês (vêm de lib/month-tasks, no servidor). */
 export type ShellTasks = { day: number; month: string; numbersMissing: number; reportsTotal: number; reportsReady: number } | null;
@@ -43,7 +44,10 @@ export type ShellAlt = {
   roteiros?: { escrever: number; revisar: number; recebidos: number; atrasados: { who: string; what: string }[]; lista: { client: string; due: string | null }[] };
 };
 
-export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
+export type ShellFeedback = { id: string; message: string; tone: string; sent_by_name: string; created_at: string; ref_month: string } | null;
+
+export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null, feedback = null }: {
+  feedback?: ShellFeedback;
   children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas; alt?: ShellAlt | null;
 }) {
   const me = useMe();
@@ -53,6 +57,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const [depth, setDepth] = useState(0);
   const [tutorial, setTutorial] = useState(!!alt?.tutorial);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
+    : path.startsWith('/dashboard/desempenho') ? 'desempenho'
     : path.startsWith('/dashboard/roteiros/pedidos') ? 'pedidos'
     : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
     : path.startsWith('/dashboard/demandas') ? 'demandas'
@@ -180,6 +185,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
             <button className="btn sm line" onClick={() => viewAs('')}>Voltar para a minha visão</button>
           </div>
         )}
+        <FeedbackBanner data={feedback} viewing={!!me.viewingAs} />
         {section !== 'entregas' && <EntregasBanner data={entregas} name={firstName(me.viewingAs?.name ?? me.name)} />}
         <HelloBanner alt={alt} name={firstName(me.viewingAs?.name ?? me.name)} section={section}
           greeted={!!entregas && section !== 'entregas'} />
@@ -361,6 +367,30 @@ function RoteirosBanner({ data, name, section }: { data: ShellAlt['roteiros'] | 
       <div className="hello-actions">
         {(showMine || showRec) && <Link className="btn sm" href="/dashboard/demandas">{showMine ? 'Escrever agora' : 'Ver o que chegou'}</Link>}
         {(showRev || showLate) && <Link className={`btn sm${showMine || showRec ? ' line' : ''}`} href={`/dashboard/roteiros/pedidos?aba=${showRev ? 'revisar' : 'equipe'}`}>{showRev ? 'Revisar' : 'Ver atrasados'}</Link>}
+      </div>
+    </div>
+  );
+}
+
+/** Recado do mês (aba Desempenho): fica no topo até a pessoa marcar como lido. */
+function FeedbackBanner({ data, viewing }: { data: ShellFeedback; viewing: boolean }) {
+  const [hidden, setHidden] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (!data || hidden) return null;
+  async function seen() {
+    setBusy(true);
+    const r = await markFeedbackSeen(data!.id);
+    setBusy(false);
+    if (r.ok) setHidden(true);
+  }
+  return (
+    <div className={`task-banner feedback-banner ${data.tone}`}>
+      <span>
+        <b>Recado da {firstName(data.sent_by_name) || 'Kim'} · seu mês de {monthName(data.ref_month)}</b>
+        <span className="fb-msg">{data.message}</span>
+      </span>
+      <div className="hello-actions">
+        <button className="btn sm" disabled={busy || viewing} onClick={seen} title={viewing ? 'Só a própria pessoa marca como lido' : undefined}><Icon name="check" />Li, obrigada!</button>
       </div>
     </div>
   );

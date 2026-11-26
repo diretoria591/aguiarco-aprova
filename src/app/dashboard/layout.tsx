@@ -13,6 +13,7 @@ import { loadEntregas } from '@/lib/entregas-server';
 import { currentMonth, todayYMD } from '@/lib/format';
 import { loadAltCounts } from '@/lib/alteracoes-server';
 import { ensureFixos, loadPedidoCounts } from '@/lib/pedidos-roteiro-server';
+import { loadUnseenFeedback } from '@/lib/desempenho-server';
 import type { TeamRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -53,7 +54,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // quantos clientes estão para cobrar (número na aba Cobrar hoje); quem só agenda não vê a aba
   // demandas fixas: cria os pedidos de roteiro do mês (uma vez por mês, sem duplicar)
   await ensureFixos(supabase);
-  const [cobrarCount, tasks, pautas, entregas, altCounts, doer, rotCounts] = await Promise.all([
+  const [cobrarCount, tasks, pautas, entregas, altCounts, doer, rotCounts, feedback] = await Promise.all([
     view.sections.includes('cobrar') ? loadCobrar(supabase).then((r) => r.items.length) : 0,
     loadMonthTasks(supabase, view.owner ? null : view.id),
     // pautas de sábado: lembrete na segunda para quem cuida da estratégia (aba Relatórios)
@@ -66,6 +67,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       .then((r) => (r.data ?? {}) as { does_changes?: boolean; tutorial_demandas_at?: string | null; delivery_days?: number[] | null; delivery_hours?: string | null }),
     // pedidos de texto: para escrever, recebidos de outra pessoa, para revisar e atrasados (Kim e João)
     loadPedidoCounts(supabase, view.id, view.sections.includes('alteracoes'), todayYMD()).catch(() => ({ escrever: 0, revisar: 0, recebidos: 0, atrasados: [], lista: [] })),
+    // recado do mês (Desempenho) que a pessoa ainda não leu
+    loadUnseenFeedback(supabase, view.id).catch(() => null),
   ]);
   const entregasAlert = entregas && entregas.rows.length ? {
     atrasado: entregas.rows.filter((r) => r.status === 'atrasado').map((r) => r.name),
@@ -76,7 +79,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <MeProvider me={{ id: real.id, name: real.name, email: real.email, role, owner: real.owner, sections: view.sections, viewingAs: view.id !== real.id ? { id: view.id, name: view.name } : undefined }}>
-      <AdminShell queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas} entregas={entregasAlert}
+      <AdminShell feedback={feedback} queueCount={queueCount} cobrarCount={cobrarCount} tasks={tasks} pautas={pautas} entregas={entregasAlert}
         alt={{
           ...altCounts, doesChanges: !!doer.does_changes, roteiros: rotCounts,
           // tutorial no primeiro acesso de quem faz alterações (não abre no "Ver como")

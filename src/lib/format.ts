@@ -81,6 +81,11 @@ export const planMonth = (p: { scheduled_date: string | null; sent_at: string })
   p.scheduled_date ? p.scheduled_date.slice(0, 7) : monthOf(p.sent_at);
 
 /** Hoje no fuso da agência, como "AAAA-MM-DD". */
+/** Dia (AAAA-MM-DD) de um instante, no fuso da agência. */
+export function ymdOf(iso: string): string {
+  const p = parts(new Date(iso));
+  return `${p.y}-${pad(p.m)}-${pad(p.d)}`;
+}
 export function todayYMD(): string {
   const p = parts(new Date());
   return `${p.y}-${pad(p.m)}-${pad(p.d)}`;

@@ -1030,3 +1030,19 @@ main{max-width:1240px;margin:0 auto;padding:36px 28px 80px}
 .linkish{background:none;border:0;padding:0;font:inherit;color:var(--brown);text-decoration:underline;cursor:pointer}
 .rp-section{margin:0 0 22px}
 .rp-section > h2{font-size:16px;font-weight:600;margin:0 0 10px}
+
+/* Desempenho */
+.perf-areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.perf-area{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;display:grid;gap:2px;font-size:13px;background:var(--surface)}
+.perf-area b{font-size:13.5px}
+.perf-area small{color:var(--muted);font-size:12px}
+.perf-area.ok{border-color:transparent;background:var(--ok-bg)}
+.perf-area.ok b{color:var(--ok)}
+.perf-area.late{border-color:transparent;background:var(--late-bg)}
+.perf-area.late b,.perf-area .perf-open{color:var(--late)}
+.perf-area .perf-open{font-weight:600;font-size:12px}
+.feedback-banner .fb-msg{display:block;white-space:pre-wrap;margin-top:4px}
+.feedback-banner.otimo{background:var(--ok-bg)}
+.feedback-banner.atencao{background:var(--fix-bg)}
+.feedback-banner.otimo{border-left-color:var(--ok)}
+.feedback-banner.atencao{border-left-color:var(--fix)}
