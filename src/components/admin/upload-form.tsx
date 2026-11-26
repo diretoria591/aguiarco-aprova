@@ -83,6 +83,9 @@ export type StageMode = {
   submitLabel: string;
   /** Para onde vai depois, ex.: "para a Brenda" ou "para a revisão da Kim ou do João". */
   goesTo: string;
+  /** observação da Kim/João ao encaminhar */
+  obs?: string;
+  obsBy?: string;
   onFinish: (plan: Plan, note: string, summary: string) => Promise<boolean>;
 };
 
@@ -428,6 +431,11 @@ export function UploadForm({
               <div className="ask-box">
                 <span className="eyebrow">O que o cliente pediu</span>
                 <p>{lastAsk.content}</p>
+              </div>
+            )}
+            {stage?.obs && (
+              <div className="alt-obs" style={{ marginBottom: 14 }}>
+                <b>Observação{stage.obsBy ? ` da ${stage.obsBy.trim().split(/\s+/)[0]}` : ''}:</b> {stage.obs}
               </div>
             )}
           </>

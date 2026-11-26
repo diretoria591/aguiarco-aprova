@@ -78,3 +78,18 @@ create policy "team full access alteracao_etapas" on public.alteracao_etapas
 drop policy if exists "team full access alteracao_media" on public.alteracao_media;
 create policy "team full access alteracao_media" on public.alteracao_media
   for all to authenticated using (public.is_team()) with check (public.is_team());
+
+-- tutorial de Minhas demandas: mostrado no primeiro acesso de quem faz alterações
+alter table public.profiles add column if not exists tutorial_demandas_at timestamptz;
+
+-- observação opcional da Kim/João ao encaminhar ("traduz" o pedido do cliente para a equipe)
+alter table public.alteracoes add column if not exists forward_note text not null default '';
+
+-- quem só visualiza (função Agendamento) também envia os arquivos das alterações encaminhadas para ela
+drop policy if exists "team uploads approvals-media" on storage.objects;
+create policy "team uploads approvals-media" on storage.objects
+  for insert to authenticated with check (bucket_id = 'approvals-media' and public.is_team());
+-- e o histórico registra o que ela fez (só inserir; editar/apagar continua com quem edita)
+drop policy if exists "team inserts activity" on public.activity_logs;
+create policy "team inserts activity" on public.activity_logs
+  for insert to authenticated with check (public.is_team());

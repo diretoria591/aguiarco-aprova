@@ -82,6 +82,8 @@ export type StagedMedia = { id: string; alteracao_id: string; post_id: string; f
 export type Alteracao = {
   id: string; client_id: string; post_id: string; request_comment_id: string | null; request_text: string;
   status: AltStatus; plan: Plan | null; publish_date: string | null; created_by_name: string; created_at: string;
+  /** observação opcional de quem encaminhou (explica o pedido do cliente para a equipe) */
+  forward_note: string;
   review_note: string; sent_at: string | null; sent_by: string;
   alteracao_etapas: Etapa[]; alteracao_media: StagedMedia[];
 };

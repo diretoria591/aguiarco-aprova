@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
-import { AskBox, ClientTabs, DayStrip, Thumb, Trail } from '@/components/admin/alteracoes-ui';
+import { AskBox, ClientTabs, DayStrip, ObsBox, Thumb, Trail } from '@/components/admin/alteracoes-ui';
 import { TYPES } from '@/lib/constants';
 import { fmtDate } from '@/lib/format';
 import { splitMedia } from '@/lib/media';
@@ -139,6 +139,7 @@ function ForwardPicker({ postId, publish, doers, today }: { postId: string; publ
   const [b, setB] = useState<string | null>(null);
   const [dueA, setDueA] = useState('');
   const [dueB, setDueB] = useState('');
+  const [obs, setObs] = useState('');
   const [busy, setBusy] = useState(false);
   const pa = doers.find((d) => d.id === a) ?? null;
   const pb = doers.find((d) => d.id === b) ?? null;
@@ -178,7 +179,7 @@ function ForwardPicker({ postId, publish, doers, today }: { postId: string; publ
     if (!pa) return toast('Escolha quem altera primeiro.', 'err');
     if (!dueA || (pb && !dueB)) return toast('Escolha o prazo de cada pessoa.', 'err');
     setBusy(true);
-    const r = await forwardAlteracao({ postId, steps: [{ profileId: pa.id, due: dueA }, ...(pb ? [{ profileId: pb.id, due: dueB }] : [])] });
+    const r = await forwardAlteracao({ postId, note: obs, steps: [{ profileId: pa.id, due: dueA }, ...(pb ? [{ profileId: pb.id, due: dueB }] : [])] });
     setBusy(false);
     if (!r.ok) return toast(r.error, 'err');
     toast(`Encaminhado para ${doerName(pa)}${pb ? ` → ${doerName(pb)}` : ''}`);
@@ -233,6 +234,15 @@ function ForwardPicker({ postId, publish, doers, today }: { postId: string; publ
         </div>
       )}
 
+      {pa && (
+        <div className="field" style={{ margin: 0 }}>
+          <label htmlFor={`obs-${postId}`}>Observação para a equipe <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+          <textarea id={`obs-${postId}`} className="textarea" rows={2} value={obs} onChange={(e) => setObs(e.target.value)}
+            placeholder="Ex.: Quando ela fala “a foto da entrada”, é a fachada nova que está na pasta do Drive." />
+          <span className="hint">Use para explicar o que o cliente quis dizer. Aparece no e-mail e na demanda de cada pessoa.</span>
+        </div>
+      )}
+
       {warns.length > 0 && (
         <div className="alt-warn" role="alert">
           <b className="t"><Icon name="alert" /> Atenção</b>
@@ -279,6 +289,7 @@ function EquipeCard({ a, today }: { a: AltRow; today: string }) {
           <div className="small muted">Encaminhado por {a.created_by_name} {fmtDate(a.created_at)}{a.publish_date ? <> · Publicação <b>{dayLabel(a.publish_date, true)}</b></> : null}</div>
           <Trail etapas={a.alteracao_etapas} review={false} today={today} />
           <AskBox text={a.request_text} />
+          <ObsBox text={a.forward_note} by={a.created_by_name} />
           {a.review_note && <div className="alt-back"><b>Recado da revisão:</b> {a.review_note}</div>}
           <div className="row">
             <Link className="btn line sm" href={`/dashboard/clientes/${a.client_id}?post=${a.post_id}`}><Icon name="eye" />Ver conteúdo e conversa</Link>
@@ -341,6 +352,7 @@ function RevisarCard({ a, today }: { a: AltRow; today: string }) {
         <div className="small muted">{a.publish_date ? <>Publicação <b>{dayLabel(a.publish_date, true)}</b> · </> : null}<Link href={`/dashboard/clientes/${a.client_id}?post=${a.post_id}`}>Ver conteúdo e conversa</Link></div>
         <Trail etapas={a.alteracao_etapas} review today={today} />
         <AskBox text={a.request_text} />
+        <ObsBox text={a.forward_note} by={a.created_by_name} />
 
         <div className="alt-compare">
           <div>

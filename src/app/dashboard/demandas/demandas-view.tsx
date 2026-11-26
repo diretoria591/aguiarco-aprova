@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
 import { useMe } from '@/components/admin/me';
-import { AskBox, ClientTabs, Thumb, Trail } from '@/components/admin/alteracoes-ui';
+import { AskBox, ClientTabs, ObsBox, Thumb, Trail } from '@/components/admin/alteracoes-ui';
 import { UploadForm } from '@/components/admin/upload-form';
 import { TYPES } from '@/lib/constants';
 import { firstName } from '@/lib/format';
@@ -13,6 +13,7 @@ import { splitMedia } from '@/lib/media';
 import { dayLabel, etapasOf, STAGED_PREFIX, type Alteracao, type Etapa } from '@/lib/alteracoes';
 import type { Client, Post, PostFormat, PostMedia } from '@/lib/types';
 import { finishEtapa } from '../alteracoes/actions';
+import { DemandasTutorial } from '@/components/admin/demandas-tutorial';
 
 type AltRow = Alteracao & { posts: Post; clients: Client };
 type State = 'vez' | 'depois' | 'entregue';
@@ -32,9 +33,10 @@ function baseMaterial(a: AltRow): Post {
   return { ...a.posts, caption: a.plan.caption, post_media: [...items, ...(cover ? [{ ...cover, order_index: -1 }] : [])] };
 }
 
-export function DemandasView({ rows, error, meId, name, cliente, today }: {
-  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string;
+export function DemandasView({ rows, error, meId, name, cliente, today, days, hours }: {
+  rows: AltRow[]; error: string | null; meId: string; name: string; cliente: string | null; today: string; days: number[]; hours: string;
 }) {
+  const [help, setHelp] = useState(false);
   const list = useMemo(() => rows.map((a) => {
     const mine = etapasOf(a).filter((e) => e.profile_id === meId);
     const vez = mine.find((e) => e.status === 'fazendo' && a.status === 'fazendo');
@@ -62,7 +64,9 @@ export function DemandasView({ rows, error, meId, name, cliente, today }: {
     <>
       <div className="hello">
         <div><p className="eyebrow">Para você</p><h1>Minhas <b>demandas</b></h1></div>
+        <button type="button" className="btn line sm" onClick={() => setHelp(true)}><Icon name="sparkle" />Como funciona</button>
       </div>
+      {help && <DemandasTutorial name={firstName(name)} days={days} hours={hours} profileId={meId} save={false} onClose={() => setHelp(false)} />}
       {error && <div className="card empty" style={{ marginBottom: 16 }}><p style={{ margin: 0 }}>Não foi possível carregar: {error}</p></div>}
       <p className="muted small" style={{ margin: '-14px 0 16px' }}>
         {total ? `${firstName(name)}, você tem ${total} alteraç${total > 1 ? 'ões' : 'ão'} para fazer. Escolha o cliente.` : 'Nada para fazer agora.'}
@@ -116,6 +120,7 @@ function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa
           ))}
           {state === 'depois' && <p className="small muted" style={{ margin: '0 0 8px' }}>Vem para você quando {before?.name ?? 'a outra pessoa'} terminar. Você recebe um e-mail.</p>}
           <AskBox text={a.request_text} />
+          <ObsBox text={a.forward_note} by={a.created_by_name} />
           <div className="row">
             {state === 'vez' && (
               <button type="button" className="btn" onClick={() => setOpen(true)}>
@@ -140,6 +145,7 @@ function DemandaCard({ a, etapa, state, meId, today }: { a: AltRow; etapa: Etapa
             alteracaoId: a.id,
             submitLabel: next ? `Terminei, passar para ${next.name}` : 'Entregar para revisão',
             goesTo: next ? `para ${next.name}` : 'para a revisão da Kim ou do João',
+            obs: a.forward_note, obsBy: a.created_by_name,
             onFinish: async (plan, note, summary) => {
               const r = await finishEtapa({ etapaId: etapa.id, plan, note, summary });
               if (!r.ok) { toast(r.error, 'err'); return false; }

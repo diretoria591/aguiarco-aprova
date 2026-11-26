@@ -15,6 +15,8 @@ export type ClientCard = Client & { counts: Counts; cover: string | null };
 
 export function DashboardHome({ clients, recent, error }: { clients: ClientCard[]; recent: ActivityLog[]; error: string | null }) {
   const me = useMe();
+  // "Só vê" (função Agendamento): olha os clientes, mas não cadastra nem edita
+  const ro = me.role === 'scheduler';
   const [newOpen, setNewOpen] = useState(false);
   const tot = clients.reduce(
     (a, c) => ({ p: a.p + c.counts.pendente, f: a.f + c.counts.ajustes, o: a.o + c.counts.aprovado }),
@@ -29,7 +31,7 @@ export function DashboardHome({ clients, recent, error }: { clients: ClientCard[
           <p className="eyebrow">Painel da agência</p>
           <h1 suppressHydrationWarning>{greet()}, <b>{firstName(me.name)}</b></h1>
         </div>
-        <button className="btn" onClick={() => setNewOpen(true)}><Icon name="plus" />Novo cliente</button>
+        {!ro && <button className="btn" onClick={() => setNewOpen(true)}><Icon name="plus" />Novo cliente</button>}
       </div>
 
       {error && <div className="card empty" style={{ marginBottom: 24 }}><h3>Algo não <b>carregou</b></h3><p>{error}</p></div>}
@@ -68,9 +70,11 @@ export function DashboardHome({ clients, recent, error }: { clients: ClientCard[
                 </div>
               </Link>
             ))}
-            <button className="card ccard add" onClick={() => setNewOpen(true)}>
-              <div><div className="plus"><Icon name="plus" /></div>Cadastrar cliente</div>
-            </button>
+            {!ro && (
+              <button className="card ccard add" onClick={() => setNewOpen(true)}>
+                <div><div className="plus"><Icon name="plus" /></div>Cadastrar cliente</div>
+              </button>
+            )}
           </div>
         </section>
         <aside className="side">

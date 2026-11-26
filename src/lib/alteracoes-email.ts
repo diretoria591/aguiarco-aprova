@@ -10,7 +10,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
  */
 export function demandaEmail(o: {
   to: string; kind: 'nova' | 'vez' | 'volta'; clientName: string; title: string; format: string; version: number;
-  ask: string; due: string | null; publish: string | null; by: string; next: string | null; prevName?: string; prevNote?: string;
+  ask: string; obs?: string; obsBy?: string; due: string | null; publish: string | null; by: string; next: string | null; prevName?: string; prevNote?: string;
   backNote?: string; url: string;
 }) {
   const hi = firstName(o.to);
@@ -32,6 +32,7 @@ export function demandaEmail(o: {
 <div style="background:#F3EAE3;border-radius:10px;padding:12px 14px;margin:0 0 14px">${lead}${prazo ? `<br>${prazo}` : ''}</div>
 <p style="margin:0 0 4px;font-size:12px;color:#8C8781">${esc(o.format)} “${esc(o.title)}” · versão ${o.version}</p>
 ${o.ask ? `<div style="background:#FFF3E0;border-radius:10px;padding:10px 12px;margin:6px 0 14px;font-size:14px"><b style="color:#A15C07">O cliente pediu:</b> “${esc(o.ask)}”</div>` : ''}
+${o.obs ? `<div style="background:#F3EAE3;border-left:4px solid #7A5A47;border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:14px"><b style="color:#7A5A47">Observação ${o.obsBy ? `da ${esc(firstName(o.obsBy))}` : 'da revisão'}:</b> ${esc(o.obs)}</div>` : ''}
 ${o.prevNote ? `<div style="background:#F7F6F4;border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:14px"><b>${esc(o.prevName ?? '')}:</b> ${esc(o.prevNote)}</div>` : ''}
 ${o.backNote ? `<div style="background:#FDEBDD;border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:14px"><b style="color:#C2560C">Recado da revisão:</b> ${esc(o.backNote)}</div>` : ''}
 <p style="margin:16px 0 10px"><a href="${esc(o.url)}" style="display:inline-block;background:#E1CABA;color:#2C2C2C;text-decoration:none;font-weight:600;font-size:14px;padding:12px 20px;border-radius:999px">Abrir minhas demandas</a></p>
@@ -47,6 +48,7 @@ ${o.backNote ? `<div style="background:#FDEBDD;border-radius:10px;padding:10px 1
     o.due ? `Prazo: ${dayLabel(o.due, true)}.${o.publish ? ` A publicação é ${dayLabel(o.publish, true)}.` : ''}` : '',
     '', `${o.format} “${o.title}” · versão ${o.version}`,
     o.ask ? `O cliente pediu: “${o.ask}”` : '',
+    o.obs ? `Observação${o.obsBy ? ` da ${firstName(o.obsBy)}` : ''}: ${o.obs}` : '',
     o.prevNote ? `${o.prevName ?? ''}: ${o.prevNote}` : '',
     o.backNote ? `Recado da revisão: ${o.backNote}` : '',
     '', `Abrir minhas demandas: ${o.url}`,

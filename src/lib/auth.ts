@@ -51,7 +51,8 @@ export async function requireSection(key: SectionKey) {
   if (!v) redirect('/login');
   if (v.view.sections.includes(key)) return v;
   const first = v.view.sections[0];
-  redirect(first ? sectionHref(first) : '/login');
+  // quem só faz alterações (sem abas) cai direto em Minhas demandas
+  redirect(first ? sectionHref(first) : '/dashboard/demandas');
 }
 
 /** A dona da conta (de verdade, não pelo "Ver como"). */

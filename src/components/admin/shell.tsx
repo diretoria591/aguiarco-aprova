@@ -8,6 +8,9 @@ import { firstName, greet, initials, monthName } from '@/lib/format';
 import { Icon } from '@/components/icon';
 import { useMe } from './me';
 import { SECTIONS } from '@/lib/sections';
+import { DemandasTutorial } from './demandas-tutorial';
+import { addDays, dayLabel } from '@/lib/alteracoes';
+import { todayYMD } from '@/lib/format';
 
 /** Tarefas do começo do mês (vêm de lib/month-tasks, no servidor). */
 export type ShellTasks = { day: number; month: string; numbersMissing: number; reportsTotal: number; reportsReady: number } | null;
@@ -32,7 +35,11 @@ export type ShellPauta = { id: string; client_id: string; name: string; ref_mont
 export type ShellEntregas = { atrasado: string[]; atencao: string[]; acima: string[]; total: number } | null;
 
 /** Pedidos de alteração: para encaminhar/revisar (Kim e João) e a vez da pessoa (Minhas demandas). */
-export type ShellAlt = { encaminhar: number; revisar: number; minhas: number; doesChanges: boolean };
+export type ShellAlt = {
+  encaminhar: number; revisar: number; minhas: number; doesChanges: boolean; tutorial?: boolean; days?: number[]; hours?: string;
+  /** demandas da pessoa (a vez dela), para o aviso do topo */
+  lista?: { client: string; clientId: string; title: string; due: string | null }[];
+};
 
 export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = null, team = null, pautas = [], entregas = null, alt = null }: {
   children: ReactNode; queueCount?: number; cobrarCount?: number; tasks?: ShellTasks; team?: TeamOption[] | null; pautas?: ShellPauta[]; entregas?: ShellEntregas; alt?: ShellAlt | null;
@@ -42,6 +49,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [depth, setDepth] = useState(0);
+  const [tutorial, setTutorial] = useState(!!alt?.tutorial);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
     : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
     : path.startsWith('/dashboard/demandas') ? 'demandas'
@@ -56,7 +64,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
     : path.startsWith('/dashboard/rodadas') ? 'rodadas' : 'clientes';
   const allowed = new Set(me.sections ?? []);
   const can = (k: string) => allowed.has(k);
-  const home = links0.find((l) => can(l.key))?.href ?? '/dashboard';
+  const home = links0.find((l) => can(l.key))?.href ?? (alt?.doesChanges ? '/dashboard/demandas' : '/dashboard');
   const badge = (n: number) => (n > 0 ? <span className="nbadge">{n}</span> : null);
   // a aba Números só aparece na época de preencher (começo do mês) ou quando alguém abre a página
   const showNumeros = can('numeros') && (!!tasks || section === 'numeros');
@@ -164,10 +172,15 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
           </div>
         )}
         {section !== 'entregas' && <EntregasBanner data={entregas} name={firstName(me.viewingAs?.name ?? me.name)} />}
-        {section !== 'demandas' && <DemandasBanner n={alt?.minhas ?? 0} name={firstName(me.viewingAs?.name ?? me.name)} />}
+        <HelloBanner alt={alt} name={firstName(me.viewingAs?.name ?? me.name)} section={section}
+          greeted={!!entregas && section !== 'entregas'} />
         <PautasBanner pautas={pautas} name={firstName(me.viewingAs?.name ?? me.name)} />
         <TaskBanner tasks={tasks} numbers={can('numeros') && (me.role === 'scheduler' || !can('relatorios'))} reports={can('relatorios')} name={firstName(me.viewingAs?.name ?? me.name)} section={section} />
         <main>{children}</main>
+        {tutorial && alt && (
+          <DemandasTutorial name={firstName(me.name)} days={alt.days ?? [1, 2, 3, 4, 5]} hours={alt.hours ?? ''} profileId={me.id} save
+            onClose={() => { setTutorial(false); router.push('/dashboard/demandas'); router.refresh(); }} />
+        )}
       </div>
     </div>
   );
@@ -251,13 +264,55 @@ function EntregasBanner({ data, name }: { data: ShellEntregas; name: string }) {
   );
 }
 
-/** Para quem tem alteração para fazer: sempre à vista até entregar. */
-function DemandasBanner({ n, name }: { n: number; name: string }) {
-  if (!n) return null;
+/**
+ * "Bom dia, Brenda!": o que a pessoa tem para fazer hoje, sempre à vista.
+ * Prazo vencido fica vermelho; prazo hoje, âmbar. Para a Kim e o João, também os pedidos para encaminhar e revisar.
+ */
+function HelloBanner({ alt, name, section, greeted }: { alt: ShellAlt | null; name: string; section: string; greeted: boolean }) {
+  if (!alt) return null;
+  const today = todayYMD();
+  const lista = alt.lista ?? [];
+  const late = lista.filter((d) => d.due && d.due < today);
+  const hoje = lista.filter((d) => d.due === today);
+  const rest = lista.filter((d) => !d.due || d.due > today);
+  const fila = alt.encaminhar + alt.revisar;
+  const showMine = lista.length > 0 && section !== 'demandas';
+  const showFila = fila > 0 && section !== 'alteracoes';
+  if (!showMine && !showFila) return null;
+  const when = (d: string | null) => (!d ? '' : d === addDays(today, -1) ? 'ontem' : dayLabel(d));
+  const nome = (d: { client: string; title: string }) => `${d.client}${d.title ? ` (“${d.title}”)` : ''}`;
+  const names = (xs: { client: string }[]) => [...new Set(xs.map((x) => x.client))].join(', ');
+  const tone = showMine && late.length ? 'late' : showMine && hoje.length ? '' : 'ok';
+  const target = late[0] ?? hoje[0] ?? rest[0];
+
+  let mine: React.ReactNode = null;
+  // depois de "Bom dia, Brenda!" começa com maiúscula; depois de "João, " (quando o termômetro já cumprimentou), minúscula
+  const V = greeted ? 'você' : 'Você';
+  const H = greeted ? 'hoje' : 'Hoje';
+  if (showMine) {
+    if (late.length === 1) mine = <><b>{V} precisa fazer a alteração de {nome(late[0])}.</b> O prazo era {when(late[0].due)}.</>;
+    else if (late.length > 1) mine = <><b>{V} tem {late.length} alterações atrasadas</b> ({names(late)}).</>;
+    else if (hoje.length) mine = <><b>{H} é o prazo de {hoje.length === 1 ? `1 alteração: ${nome(hoje[0])}` : `${hoje.length} alterações (${names(hoje)})`}.</b></>;
+    else mine = <>{V} tem <b>{lista.length} alteraç{lista.length > 1 ? 'ões' : 'ão'} para fazer</b>. A próxima vence {when(rest[0]?.due ?? null) || 'sem prazo'} ({rest[0]?.client}).</>;
+    if (late.length && hoje.length) mine = <>{mine} E {hoje.length} vence{hoje.length > 1 ? 'm' : ''} hoje.</>;
+    if ((late.length || hoje.length) && rest.length) mine = <>{mine} Depois: {rest.length} com prazo mais pra frente.</>;
+  }
+  const filaTxt = showFila ? (
+    <>{[alt.encaminhar ? `${alt.encaminhar} pedido${alt.encaminhar > 1 ? 's' : ''} de alteração para encaminhar` : '', alt.revisar ? `${alt.revisar} para revisar` : ''].filter(Boolean).join(' e ')}.</>
+  ) : null;
+
   return (
-    <div className="task-banner">
-      <span><b>{name}, você tem {n} alteraç{n > 1 ? 'ões' : 'ão'} para fazer.</b> Veja o prazo de cada uma em Minhas demandas.</span>
-      <Link className="btn sm" href="/dashboard/demandas">Ver agora</Link>
+    <div className={`task-banner hello-banner ${tone}`}>
+      <span suppressHydrationWarning>
+        {!greeted && <b>{greet()}, {name}! </b>}
+        {mine ? <>{greeted ? <b>{name}, </b> : null}{mine}</> : null}
+        {mine && filaTxt ? ' ' : null}
+        {filaTxt ? <>{mine ? 'Na revisão: ' : 'Tem '}{filaTxt}</> : null}
+      </span>
+      <div className="hello-actions">
+        {showMine && <Link className="btn sm" href={`/dashboard/demandas${target?.clientId ? `?cliente=${target.clientId}` : ''}`}>{late.length ? 'Fazer agora' : 'Ver minhas demandas'}</Link>}
+        {showFila && <Link className={`btn sm${showMine ? ' line' : ''}`} href="/dashboard/alteracoes">Abrir alterações</Link>}
+      </div>
     </div>
   );
 }
