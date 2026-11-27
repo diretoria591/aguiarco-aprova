@@ -55,6 +55,7 @@ export function TarefaCard({ t, ctx, compact, onOpen }: { t: Tarefa; ctx: Ctx; c
   const { update } = useTarefaActions();
   const [feito, setFeito] = useState(false);
   const [travou, setTravou] = useState(false);
+  const [delegar, setDelegar] = useState(false);
   const late = isLate(t, ctx.today);
   const itens = t.projeto_itens ?? [];
   const done = itens.filter((i) => i.done).length;
@@ -87,9 +88,11 @@ export function TarefaCard({ t, ctx, compact, onOpen }: { t: Tarefa; ctx: Ctx; c
           <button type="button" className="btn sm line" onClick={() => update(t, { status: 'saiu', done_at: new Date().toISOString() }, `Chegou a resposta${t.waiting_on ? ` de ${t.waiting_on}` : ''}.`, 'Marcado como resolvido')}>Chegou</button>
           <button type="button" className="btn sm ghost" onClick={() => update(t, { status: 'andamento', waiting_on: '', cobrar_em: null }, `${t.waiting_on || 'O cliente'} pediu ajuste.`, 'Voltou para em andamento')}>Pediu ajuste</button>
         </>}
+        {t.status !== 'saiu' && ctx.pessoas.length > 1 && <button type="button" className="btn sm ghost" onClick={() => setDelegar(true)} title="Não é você quem faz? Passe para outra pessoa">Delegar</button>}
       </div>
       {feito && <ProximoPasso t={t} ctx={ctx} onClose={() => setFeito(false)} />}
       {travou && <Travou t={t} ctx={ctx} onClose={() => setTravou(false)} />}
+      {delegar && <Delegar t={t} ctx={ctx} onClose={() => setDelegar(false)} />}
     </div>
   );
 }
@@ -147,6 +150,34 @@ export function ProximoPasso({ t, ctx, onClose }: { t: Tarefa; ctx: Ctx; onClose
         <textarea className="textarea" rows={7} value={body} onChange={(e) => setBody(e.target.value)} />
         <span className="hint">Para: {p.report_to || '—'}{p.report_cc ? ` · Cc: ${p.report_cc}` : ''}</span>
       </div>
+    </Modal>
+  );
+}
+
+/** "Delegar": não sou eu que faço, é outra pessoa (com recado e, se quiser, novo prazo). */
+export function Delegar({ t, ctx, onClose }: { t: Tarefa; ctx: Ctx; onClose: () => void }) {
+  const { update, me } = useTarefaActions();
+  const outras = ctx.pessoas.filter((p) => !(t.owner_id ? p.id === t.owner_id : nomeDe(p).toLowerCase() === t.owner_name.toLowerCase()));
+  const [quem, setQuem] = useState(outras[0]?.id ?? '');
+  const [prazo, setPrazo] = useState(t.due_date ?? '');
+  const [recado, setRecado] = useState('');
+  async function save() {
+    const p = ctx.pessoas.find((x) => x.id === quem);
+    if (!p) return;
+    const nome = nomeDe(p);
+    const ok = await update(t, { owner_id: contaId(p), owner_name: nome, ...(prazo && prazo !== t.due_date ? { due_date: prazo } : {}) },
+      `${me.name.split(' ')[0]} delegou para ${nome}${t.owner_name ? ` (estava com ${t.owner_name})` : ''}.${recado.trim() ? ` Recado: ${recado.trim()}` : ''}${prazo && prazo !== t.due_date ? ` Novo prazo: ${dia(prazo)}.` : ''}`,
+      `Agora está com ${nome}`);
+    if (ok) onClose();
+  }
+  return (
+    <Modal title="Delegar: quem faz esta tarefa?" onClose={onClose} foot={<><button className="btn ghost" onClick={onClose}>Voltar</button><button className="btn" disabled={!quem} onClick={save}>Delegar</button></>}>
+      <p className="small muted" style={{ margin: '0 0 12px' }}>“{t.title}” está com <b>{t.owner_name || 'ninguém'}</b>. Ela sai da lista de quem está e vai para a de quem você escolher.</p>
+      <div className="field"><label>Passar para</label>
+        <div className="chips">{outras.map((p) => <button key={p.id} type="button" className={`chip-opt${quem === p.id ? ' on' : ''}`} onClick={() => setQuem(p.id)}>{nomeDe(p)}</button>)}</div>
+      </div>
+      <div className="field"><label>Prazo</label><input className="input" type="date" value={prazo} onChange={(e) => setPrazo(e.target.value)} /></div>
+      <div className="field" style={{ marginBottom: 0 }}><label>Recado (opcional)</label><input className="input" value={recado} onChange={(e) => setRecado(e.target.value)} placeholder="ex.: é decisão de gestão, contrato" /></div>
     </Modal>
   );
 }

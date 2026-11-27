@@ -51,12 +51,14 @@ export function ProjetoTutorial({ name, projeto, cliente, save, onClose }: {
               <span className="btn sm line">Em andamento</span>
               <span className="btn sm ok"><Icon name="check" />Feito</span>
               <span className="btn sm line">Travou</span>
+              <span className="btn sm ghost">Delegar</span>
             </div>
           </div>
           <ul>
             <li><b>Em andamento</b>: você começou.</li>
             <li><b>Feito</b>: terminou. O Aprova pergunta o próximo passo (veja a seguir).</li>
             <li><b>Travou</b>: depende de alguém. Você diz de quem e quando cobrar.</li>
+            <li><b>Delegar</b>: não é você quem faz? Passe para a Kim (ou outra pessoa), com um recado.</li>
           </ul>
           <p>Clique no nome da tarefa para ver os detalhes, a lista (ex.: os influenciadores para contatar) e para registrar um comentário curto, como “enviado ao Rafa em 12/11, aguardando”.</p>
         </>
