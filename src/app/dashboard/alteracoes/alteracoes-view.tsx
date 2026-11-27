@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { useUI } from '@/components/ui';
+import { UploadForm } from '@/components/admin/upload-form';
 import { AskBox, ClientTabs, DayStrip, ObsBox, Thumb, Trail } from '@/components/admin/alteracoes-ui';
 import { TYPES } from '@/lib/constants';
 import { fmtDate } from '@/lib/format';
@@ -14,7 +15,7 @@ import {
   type Alteracao, type Doer, type DueWarning,
 } from '@/lib/alteracoes';
 import type { Client, Post, PostFormat, PostMedia } from '@/lib/types';
-import { approveAlteracao, cancelAlteracao, forwardAlteracao, sendBack } from './actions';
+import { approveAlteracao, cancelAlteracao, forwardAlteracao, sendBack, validarReeditado } from './actions';
 
 export type Aba = 'encaminhar' | 'equipe' | 'revisar';
 type AltRow = Alteracao & { posts: Post & { publish_at?: string | null }; clients: Client };
@@ -109,6 +110,8 @@ function PostHead({ post, status }: { post: Post; status: React.ReactNode }) {
 /* ---------- Para encaminhar ---------- */
 
 function PedidoCard({ p, doers, today }: { p: Pedido; doers: Doer[]; today: string }) {
+  const { toast } = useUI();
+  const [mine, setMine] = useState(false);
   const first = sortedItems(p.post.post_media).items[0] ?? null;
   return (
     <section className="card alt-card">
@@ -122,9 +125,29 @@ function PedidoCard({ p, doers, today }: { p: Pedido; doers: Doer[]; today: stri
             {' · '}<Link href={`/dashboard/clientes/${p.client.id}?post=${p.post.id}`}>Ver conteúdo e conversa</Link>
           </div>
           <AskBox text={p.ask?.content ?? ''} />
+          <div className="alt-self">
+            <button type="button" className="btn line sm" onClick={() => setMine(true)}><Icon name="check" />Já reeditei o material</button>
+            <span className="small muted">Você mesma fez a alteração? Suba a versão nova e escolha: reenviar para o cliente aprovar ou já validar e mandar para agendar.</span>
+          </div>
           <ForwardPicker postId={p.post.id} publish={p.publish} doers={doers} today={today} />
         </div>
       </div>
+      {mine && (
+        <UploadForm
+          client={p.client}
+          material={p.post}
+          onClose={() => setMine(false)}
+          direct={{
+            onValidate: async (note) => {
+              const r = await validarReeditado({ postId: p.post.id, note });
+              if (!r.ok) { toast(r.error, 'err'); return false; }
+              toast('Validado e enviado para a fila de agendamento');
+              if (r.warning) toast(r.warning, 'err');
+              return true;
+            },
+          }}
+        />
+      )}
     </section>
   );
 }
