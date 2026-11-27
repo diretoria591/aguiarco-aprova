@@ -58,6 +58,7 @@ export function AdminShell({ children, queueCount = 0, cobrarCount = 0, tasks = 
   const [tutorial, setTutorial] = useState(!!alt?.tutorial);
   const section = path.startsWith('/dashboard/equipe') ? 'equipe'
     : path.startsWith('/dashboard/desempenho') ? 'desempenho'
+    : path.startsWith('/dashboard/projetos') ? 'projetos'
     : path.startsWith('/dashboard/roteiros/pedidos') ? 'pedidos'
     : path.startsWith('/dashboard/alteracoes') ? 'alteracoes'
     : path.startsWith('/dashboard/demandas') ? 'demandas'

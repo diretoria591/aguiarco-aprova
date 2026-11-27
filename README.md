@@ -184,3 +184,24 @@ Quem faz alterações e os dias e horário de entrega ficam na aba **Equipe** (l
 ## Desempenho da equipe
 
 Aba **Desempenho** (`/dashboard/desempenho`, só a dona; libere para outra pessoa na aba Equipe). Para cada pessoa, no mês atual ou nos dois anteriores: agendamentos (no prazo = até o próximo dia de entrega da pessoa depois da aprovação e antes da publicação), alterações e pedidos de texto (até o prazo combinado, e os abertos com prazo vencido), relatórios (dia 5) e números (dia 3). O Aprova sugere a mensagem — parabéns, bom com pontos de atenção ou alerta — e a Kim ajusta e envia: a pessoa vê o recado no topo do Aprova até clicar em "Li, obrigada!" (e por e-mail, se marcado). Também dá para copiar para o WhatsApp. Recados ficam na tabela `feedbacks` (cada pessoa só lê os dela). Migration: `2026-11-26_desempenho.sql`.
+
+## Projetos especiais (ex.: JAH Portugal)
+
+Aba **Projetos** (`/dashboard/projetos`): só a dona e quem tem a aba liberada na Equipe. Abas: **Agora**, **Painel** (a fazer · em andamento · travado/esperando resposta · já saiu), **Minhas tarefas** (o que cada pessoa tem que fazer), **E-mails** e **Relatório de sexta**.
+
+- Cada tarefa tem responsável e prazo, botões **Em andamento**, **Feito** e **Travou**, lista de itens (ex.: influenciadores para contatar) e movimentações. **Feito** pergunta o próximo passo: e-mail de entrega (abre o Gmail já escrito e a tarefa vai para "Travado · esperando o cliente", com data para cobrar em 2 dias úteis), reunião (abre a Agenda), mandar para a Kim aprovar ou só concluir.
+- **O Aprova não envia e-mail nesta área**: todo botão abre o Gmail de quem clicou.
+- **Rotinas** (stories toda segunda, relatório de sexta, marcos do mês) ficam em `projetos.rotinas` e viram tarefa sozinhas.
+- **Tutorial** no primeiro acesso de quem não é a dona (botão "Como funciona" para rever).
+- Dados do projeto (contatos, tarefas) ficam só no Supabase, nunca no repositório. Valores e pagamentos não entram.
+
+### Gmail (só leitura)
+
+O Gmail da Kim é lido a cada 10 minutos (pg_cron → `POST /api/projetos/sync`, com os mesmos segredos do Vault dos avisos). Entram só e-mails dos domínios do projeto (`projetos.gmail_domains`); guarda remetente, assunto, data e um trecho. Conversa em que a última mensagem veio do cliente aparece em "Precisa de resposta".
+
+Configuração (uma vez):
+1. Google Cloud → novo projeto → **APIs e serviços → Biblioteca** → ative a **Gmail API**.
+2. **Tela de consentimento OAuth** → tipo **Interno** (conta Google Workspace da agência).
+3. **Credenciais → Criar ID do cliente OAuth → Aplicativo da Web** → URI de redirecionamento: `https://SEU-DOMINIO/api/projetos/gmail/callback`.
+4. Vercel → Environment Variables: `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` → Redeploy.
+5. No Aprova, aba **E-mails** do projeto → **Conectar o Gmail** (só a dona). Migration: `2026-11-27_projetos.sql`.
