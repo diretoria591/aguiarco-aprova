@@ -125,6 +125,11 @@ function GmailBanner({ msg }: { msg: string | null }) {
   return <div className={`task-banner ${msg === 'ok' ? 'ok' : 'late'}`} style={{ margin: '0 0 14px' }}><span>{txt[msg] ?? msg}</span></div>;
 }
 
+/** Remetentes automáticos (assinatura digital, avisos, no-reply): não pedem resposta. */
+const AUTO = /(no-?reply|nao-?responda|notifica|mailer-daemon|d4sign|docusign|calendar-notification)/i;
+/** Conversa parada há mais que isso sai de "Precisa de resposta" (continua na lista de e-mails). */
+const MAX_DIAS = 14;
+
 /** Conversas em que a última mensagem veio do cliente ou de parceiros e ninguém respondeu. */
 function needsReply(emails: ProjEmail[]): Thread[] {
   const by = new Map<string, ProjEmail[]>();
@@ -132,7 +137,9 @@ function needsReply(emails: ProjEmail[]): Thread[] {
   const out: Thread[] = [];
   for (const list of by.values()) {
     const last = [...list].sort((a, b) => b.sent_at.localeCompare(a.sent_at))[0];
-    if (last.direction === 'in' && !last.dismissed_at) out.push({ last, count: list.length, hours: Math.round((Date.now() - Date.parse(last.sent_at)) / 3600e3) });
+    const hours = Math.round((Date.now() - Date.parse(last.sent_at)) / 3600e3);
+    if (AUTO.test(`${last.from_email} ${last.from_name}`) || hours > MAX_DIAS * 24) continue;
+    if (last.direction === 'in' && !last.dismissed_at) out.push({ last, count: list.length, hours });
   }
   return out.sort((a, b) => a.last.sent_at.localeCompare(b.last.sent_at));
 }
