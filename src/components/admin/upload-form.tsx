@@ -89,9 +89,19 @@ export type StageMode = {
   onFinish: (plan: Plan, note: string, summary: string) => Promise<boolean>;
 };
 
+/**
+ * Modo "eu mesma reeditei" (Kim ou João, direto de "Para encaminhar"): sobe a versão nova e escolhe
+ * se ela volta para o cliente reaprovar ou se já fica validada e vai para a fila de agendamento.
+ */
+export type DirectMode = {
+  /** Chamado depois que a versão nova já foi salva, quando a escolha é "já validar". */
+  onValidate: (note: string) => Promise<boolean>;
+};
+type After = 'cliente' | 'agendar';
+
 export function UploadForm({
-  client, material, onClose, onDone, stage,
-}: { client: Client; material?: Post; onClose: () => void; onDone?: () => void; stage?: StageMode }) {
+  client, material, onClose, onDone, stage, direct,
+}: { client: Client; material?: Post; onClose: () => void; onDone?: () => void; stage?: StageMode; direct?: DirectMode }) {
   const isVersion = !!material;
   const router = useRouter();
   const me = useMe();
@@ -117,6 +127,9 @@ export function UploadForm({
   const [type, setType] = useState<PostFormat>(material?.format ?? 'carrossel');
   const [over, setOver] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  /** só no modo direto: para onde vai a versão nova */
+  const [after, setAfter] = useState<After>('cliente');
+  const validate = !!direct && after === 'agendar';
 
   function validFiles(list: FileList | null) {
     const ok: File[] = [];
@@ -327,17 +340,29 @@ export function UploadForm({
           await supabase.from('post_media').delete().in('id', gone.map((m) => m.id));
           await removeFiles(gone.map((m) => m.storage_path)).catch(() => {});
         }
-        const { error } = await supabase.from('posts').update({
-          version: v, caption, status: 'pending', sent_at: new Date().toISOString(),
-          first_viewed_at: null, decided_at: null, decided_by: null,
-        }).eq('id', material.id);
-        if (error) throw error;
         const note = String(fd.get('note') ?? '').trim();
         const summary = changeSummary(caption);
+        // "já validar": a versão muda, mas quem aprova e manda para a fila é o servidor (avisa quem agenda)
+        const { error } = await supabase.from('posts').update(validate
+          ? { version: v, caption }
+          : { version: v, caption, status: 'pending', sent_at: new Date().toISOString(), first_viewed_at: null, decided_at: null, decided_by: null },
+        ).eq('id', material.id);
+        if (error) throw error;
         await supabase.from('comments').insert({
           post_id: material.id, author_name: me.name, author_role: 'agency', kind: 'version',
-          content: [note || `Nova versão enviada (v${v}).`, summary].filter(Boolean).join('\n'), version: v,
+          content: [validate ? `Alteração feita (v${v}). ✓` : note || `Nova versão enviada (v${v}).`, summary].filter(Boolean).join('\n'), version: v,
         });
+        if (validate) {
+          await supabase.from('activity_logs').insert({
+            client_id: client.id, post_id: material.id, type: 'nova_versao', actor: me.name, meta: `v${v}`,
+            action_text: `${me.name} reeditou ${material.title} (v${v})`,
+          });
+          const ok = await direct!.onValidate(note);
+          setProgress(null);
+          router.refresh();
+          if (ok) { onClose(); onDone?.(); }
+          return;
+        }
         await supabase.from('activity_logs').insert({
           client_id: client.id, post_id: material.id, type: 'nova_versao', actor: me.name, meta: `v${v}`,
           action_text: `${me.name} enviou nova versão de ${material.title} (v${v})`,
@@ -408,7 +433,7 @@ export function UploadForm({
         <>
           <button className="btn line" onClick={onClose} disabled={busy}>Cancelar</button>
           <button className="btn" onClick={submit} disabled={busy}>
-            <Icon name={stage ? 'check' : 'send'} />{stage ? stage.submitLabel : isVersion ? 'Enviar nova versão' : 'Enviar para aprovação'}
+            <Icon name={stage || validate ? 'check' : 'send'} />{stage ? stage.submitLabel : validate ? 'Validar e mandar para agendar' : direct ? 'Reenviar para o cliente aprovar' : isVersion ? 'Enviar nova versão' : 'Enviar para aprovação'}
           </button>
         </>
       }
@@ -420,6 +445,11 @@ export function UploadForm({
               <p className="muted small" style={{ margin: '0 0 14px' }}>
                 <b>O cliente ainda não vê</b> o que você fizer aqui. Quando terminar, a alteração vai {stage.goesTo}.
                 Troque só o que o cliente pediu: o resto continua como está.
+              </p>
+            ) : direct ? (
+              <p className="muted small" style={{ margin: '0 0 14px' }}>
+                Suba aqui o material que você já reeditou. Troque só o que o cliente pediu: o resto continua como está.
+                No fim, escolha se ele volta para o cliente aprovar ou se você já valida.
               </p>
             ) : (
               <p className="muted small" style={{ margin: '0 0 14px' }}>
@@ -535,8 +565,31 @@ export function UploadForm({
               </>
             ) : (
               <>
-                <label>Recado para o cliente <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
-                <input className="input" name="note" placeholder="Ex.: Ajustamos a cor do título como você pediu." />
+                {direct && (
+                  <div style={{ marginBottom: 12 }}>
+                    <label>E agora?</label>
+                    <div className="alt-people" role="radiogroup">
+                      <button type="button" role="radio" className={`person${after === 'cliente' ? ' on' : ''}`} aria-checked={after === 'cliente'} onClick={() => setAfter('cliente')}>
+                        <b>Reenviar para o cliente{after === 'cliente' ? ' ✓' : ''}</b><span>volta para aguardando aprovação</span>
+                      </button>
+                      <button type="button" role="radio" className={`person${after === 'agendar' ? ' on' : ''}`} aria-checked={after === 'agendar'} onClick={() => setAfter('agendar')}>
+                        <b>Já validar e mandar agendar{after === 'agendar' ? ' ✓' : ''}</b><span>vai direto para a fila da Duda</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {validate ? (
+                  <>
+                    <label>Observação para quem agenda <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+                    <input className="input" name="note" key="note-agendar" placeholder="Ex.: Já está com a música nova que a cliente pediu." />
+                    <span className="hint">O conteúdo fica aprovado por você e quem agenda recebe o e-mail com o pedido do cliente e esta observação.</span>
+                  </>
+                ) : (
+                  <>
+                    <label>Recado para o cliente <span className="muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+                    <input className="input" name="note" key="note-cliente" placeholder="Ex.: Ajustamos a cor do título como você pediu." />
+                  </>
+                )}
               </>
             )}
           </div>

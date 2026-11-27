@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient, createClient } from '@/lib/supabase/server';
+import { dispatchNotifications } from '@/lib/notify';
 import { MEDIA_BUCKET } from '@/lib/supabase/env';
 import { currentViewer } from '@/lib/auth';
 import { TYPES } from '@/lib/constants';
@@ -239,4 +240,59 @@ export async function cancelAlteracao(id: string): Promise<Result> {
   });
   refresh();
   return { ok: true };
+}
+
+/**
+ * Kim ou João já reeditaram o material (a versão nova já foi salva pelo formulário) e validam
+ * na hora: o conteúdo fica aprovado e entra na fila de agendamento, com aviso por e-mail para quem agenda.
+ */
+export async function validarReeditado(input: { postId: string; note?: string }): Promise<Result> {
+  const u = await me();
+  if (!u?.reviewer) return { ok: false, error: 'Só a Kim e o João validam alterações.' };
+  const supabase = await createClient();
+  const { data: post } = await supabase.from('posts').select('*, comments(*)').eq('id', input.postId).maybeSingle();
+  if (!post) return { ok: false, error: 'Conteúdo não encontrado.' };
+  if (post.status !== 'adjustment_requested') return { ok: false, error: 'Esse conteúdo não está mais esperando alteração.' };
+  const { count } = await supabase.from('alteracoes').select('id', { count: 'exact', head: true })
+    .eq('post_id', input.postId).in('status', ['fazendo', 'revisao']);
+  if (count) return { ok: false, error: 'Essa alteração já está com a equipe. Cancele o encaminhamento antes.' };
+
+  const ask = [...((post.comments ?? []) as { author_role: string; kind: string; created_at: string; content: string }[])]
+    .filter((c) => c.author_role === 'client' && c.kind === 'adjustment').sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  const note = String(input.note ?? '').trim().slice(0, 1500);
+  const scheduleNote = [
+    `Alteração feita e validada por ${u.name} (v${post.version}).`,
+    ask?.content ? `Pedido do cliente: ${ask.content}` : '',
+    note ? `Recado de ${u.name}: ${note}` : '',
+  ].filter(Boolean).join('\n\n').slice(0, 5000);
+
+  const { data: done, error } = await supabase.from('posts').update({
+    status: 'approved', decided_at: new Date().toISOString(), decided_by: `${u.name} (alteração validada pela equipe)`, schedule_note: scheduleNote,
+  }).eq('id', post.id).eq('status', 'adjustment_requested').select('approved_at').maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!done) return { ok: false, error: 'Não foi possível validar: o conteúdo mudou de status.' };
+  await supabase.from('activity_logs').insert({
+    client_id: post.client_id, post_id: post.id, type: 'alteracao_validada', actor: u.name,
+    action_text: `${u.name} reeditou e validou ${post.title} (v${post.version}): foi para a fila de agendamento`,
+  });
+
+  // aprovação da equipe não avisa sozinha (o gatilho só avisa a do cliente): avisa quem agenda aqui
+  let warning: string | undefined;
+  const admin = createAdminClient();
+  if (!admin) warning = 'Foi para a fila de agendamento, mas o e-mail para quem agenda não saiu (falta SUPABASE_SERVICE_ROLE_KEY).';
+  else {
+    try {
+      const { error: e2 } = await admin.from('notification_outbox')
+        .insert({ post_id: post.id, client_id: post.client_id, channel: 'email', approved_at: done.approved_at });
+      if (e2 && e2.code !== '23505') throw e2; // 23505: aviso dessa aprovação já está na fila
+      const r = await dispatchNotifications(admin, await siteUrl());
+      if (r.failed) warning = 'Foi para a fila de agendamento, mas o e-mail para quem agenda falhou. O Aprova tenta de novo.';
+    } catch (e) {
+      warning = `Foi para a fila de agendamento, mas o e-mail para quem agenda não saiu: ${e instanceof Error ? e.message : String(e)}`;
+    }
+  }
+  refresh();
+  revalidatePath('/dashboard/agendamento');
+  revalidatePath(`/dashboard/clientes/${post.client_id}`);
+  return { ok: true, warning };
 }
